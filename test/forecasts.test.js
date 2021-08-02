@@ -17,32 +17,34 @@
 */
 
 const request = require("supertest");
-const assert = require("assert");
+const chai = require("chai");
+const chaiHttp = require("chai-http");
 const app = require("../src/index");
+
+chai.use(chaiHttp);
+const expect = chai.expect;
 
 describe("GET forecasts for Cesena", () => {
   const base_url = "/forecast";
-  it("responds with unsuccessful result", (done) => {
-    request(app)
+  it("responds with unsuccessful result", async () => {
+    const result = await request(app)
       .get(base_url + "/1234")
-      .expect(400)
-      .end((error, result) => {
-        if (error) {
-          done(error);
-        }
-        done();
-      });
+      .set("content-type", "application/json");
+
+    expect(result).have.status(400);
+    expect(result).to.be.an("object", "We expect that result is an object");
+    expect(result).to.have.a.nested.property("error.text");
   });
 
-  it("responds with successful result", (done) => {
-    request(app)
-      .get(base_url + "/Cesena,Italy")
-      .expect(200)
-      .end((error, result) => {
-        if (error) {
-          done(error);
-        }
-        done();
-      });
-  });
+  it("responds with successful result", async () => {
+    const result = await request(app)
+      .get(base_url + "/Cesena")
+      .set("content-type", "application/json")
+      .set("Accept", "application/json");
+
+    expect(result).have.status(200);
+    expect(result).to.be.an("object", "We expect that result is an object");
+    expect(result.body).to.have.a.property("owm");
+    expect(result.body).to.have.a.property("tro");
+  }).timeout(5000); // This test need more time.
 });
