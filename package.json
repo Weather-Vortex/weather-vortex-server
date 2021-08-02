@@ -4,6 +4,7 @@
   "description": "Server for Weather Vortex Project.",
   "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "mocha src/tests/**"
   },
   "repository": {
