@@ -19,18 +19,22 @@ const createUser = (req, res) => {
 };
 
 const getUser = (req, res) => {
+  // TODO: Return some info about user, not sensitive info like password.
   console.log("Get user", req.params.id);
 };
 
 const updateUser = (req, res) => {
+  // TODO: Update some info about user.
   console.log("Update user", req.params.id);
 };
 
 const deleteUser = (req, res) => {
+  // TODO: We can delete users?
   console.log("Delete user", req.params.id);
 };
 
 const getAllUsers = (req, res) => {
+  // TODO: What informations we can return about users?
   console.log("Get all user");
 };
 
