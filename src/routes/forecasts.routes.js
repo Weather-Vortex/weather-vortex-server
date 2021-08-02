@@ -18,14 +18,47 @@
 
 const express = require("express");
 const openWeatherStorage = require("../storages/openweathermap.storage");
+const locationStorage = require("../storages/location.storage");
+const troposphereStorage = require("../storages/troposhpere.storage");
+const storageUtils = require("../storages/storage.utils");
 const router = express.Router();
 
 router.get("/:city_name", async (req, res) => {
-  const openWeatherForecast = await openWeatherStorage.fourDayForecastByCity(
-    req.params.city_name
-  );
+  // Check if param is valid.
+  if (!storageUtils.checkCityNameType(req)) {
+    return res.status(400).json({
+      error: "Req.params.city_name is not correctly declared.",
+      value: req.params.city_name,
+    });
+  }
 
-  res.status(200).json(openWeatherForecast);
+  const city_name = req.params.city_name;
+  let location = await locationStorage.getLocationDataByCity(city_name);
+  if (typeof location.error !== "undefined" && location.error !== null) {
+    return res.status(500).json(location);
+  }
+
+  if (Array.isArray(location.data) && location.data.length > 0) {
+    // Manage multiple location found.
+    // TODO: How can we manage them smarter?
+    location = location.data[0];
+  }
+  if (typeof location.latitude === "undefined") {
+    return res.status(500).json("No latitude for the object");
+  }
+
+  const openWeatherForecast =
+    await openWeatherStorage.fourDayForecastByLocation(
+      location.latitude,
+      location.longitude
+    );
+  const troposphereForecast =
+    await troposphereStorage.get7DaysForecastByLocation(
+      location.latitude,
+      location.longitude
+    );
+
+  res.status(200).json({ owm: openWeatherForecast, tro: troposphereForecast });
 });
 
 module.exports = router;
