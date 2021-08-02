@@ -21,10 +21,11 @@ const openWeatherStorage = require("../storages/openweathermap.storage");
 const router = express.Router();
 
 router.get("/:city_name", async (req, res) => {
-  const openweatherforecast = await openWeatherStorage.fourDayForecastByCity(
+  const openWeatherForecast = await openWeatherStorage.fourDayForecastByCity(
     req.params.city_name
   );
-  console.log("Forecast:", openweatherforecast);
+
+  res.status(200).json(openWeatherForecast);
 });
 
 module.exports = router;

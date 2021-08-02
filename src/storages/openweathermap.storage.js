@@ -24,17 +24,16 @@ const axios = require("axios");
  * @returns {Object} Weather Forecast.
  */
 const fourDayForecastByCity = async (city_name) => {
-  console.log("Required data for %s", city_name);
   // TODO: Read from env
   const url =
     "https://api.openweathermap.org/data/2.5/forecast?q=Rome,Italy&appid=095e72fe0e443261be9fa4aeb5248a57";
   try {
     const response = await axios.get(url);
     const data = response.data;
-    console.log("Response:", data);
     return data;
   } catch (error) {
     console.error("Error in axios call", error);
+    return undefined;
   }
 };
 
