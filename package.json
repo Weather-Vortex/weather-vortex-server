@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "mocha src/tests/**"
+    "test": "mocha tests/** --exit",
+    "test-cov": "nyc --reporter=text npm run test"
   },
   "repository": {
     "type": "git",
@@ -25,8 +26,11 @@
   "dependencies": {
     "axios": "^0.21.1",
     "express": "^4.17.1",
+    "mongoose": "^5.13.5"
+  },
+  "devDependencies": {
     "mocha": "^9.0.3",
-    "mongoose": "^5.13.5",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "supertest": "^6.1.4"
   }
 }
