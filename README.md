@@ -13,6 +13,8 @@ Server for Weather Vortex Project.
 
 ### Build
 
+Generate your `.env` file following the example in `.env.example`.
+
 > In the future, here will be described the docker build procedure.
 
 ### Run
