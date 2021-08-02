@@ -32,6 +32,7 @@ mongoose
   });
 
 const app = express();
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.status(200).json({ result: "ok" });
@@ -51,4 +52,5 @@ app.listen(12000, () => {
   console.log("Application running on http://localhost:12000");
 });
 
+// Export app to use it in unit testing.
 module.exports = app;
