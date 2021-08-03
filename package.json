@@ -5,8 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "mocha --recursive --timeout 3000 --exit",
-    "test-cov": "nyc --reporter=text npm run test"
+    "test": "mocha --recursive --exit",
+    "test-cov": "nyc --reporter=text npm run test",
+    "test-cov:html": "nyc --reporter=html npm run test"
   },
   "repository": {
     "type": "git",
