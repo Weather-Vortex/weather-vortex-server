@@ -16,8 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const axios = require("axios");
-const utils = require("./storage.utils");
 const troposphere_base_url = "https://api.troposphere.io";
 const troposphere_api_key =
   "02a505c1a967cd777252ff263bdf78c9fb80de6d9703bae9f3"; // TODO: Read from env
@@ -35,7 +33,10 @@ class TroposphereProvider extends WeatherProvider {
   }
 }
 
-const provider = new TroposphereProvider(base_url, api_key);
+const provider = new TroposphereProvider(
+  troposphere_base_url,
+  troposphere_api_key
+);
 
 const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
   const url = provider.formatUrl(`/forecast/${latitude},${longitude}`);
