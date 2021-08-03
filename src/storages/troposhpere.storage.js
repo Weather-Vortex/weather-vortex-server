@@ -22,14 +22,24 @@ const troposphere_base_url = "https://api.troposphere.io";
 const troposphere_api_key =
   "02a505c1a967cd777252ff263bdf78c9fb80de6d9703bae9f3"; // TODO: Read from env
 
-const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
-  const url = `${troposphere_base_url}/forecast/${latitude},${longitude}?token=${troposphere_api_key}`;
-  try {
-    return axios.get(url);
-  } catch (error) {
-    utils.manageAxiosError(error);
-    return undefined;
+const { WeatherProvider } = require("./weatherProvider");
+
+class TroposphereProvider extends WeatherProvider {
+  constructor(base_url, api_key) {
+    super(base_url, api_key);
+    this.name = "Troposphere Provider";
   }
+
+  formatUrl(data) {
+    return `${this.base_url}${data}?token=${troposphere_api_key}`;
+  }
+}
+
+const provider = new TroposphereProvider(base_url, api_key);
+
+const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
+  const url = provider.formatUrl(`/forecast/${latitude},${longitude}`);
+  return provider.fourDayForecastRequest(url);
 };
 
 module.exports = {

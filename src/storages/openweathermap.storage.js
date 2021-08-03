@@ -56,8 +56,6 @@ const fourDayForecastByLocationRequest = (latitude, longitude) => {
 };
 
 module.exports = {
-  fourDayForecastByCity,
   fourDayForecastByCityRequest,
-  fourDayForecastByLocation,
   fourDayForecastByLocationRequest,
 };
