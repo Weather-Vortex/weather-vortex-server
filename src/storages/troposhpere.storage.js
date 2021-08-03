@@ -19,8 +19,7 @@
 const axios = require("axios");
 const utils = require("./storage.utils");
 const troposphere_base_url = "https://api.troposphere.io";
-const troposphere_api_key =
-  "02a505c1a967cd777252ff263bdf78c9fb80de6d9703bae9f3"; // TODO: Read from env
+const troposphere_api_key = process.env.TROPOSPHERE_API_KEY; // TODO: Read from env
 
 /**
  * @deprecated Since 0.2, use request method instead.
