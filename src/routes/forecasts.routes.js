@@ -35,6 +35,7 @@ router.get("/:city_name", async (req, res) => {
   const city_name = req.params.city_name;
   let location = await locationStorage.getLocationDataByCity(city_name);
   if (typeof location.error !== "undefined" && location.error !== null) {
+    // Return location error if any.
     return res.status(500).json(location);
   }
 
@@ -44,21 +45,28 @@ router.get("/:city_name", async (req, res) => {
     location = location.data[0];
   }
   if (typeof location.latitude === "undefined") {
+    // Return location missing error if empty.
     return res.status(500).json("No latitude for the object");
   }
 
+  // First pending request.
   const openWeatherForecast =
-    await openWeatherStorage.fourDayForecastByLocation(
-      location.latitude,
-      location.longitude
-    );
-  const troposphereForecast =
-    await troposphereStorage.get7DaysForecastByLocation(
+    openWeatherStorage.fourDayForecastByLocationRequest(
       location.latitude,
       location.longitude
     );
 
-  res.status(200).json({ owm: openWeatherForecast, tro: troposphereForecast });
+  // Second pending request.
+  const troposphereForecast =
+    troposphereStorage.getSevenDaysForecastByLocationRequest(
+      location.latitude,
+      location.longitude
+    );
+
+  // Wait for all requests.
+  const results = await Promise.all([openWeatherForecast, troposphereForecast]);
+
+  res.status(200).json({ owm: results[0].data, tro: results[1].data });
 });
 
 module.exports = router;

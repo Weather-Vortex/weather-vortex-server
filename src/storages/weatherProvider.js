@@ -55,7 +55,7 @@ class WeatherProvider {
   /**
    * Get a resource from an url with axios.
    * @param {String} url Url to get with axios.
-   * @returns Axios promise.
+   * @returns {Promise<any>} Axios promise.
    */
   fourDayForecastRequest = (url) => axios.get(url);
 }
