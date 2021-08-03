@@ -22,23 +22,6 @@ const troposphere_base_url = "https://api.troposphere.io";
 const troposphere_api_key =
   "02a505c1a967cd777252ff263bdf78c9fb80de6d9703bae9f3"; // TODO: Read from env
 
-/**
- * @deprecated Since 0.2, use request method instead.
- * @param {*} latitude
- * @param {*} longitude
- * @returns
- */
-const get7DaysForecastByLocation = async (latitude, longitude) => {
-  const url = `${troposphere_base_url}/forecast/${latitude},${longitude}?token=${troposphere_api_key}`;
-  try {
-    const { data } = await axios.get(url);
-    return data;
-  } catch (error) {
-    utils.manageAxiosError(error);
-    return undefined;
-  }
-};
-
 const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
   const url = `${troposphere_base_url}/forecast/${latitude},${longitude}?token=${troposphere_api_key}`;
   try {
@@ -50,6 +33,5 @@ const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
 };
 
 module.exports = {
-  get7DaysForecastByLocation,
   getSevenDaysForecastByLocationRequest,
 };
