@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const utils = require("../src/storages/storage.utils");
+const utils = require("../../src/storages/storage.utils");
 const assert = require("chai").assert;
 
 describe("Check if params contains a string", () => {

@@ -30,16 +30,42 @@ const sample_data = {
   },
 };
 // From now on, Nock will intercept each get request to this url.
-nock(base_url).get(res_url).reply(200, sample_data);
+nock(base_url).get(res_url).times(4).reply(200, sample_data);
 
 describe("Get forecast for a simple provider", () => {
-  it("responds with a successful result", async () => {
-    const provider = new WeatherProvider(base_url, api_key);
-    const final_url = base_url + res_url + "";
-    const result = await provider.fourDayForecast(final_url);
-    console.log(result);
-    expect(result).to.be.an("object");
-    expect(result).to.have.a.nested.property("forecast.rain", false);
-    expect(result).to.have.a.nested.property("forecast.temp", 36);
+  describe("using old get result function", () => {
+    it("responds with a successful result", async () => {
+      const provider = new WeatherProvider(base_url, api_key);
+      const final_url = base_url + res_url + "";
+      const result = await provider.fourDayForecast(final_url);
+      expect(result).to.be.an("object");
+      expect(result).to.have.a.nested.property("forecast.rain", false);
+      expect(result).to.have.a.nested.property("forecast.temp", 36);
+    });
+  });
+
+  describe("using new get request function", async () => {
+    it("responds with a successful result", async () => {
+      const provider = new WeatherProvider(base_url, api_key);
+      const final_url = base_url + res_url + "";
+      const { data } = await provider.fourDayForecastRequest(final_url);
+      expect(data).to.be.an("object");
+      expect(data).to.have.a.nested.property("forecast.rain", false);
+      expect(data).to.have.a.nested.property("forecast.temp", 36);
+    });
+
+    it("responds with a successful result many times", async () => {
+      const provider = new WeatherProvider(base_url, api_key);
+      const final_url = base_url + res_url + "";
+      const first = provider.fourDayForecastRequest(final_url);
+      const second = provider.fourDayForecastRequest(final_url);
+
+      const data = await Promise.all([first, second]);
+      data.map((val) => {
+        expect(val).to.be.an("object");
+        expect(val).to.have.a.nested.property("data.forecast.rain", false);
+        expect(data).to.have.a.nested.property("data.forecast.temp", 36);
+      });
+    });
   });
 });
