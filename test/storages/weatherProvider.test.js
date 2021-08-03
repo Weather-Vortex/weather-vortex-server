@@ -64,7 +64,7 @@ describe("Get forecast for a simple provider", () => {
       data.map((val) => {
         expect(val).to.be.an("object");
         expect(val).to.have.a.nested.property("data.forecast.rain", false);
-        expect(data).to.have.a.nested.property("data.forecast.temp", 36);
+        expect(val).to.have.a.nested.property("data.forecast.temp", 36);
       });
     });
   });

@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "mocha --timeout 3000 --exit",
+    "test": "mocha --recursive --timeout 3000 --exit",
     "test-cov": "nyc --reporter=text npm run test"
   },
   "repository": {
