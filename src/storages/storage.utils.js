@@ -39,6 +39,6 @@ module.exports.manageAxiosError = (error) => {
     console.log(error.request);
   } else {
     // Something happened in setting up the request that triggered an Error
-    console.log("Error", error.message);
+    console.log("Axios error unknown:", error.message);
   }
 };

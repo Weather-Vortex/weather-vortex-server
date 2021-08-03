@@ -53,11 +53,20 @@ class WeatherProvider {
   };
 
   /**
-   * Get a resource from an url with axios.
-   * @param {String} url Url to get with axios.
+   * Get a resource from an url with Axios.
+   * @param {String} url Url to get with Axios.
    * @returns {Promise<any>} Axios promise.
    */
-  fourDayForecastRequest = (url) => axios.get(url);
+  fourDayForecastRequest = (url) => {
+    try {
+      // Return the real Promise from Axios.
+      return axios.get(url);
+    } catch (error) {
+      utils.manageAxiosError(error);
+      // Return a rejected Promise.
+      return new Promise.reject("Error in axios call");
+    }
+  };
 }
 
 module.exports = {

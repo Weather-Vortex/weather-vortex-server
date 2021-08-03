@@ -33,8 +33,16 @@ const getLocationDataByCity = async (city_name) => {
     const { data } = await axios.get(url);
 
     // Return an error if data doesn't contains.
-    if (data.error === null && data.data === null) {
-      return { error: "No location found" };
+    if (
+      data.error === null &&
+      typeof data.data === "object" &&
+      data.data.length === 0
+    ) {
+      return {
+        error: 404,
+        message: "No location found",
+        name: city_name,
+      };
     }
 
     return data;

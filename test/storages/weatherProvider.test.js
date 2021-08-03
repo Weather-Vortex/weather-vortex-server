@@ -32,10 +32,12 @@ const sample_data = {
 // From now on, Nock will intercept each get request to this url.
 nock(base_url).get(res_url).times(4).reply(200, sample_data);
 
+const providerProvider = (url) => new WeatherProvider(url, api_key);
+
 describe("Get forecast for a simple provider", () => {
   describe("using old get result function", () => {
     it("responds with a successful result", async () => {
-      const provider = new WeatherProvider(base_url, api_key);
+      const provider = providerProvider(base_url);
       const final_url = base_url + res_url + "";
       const result = await provider.fourDayForecast(final_url);
       expect(result).to.be.an("object");
@@ -46,7 +48,7 @@ describe("Get forecast for a simple provider", () => {
 
   describe("using new get request function", async () => {
     it("responds with a successful result", async () => {
-      const provider = new WeatherProvider(base_url, api_key);
+      const provider = providerProvider(base_url);
       const final_url = base_url + res_url + "";
       const { data } = await provider.fourDayForecastRequest(final_url);
       expect(data).to.be.an("object");
@@ -55,7 +57,7 @@ describe("Get forecast for a simple provider", () => {
     });
 
     it("responds with a successful result many times", async () => {
-      const provider = new WeatherProvider(base_url, api_key);
+      const provider = providerProvider(base_url);
       const final_url = base_url + res_url + "";
       const first = provider.fourDayForecastRequest(final_url);
       const second = provider.fourDayForecastRequest(final_url);
@@ -66,6 +68,16 @@ describe("Get forecast for a simple provider", () => {
         expect(val).to.have.a.nested.property("data.forecast.rain", false);
         expect(val).to.have.a.nested.property("data.forecast.temp", 36);
       });
+    });
+  });
+
+  describe("fail when call a fake domain", () => {
+    it.skip("that doesn't exists", async () => {
+      const provider = providerProvider("https://weather.provider.it");
+      const final_url = "https://weather.provider.it" + res_url;
+      const fake = await provider.fourDayForecastRequest(final_url);
+      console.log(fake);
+      expect(fake).to.be.an("array");
     });
   });
 });
