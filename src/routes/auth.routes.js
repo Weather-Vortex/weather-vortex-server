@@ -1,5 +1,6 @@
 const express = require("express");
 const authStorage = require("../storages/auth.storage");
+const {auth} =require('../middlewares/auth');
 const router = express.Router();
 
 router
@@ -9,9 +10,10 @@ router
 .post('/login',authStorage.login);
 
 router
-.get('/logout',authStorage.logout);
+.get('/logout',auth, authStorage.logout);
 
 router
-.get('/profile',authStorage.loggedIn);
+//wiew informationa about the user logged in
+.get('/profile',auth,authStorage.loggedIn);
 
 module.exports = router;

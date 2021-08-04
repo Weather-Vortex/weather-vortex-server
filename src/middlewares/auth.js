@@ -1,4 +1,6 @@
-/*we will going to use to check whether the user has been logged in pr not. */
+/*we will going to use to check whether the user has been logged in or not.
+ first we will extract the available toke from cookies then we will directly call the findByToken function
+  from user.js and check for the login status of the user.*/
 const User=require('../models/user.model');
 
 let auth =(req,res,next)=>{

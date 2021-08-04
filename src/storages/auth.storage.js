@@ -3,16 +3,13 @@ const User=require('../models/user.model');
 const {auth} =require('../middlewares/auth');
 
 
-
-
-
 // adding new user (sign-up route)
 const register=(req,res)=>{
    // taking a user
    const newuser=new User(req.body);
    console.log(newuser);
 
-   if(newuser.password!=newuser.password2)return res.status(400).json({message: "password not match"});
+   if(newuser.password!=newuser.password2)return res.status(400).json({message: "passwords not match"});
    
    User.findOne({email:newuser.email},function(err,user){
        if(user) return res.status(400).json({ auth : false, message :"email exists"});
@@ -69,13 +66,13 @@ const register=(req,res)=>{
 
     }; 
 
-// get logged in user
+// get logged in user, view its informations
     const loggedIn=(req,res)=>{
         res.json({
             isAuth: true,
             id: req.user._id,
             email: req.user.email,
-            name: req.user.firstname + req.user.lastname
+            name: req.user.firstName + req.user.lastName
             
         })
 };
