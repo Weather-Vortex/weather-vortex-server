@@ -17,6 +17,13 @@
 */
 
 const express = require("express");
+const app = express();
+const http = require("http");
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
+
+// Database
 const mongoose = require("mongoose");
 
 mongoose
@@ -31,7 +38,6 @@ mongoose
     console.error("Mongodb connection error:", error);
   });
 
-const app = express();
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -41,10 +47,10 @@ app.get("/", (req, res) => {
 const userRoutes = require("./routes/user.routes");
 app.use("/users", userRoutes);
 
-const forecastRoutes = require("./routes/forecasts.routes");
-app.use("/forecast", forecastRoutes);
+const { configRouter } = require("./routes/forecasts.routes");
+app.use("/forecast", configRouter(io));
 
-app.listen(12000, () => {
+server.listen(12000, () => {
   console.log(
     "Weather Vortex  Copyright (C) 2021  Lirussi Igor, Tentoni Daniele, Zandoli Silvia"
   );
