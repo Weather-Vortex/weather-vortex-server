@@ -47,6 +47,7 @@ var userSchema = mongoose.Schema({
   preferred: {
     location: String,
     position: {
+      // TODO: Update those constraints like in location.model.js
       x: Number,
       y: Number,
     },
