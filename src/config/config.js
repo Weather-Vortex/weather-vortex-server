@@ -1,3 +1,4 @@
+//npm install express body-parser cookie-parser bcrypt mongoose jsonwebtoken nodemon
 const config={
     production :{
         SECRET: process.env.SECRET,
