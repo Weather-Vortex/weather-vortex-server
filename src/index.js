@@ -1,3 +1,21 @@
+/*
+    Web server for Weather Vortex project.
+    Copyright (C) 2021  Lirussi Igor, Tentoni Daniele, Zandoli Silvia
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyparser=require('body-parser');
@@ -15,6 +33,7 @@ const app = express();
 app.use(bodyparser.urlencoded({extended : false}));
 app.use(bodyparser.json());
 app.use(cookieParser());
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.status(200).json({ result: "ok" });
@@ -26,6 +45,8 @@ app.use("/users", userRoutes);
 const authRoutes= require("./routes/auth.routes");
 app.use("/api",authRoutes);
 
+const forecastRoutes = require("./routes/forecasts.routes");
+app.use("/forecast", forecastRoutes);
 
 app.listen(12000, () => {
   console.log(
@@ -36,6 +57,7 @@ app.listen(12000, () => {
 });
 
 
+// Export app to use it in unit testing.
 module.exports = app;
 
 
