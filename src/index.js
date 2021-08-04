@@ -2,8 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyparser=require('body-parser');
 const cookieParser=require('cookie-parser');
-const {auth} =require('./middlewares/auth');
-const User=require('./models/user.model');
 const db=require('./config/config').get(process.env.NODE_ENV);
 
 //database connection-> ps: l'ho modificato per tenere nascosto il link al database

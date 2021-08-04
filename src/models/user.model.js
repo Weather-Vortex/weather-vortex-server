@@ -1,4 +1,4 @@
-var mongoose=require('mongoose');
+const mongoose=require('mongoose');
 //(JWT) is an open standard that defines a compact and self-contained way of securely 
 //transmitting information between parties as a JSON object
 const jwt=require('jsonwebtoken'); 
@@ -21,12 +21,8 @@ const salt=10; //per la password
     password: {
       type: String,
       required: true,
-      minlength:8
-    },
-    password2: { //password di conferma, durante il signup
-      type: String,
-      required: true,
-      minlength:8
+      minlength:8,
+      maxlength:128
     },
     token:{
       type: String
@@ -69,7 +65,6 @@ userSchema.pre('save',function(next){
           bcrypt.hash(user.password,salt,function(err,hash){
               if(err) return next(err);
               user.password=hash;
-              user.password2=hash;
               next();
           })
 
@@ -82,7 +77,7 @@ userSchema.pre('save',function(next){
 
 //to login
 // comparing the user password when user tries to login
-userSchema.methods.comparepassword=function(password,cb){
+userSchema.methods.comparePassword=function(password,cb){
   bcrypt.compare(password,this.password,function(err,isMatch){
       if(err) return cb(next);
       cb(null,isMatch);

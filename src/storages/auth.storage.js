@@ -9,7 +9,7 @@ const register=(req,res)=>{
    const newuser=new User(req.body);
    console.log(newuser);
 
-   if(newuser.password!=newuser.password2)return res.status(400).json({message: "passwords not match"});
+   //if(newuser.password!=newuser.password2)return res.status(400).json({message: "passwords not match"});
    
    User.findOne({email:newuser.email},function(err,user){
        if(user) return res.status(400).json({ auth : false, message :"email exists"});
@@ -40,7 +40,7 @@ const register=(req,res)=>{
             User.findOne({'email':req.body.email},function(err,user){
                 if(!user) return res.json({isAuth : false, message : ' Auth failed ,email not found'});
         
-                user.comparepassword(req.body.password,(err,isMatch)=>{
+                user.comparePassword(req.body.password,(err,isMatch)=>{
                     if(!isMatch) return res.json({ isAuth : false,message : "password doesn't match"});
         
                 user.generateToken((err,user)=>{
