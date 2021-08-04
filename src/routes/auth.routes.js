@@ -13,7 +13,7 @@ router
 .get('/logout',auth, authStorage.logout);
 
 router
-//wiew informationa about the user logged in
+//wiew informations about the user logged in
 .get('/profile',auth,authStorage.loggedIn);
 
 module.exports = router;
