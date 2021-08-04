@@ -1,6 +1,6 @@
 /*
     Web server for Weather Vortex project.
-    Copyright (C) 2021  Daniele Tentoni
+    Copyright (C) 2021  Tentoni Daniele
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,21 +39,5 @@ var locationSchema = new mongoose.Schema({
     },
   },
 });
-
-/**
- * Find a Location given its name.
- * @param {String} name Name of the Location.
- * @returns Promise with the found location or an error.
- */
-locationSchema.statics.findByName = (name) =>
-  new Promise((resolve, reject) => {
-    this.findOne({ name }, (err, location) => {
-      if (err) {
-        reject({ result: false, error: err, message: "Location not found" });
-        return;
-      }
-      resolve({ result: true, location });
-    });
-  });
 
 module.exports = mongoose.model("Location", locationSchema);
