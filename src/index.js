@@ -24,7 +24,7 @@ const db=require('./config/config').get(process.env.NODE_ENV);
 
 //database connection-> ps: l'ho modificato per tenere nascosto il link al database
 mongoose.Promise=global.Promise;
-mongoose.connect(db.DATABASE,{ useNewUrlParser: true,useUnifiedTopology:true },function(err){
+mongoose.connect(db.DATABASE,{ useNewUrlParser: true,useUnifiedTopology:true,useCreateIndex: true },function(err){
     if(err) console.log(err);
     console.log("database is connected");
 });
