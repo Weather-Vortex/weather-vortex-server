@@ -76,7 +76,6 @@ describe("Get forecast for a simple provider", () => {
       const provider = providerProvider("https://weather.provider.it");
       const final_url = "https://weather.provider.it" + res_url;
       const fake = await provider.fourDayForecastRequest(final_url);
-      console.log(fake);
       expect(fake).to.be.an("array");
     });
   });
