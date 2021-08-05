@@ -31,24 +31,40 @@ const troposphere_api_key =
 const getLocationDataByCity = async (city_name) => {
   try {
     // First search in local cache.
-    const cached = await getCachedLocationByName(city_name);
+    let cached = await getCachedLocationByName(city_name);
+    if (cached.result === false) {
+      // Then in remote service.
+      cached = await fetchLocationByName(city_name);
+    }
+
     return cached;
   } catch (error) {
-    try {
-      // After ask to Troposphere service.
-      const result = await getRemoteLocationByName(city_name);
-      // Then add to local cache.
-      const added = await addCachedLocation(
-        city_name,
-        result.data.latitude,
-        result.data.longitude
-      );
-      // Then return the cached result.
-      return added;
-    } catch (error) {
-      console.error("Thrown error by getLocation:", error);
-      return error;
-    }
+    // At this time, don't resolve error here, but throw it up.
+    throw error;
+  }
+};
+
+/**
+ * Fetch the location data from a remote source and cache them.
+ * @param {String} locationName Name of the Location.
+ * @returns Location data.
+ */
+const fetchLocationByName = async (locationName) => {
+  try {
+    // After ask to Troposphere service.
+    const result = await getRemoteLocationByName(locationName);
+    // Then add to local cache.
+    const added = await addCachedLocation(
+      result.name,
+      result.latitude,
+      result.longitude
+    );
+
+    // Then return the cached result.
+    return added;
+  } catch (error) {
+    // At this time, don't resolve error here, but throw it up.
+    throw error;
   }
 };
 
@@ -59,8 +75,8 @@ const getLocationDataByCity = async (city_name) => {
  */
 const getCachedLocationByName = async (locationName) => {
   try {
-    const result = await Location.findOne({ name: locationName }).exec();
-    return { result: true, locationName, location: result };
+    const found = await Location.findOne({ name: locationName }).exec();
+    return { result: found !== null, locationName, location: found };
   } catch (error) {
     return { result: false, error: err, message: "Location not found" };
   }
@@ -76,15 +92,19 @@ const getCachedLocationByName = async (locationName) => {
 const addCachedLocation = async (name, latitude, longitude) => {
   const location = new Location({
     name,
-    latitude,
-    longitude,
+    position: {
+      latitude,
+      longitude,
+    },
   });
+
   try {
-    const added = await location.save().exec();
+    const added = await location.save();
     return { result: true, added };
   } catch (error) {
     const message = "Error in mongoose location insert.";
-    return { result: false, error, message, location };
+    // TODO: Generate error to throw with this.
+    throw new Error(message);
   }
 };
 
@@ -95,20 +115,23 @@ const addCachedLocation = async (name, latitude, longitude) => {
  */
 const getRemoteLocationByName = async (locationName) => {
   const url = `${troposphere_base_url}/place/name/${locationName}?token=${troposphere_api_key}`;
+  let result;
   try {
-    const { data } = await axios.get(url);
-
-    // Return data if are correct.
-    if (checkResponse(data)) {
-      return data;
-    }
-
-    const message = "No location found";
-    return { error: 404, message, locationName };
+    result = { data } = await axios.get(url);
   } catch (error) {
     utils.manageAxiosError(error);
-    return undefined;
+    const message = "Axios error";
+    throw new Error(message);
   }
+
+  // Return data if are correct.
+  if (checkResponse(data)) {
+    return data.data[0];
+  }
+
+  const message = "No location found";
+  // TODO: Generate error to throw with this.
+  throw new Error(message);
 };
 
 /**
@@ -117,10 +140,13 @@ const getRemoteLocationByName = async (locationName) => {
  * @returns True if is valid, false anywhere.
  */
 const checkResponse = (data) =>
-  data.error !== null &&
+  data.error === null &&
   typeof data.data === "object" &&
   data.data.length !== 0;
 
 module.exports = {
+  fetchLocationByName,
   getLocationDataByCity,
+  getRemoteLocationByName,
+  getCachedLocationByName,
 };

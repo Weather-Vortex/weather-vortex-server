@@ -16,50 +16,64 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+const Location = require("../../src/models/location.model");
 const {
   getLocationDataByCity,
 } = require("../../src/storages/location.storage");
-const expect = require("chai").expect;
+const chai = require("chai");
+const expect = chai.expect;
+chai.use(require("chai-as-promised"));
 
 describe("Ask for a Location", () => {
+  beforeEach(async () => {
+    // Clean database.
+    await Location.deleteMany({}).exec();
+  });
+
   it("that exists", async () => {
     const city_name = "Rimininello";
     const result = await getLocationDataByCity(city_name);
     expect(result).to.be.an("object");
-    expect(result.error).to.be.null;
-    const data = result.data;
-    expect(data).to.be.an("array").with.length(1);
-    const first = data[0];
-    expect(first).to.be.an("object");
-    expect(first).to.have.a.property(
-      "name",
-      city_name,
-      "Expected to be equal to the city requested."
+    expect(result).to.have.a.property("result", true);
+    expect(result).to.have.a.property("added");
+    expect(result.added).to.have.a.property("id");
+    expect(result.added).to.have.a.property("name", city_name);
+    expect(result.added).to.have.a.property("position");
+    expect(result.added).to.have.a.nested.property(
+      "position.latitude",
+      42.46964
     );
-    expect(first).to.have.a.property("country", "Italy");
-    expect(first).to.have.a.property("continent", "EU");
+    expect(result.added).to.have.a.nested.property(
+      "position.longitude",
+      11.62925
+    );
   });
 
-  it("that have many similar names", async () => {
+  // Skip since we don't manage many city anymore.
+  it.skip("that have many similar names", async () => {
     const city_name = "Cesena";
     const result = await getLocationDataByCity(city_name);
     expect(result).to.be.an("object");
-    expect(result.error).to.be.null;
-    const data = result.data;
-    expect(data).to.be.an("array").with.length(9);
-    const cesene = data.filter((val) => val.name === city_name);
-    expect(cesene).to.be.an("array").with.length(1);
-    const cesena = cesene[0];
-    expect(cesena).to.be.an("object");
-    expect(cesena).to.have.a.property("name", city_name);
+    expect(result).to.have.a.property("result", true);
+    expect(result).to.have.a.property("added");
+    expect(result.added).to.have.a.property("id");
+    expect(result.added).to.have.a.property("name", city_name);
+    expect(result.added).to.have.a.property("position");
+    expect(result.added).to.have.a.nested.property(
+      "position.latitude",
+      42.46964
+    );
+    expect(result.added).to.have.a.nested.property(
+      "position.longitude",
+      11.62925
+    );
   });
 
   it("that not exists", async () => {
     const city_name = "CCC";
-    const result = await getLocationDataByCity(city_name);
-    expect(result).to.be.an("object");
-    expect(result).to.have.a.property("error", 404);
-    expect(result).to.have.a.property("message", "No location found");
-    expect(result).to.have.a.property("name", city_name);
+    // const expectedError = new Error("No location found");
+    const result = getLocationDataByCity(city_name);
+    await expect(result).to.be.rejectedWith(Error);
+    // expect(() => result).to.throw(expectedError, "location");
   });
 });
