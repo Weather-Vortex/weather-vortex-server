@@ -34,19 +34,11 @@ describe("Ask for a Location", () => {
     const city_name = "Rimininello";
     const result = await getLocationDataByCity(city_name);
     expect(result).to.be.an("object");
-    expect(result).to.have.a.property("result", true);
-    expect(result).to.have.a.property("added");
-    expect(result.added).to.have.a.property("id");
-    expect(result.added).to.have.a.property("name", city_name);
-    expect(result.added).to.have.a.property("position");
-    expect(result.added).to.have.a.nested.property(
-      "position.latitude",
-      42.46964
-    );
-    expect(result.added).to.have.a.nested.property(
-      "position.longitude",
-      11.62925
-    );
+    expect(result).to.have.a.property("id");
+    expect(result).to.have.a.property("name", city_name);
+    expect(result).to.have.a.property("position");
+    expect(result).to.have.a.nested.property("position.latitude", 42.46964);
+    expect(result).to.have.a.nested.property("position.longitude", 11.62925);
   });
 
   // Skip since we don't manage many city anymore.

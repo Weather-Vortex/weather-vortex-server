@@ -20,11 +20,11 @@ module.exports.checkCityNameType = (arg) => {
   return (
     arg !== undefined &&
     arg.params !== undefined &&
-    arg.params.city_name !== undefined &&
-    typeof arg.params.city_name === "string" &&
-    isNaN(arg.params.city_name) &&
-    isNaN(parseFloat(arg.params.city_name)) &&
-    !/^\d+$/.test(arg.params.city_name)
+    arg.params.locality !== undefined &&
+    typeof arg.params.locality === "string" &&
+    isNaN(arg.params.locality) &&
+    isNaN(parseFloat(arg.params.locality)) &&
+    !/^\d+$/.test(arg.params.locality)
   );
 };
 

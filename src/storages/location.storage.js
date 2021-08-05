@@ -61,7 +61,7 @@ const fetchLocationByName = async (locationName) => {
     );
 
     // Then return the cached result.
-    return added;
+    return added.added;
   } catch (error) {
     // At this time, don't resolve error here, but throw it up.
     throw error;
