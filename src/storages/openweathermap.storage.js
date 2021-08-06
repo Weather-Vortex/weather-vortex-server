@@ -36,30 +36,12 @@ const provider = new OpenWeatherMapProvider(base_url, api_key);
 
 /**
  * Retrieve weather forecasts for given city.
- * @deprecated Since version 0.2, use request method instead for Promise use.
  * @param {String} city_name City Name for weather forecasts.
- * @returns {Object} Weather Forecast.
+ * @returns {Promise<any>} Weather Forecast Promise.
  */
-const fourDayForecastByCity = async (city_name) => {
-  const url = provider.formatUrl(`q=${city_name}`);
-  return await provider.fourDayForecast(url);
-};
-
 const fourDayForecastByCityRequest = (city_name) => {
   const url = provider.formatUrl(`q=${city_name}`);
   return provider.fourDayForecastRequest(url);
-};
-
-/**
- * Retrieve weather forecasts for given position.
- * @deprecated Since version 0.2, use request method instead for Promise use.
- * @param {Number} latitude Latitude of the position.
- * @param {Number} longitude Longitude of the position.
- * @returns Weather Forecast.
- */
-const fourDayForecastByLocation = async (latitude, longitude) => {
-  const url = provider.formatUrl(`lat=${latitude}&lon=${longitude}`);
-  return await provider.fourDayForecast(url);
 };
 
 /**
@@ -74,8 +56,6 @@ const fourDayForecastByLocationRequest = (latitude, longitude) => {
 };
 
 module.exports = {
-  fourDayForecastByCity,
   fourDayForecastByCityRequest,
-  fourDayForecastByLocation,
   fourDayForecastByLocationRequest,
 };

@@ -23,50 +23,59 @@ const troposphereStorage = require("../storages/troposhpere.storage");
 const storageUtils = require("../storages/storage.utils");
 const router = express.Router();
 
-router.get("/:city_name", async (req, res) => {
+router.get("/:locality", async (req, res) => {
   // Check if param is valid.
   if (!storageUtils.checkCityNameType(req)) {
     return res.status(400).json({
-      error: "Req.params.city_name is not correctly declared.",
-      value: req.params.city_name,
+      error: "Req.params.locality is not correctly declared.",
+      value: req.params.locality,
     });
   }
 
-  const city_name = req.params.city_name;
-  let location = await locationStorage.getLocationDataByCity(city_name);
-  if (typeof location.error !== "undefined" && location.error !== null) {
+  const locality = req.params.locality;
+  try {
+    let location = await locationStorage.getLocationDataByCity(locality);
+    console.log(location);
+
+    if (Array.isArray(location.data) && location.data.length > 0) {
+      // Manage multiple location found.
+      // TODO: How can we manage them smarter?
+      location = location.data[0];
+    }
+    if (typeof location.position.latitude === "undefined") {
+      // Return location missing error if empty.
+      return res.status(500).json("No latitude for the object");
+    }
+    if (typeof location.position.longitude === "undefined") {
+      // Return location missing error if empty.
+      return res.status(500).json("No longitude for the object");
+    }
+
+    // First pending request.
+    const openWeatherForecast =
+      openWeatherStorage.fourDayForecastByLocationRequest(
+        location.position.latitude,
+        location.position.longitude
+      );
+
+    // Second pending request.
+    const troposphereForecast =
+      troposphereStorage.getSevenDaysForecastByLocationRequest(
+        location.position.latitude,
+        location.position.longitude
+      );
+
+    // Wait for all requests.
+    const results = await Promise.all([
+      openWeatherForecast,
+      troposphereForecast,
+    ]);
+
+    return res.status(200).json({ owm: results[0].data, tro: results[1].data });
+  } catch (error) {
     // Return location error if any.
-    return res.status(500).json(location);
+    return res.status(500).json({ result: false, error, locality });
   }
-
-  if (Array.isArray(location.data) && location.data.length > 0) {
-    // Manage multiple location found.
-    // TODO: How can we manage them smarter?
-    location = location.data[0];
-  }
-  if (typeof location.latitude === "undefined") {
-    // Return location missing error if empty.
-    return res.status(500).json("No latitude for the object");
-  }
-
-  // First pending request.
-  const openWeatherForecast =
-    openWeatherStorage.fourDayForecastByLocationRequest(
-      location.latitude,
-      location.longitude
-    );
-
-  // Second pending request.
-  const troposphereForecast =
-    troposphereStorage.getSevenDaysForecastByLocationRequest(
-      location.latitude,
-      location.longitude
-    );
-
-  // Wait for all requests.
-  const results = await Promise.all([openWeatherForecast, troposphereForecast]);
-
-  res.status(200).json({ owm: results[0].data, tro: results[1].data });
 });
 
 module.exports = router;

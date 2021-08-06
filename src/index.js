@@ -18,20 +18,26 @@
 
 const express = require("express");
 const mongoose = require("mongoose");
-const bodyparser=require('body-parser');
-const cookieParser=require('cookie-parser');
-const db=require('./config/config').get(process.env.NODE_ENV);
+const bodyparser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const db = require("./config/config").get(process.env.NODE_ENV);
 
 //database connection-> ps: l'ho modificato per tenere nascosto il link al database
-mongoose.Promise=global.Promise;
-mongoose.connect(db.DATABASE,{ useNewUrlParser: true,useUnifiedTopology:true,useCreateIndex: true },function(err){
-    if(err) console.log(err);
-    console.log("database is connected");
-});
+mongoose.Promise = global.Promise;
+mongoose
+  .connect(db.DATABASE, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+  })
+  .then(() => {
+    /* do nothing */
+  })
+  .catch((err) => console.error(err));
 
 const app = express();
-app.use(bodyparser.urlencoded({extended : false}));
-app.use(bodyparser.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 app.use(cookieParser());
 app.use(express.json());
 
@@ -42,8 +48,8 @@ app.get("/", (req, res) => {
 const userRoutes = require("./routes/user.routes");
 app.use("/users", userRoutes);
 
-const authRoutes= require("./routes/auth.routes");
-app.use("/api",authRoutes);
+const authRoutes = require("./routes/auth.routes");
+app.use("/api", authRoutes);
 
 const forecastRoutes = require("./routes/forecasts.routes");
 app.use("/forecast", forecastRoutes);
@@ -56,8 +62,5 @@ app.listen(12000, () => {
   console.log("Application running on http://localhost:12000");
 });
 
-
 // Export app to use it in unit testing.
 module.exports = app;
-
-
