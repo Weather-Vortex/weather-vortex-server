@@ -2,7 +2,6 @@
 const User = require('../models/user.model');
 const { auth } = require('../middlewares/auth');
 const nodemailer = require("nodemailer");
-const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
 //email sender details
@@ -10,7 +9,7 @@ var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'silviadolomiti@gmail.com',
-        pass: ''
+        pass: 'DAMETTERE'
 
     },
     tls: {
@@ -21,17 +20,20 @@ var transporter = nodemailer.createTransport({
 // adding new user (sign-up route)
 const register = (req, res) => {
     // taking a user
-
+    
     const newuser = new User(req.body);
     //send verification mail to user
+    //let { emailToken } = req.body
+     //emailToken = crypto.randomBytes(64).toString('hex');//for email verification
+     //bisognerebbe mettere quel valore all'email token ogni volta che si fa newUser
+    console.log({ emailToken })
+    //console.log(newuser);
 
-    console.log(newuser);
     const { firstName, lastName, email, password } = req.body
-    let { emailToken } = req.body
+   
 
     //if(newuser.password!=newuser.password2)return res.status(400).json({message: "passwords not match"});
-    emailToken = crypto.randomBytes(64).toString('hex');//for email verification
-    console.log({ emailToken })
+   
 
     if (!firstName || !lastName || !email || !password)
         return res.status(400).json({ auth: false, message: "some fields are mandatory" });
