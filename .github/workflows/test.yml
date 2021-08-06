@@ -25,7 +25,7 @@ jobs:
 
       - name: Run tests
         run: |
-          npm ci
+          npm ci --no-optional
           npm run build --if-present
           npm test
         env:
