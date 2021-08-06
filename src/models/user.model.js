@@ -37,13 +37,16 @@ var userSchema = mongoose.Schema({
     trim: true,
     unique: 1,
   },
-  emailConfirmationCode: { //token for verifyng authentication emailToken
+  emailToken: { //token for verifyng authentication emailToken
     //TODO
     type: String,
     //required: true,
     //unique:true,
   },
-  confirmed: Boolean,
+  isVerified: {
+    type: Boolean,
+    default:false,
+  },
   preferred: {
     location: String,
     position: {
@@ -95,6 +98,16 @@ userSchema.methods.generateToken = function (cb) {
     cb(null, user);
   });
 };
+
+userSchema.methods.generateEmailToken=function(cb){
+  var user=this;
+  var emailToken= crypto.randomBytes(64).toString('hex');
+  user.emailToken=emailToken;
+  user.save(function (err, user) {
+    if (err) return cb(err);
+    cb(null, user);
+  });
+},
 
 // find by token
 userSchema.statics.findByToken = function (token, cb) {

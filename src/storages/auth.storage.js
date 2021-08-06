@@ -1,27 +1,42 @@
 
 const User = require('../models/user.model');
 const { auth } = require('../middlewares/auth');
+const nodemailer = require("nodemailer");
 
 
+//email sender details
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'silviadolomiti@gmail.com',
+        pass: 'password'
+
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+
+})
 // adding new user (sign-up route)
 const register = (req, res) => {
     // taking a user
     const newuser = new User(req.body);
+    //send verification mail to user
+
+
     console.log(newuser);
     const { firstName, lastName, email, password } = req.body
     //if(newuser.password!=newuser.password2)return res.status(400).json({message: "passwords not match"});
 
+    if (!firstName || !lastName || !email || !password)
+        return res.status(400).json({ auth: false, message: "some fields are mandatory" });
+
+    const validRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (!email.match(validRegex)) {
+        return res.status(400).json({ auth: false, message: "Invalid Email" });
+    }
     User.findOne({ email: newuser.email }, function (err, user) {
         if (user) return res.status(400).json({ auth: false, message: "email exists" });
-
-        if (!firstName || !lastName || !email || !password)
-            return res.status(400).json({ auth: false, message: "some fields are mandatory" });
-
-    const validRegex=/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        if(!email.match(validRegex)){
-            return res.status(400).json({ auth: false, message: "Invalid Email" });
-        }
-
         //qua al posto di salvare bisogna fare il lavorino dell'email di conferma, e guarda video sempre di lui
         newuser.save((err, doc) => {
             if (err) {
@@ -34,6 +49,27 @@ const register = (req, res) => {
             });
         });
     });
+    var mailOptions = {
+        from: ' "Verify your email" <silviadolomiti@gmail.com>',
+        to: newuser.email,
+        subject: 'weather-vortex-verification -verify your email',
+        html: `<h2>${newuser.firstName}! Thanks for registering on your site </h2>
+              <h4> Please verify your email to continue...</h4>
+              <a href="http://${req.headers.host}/api/verify-email?token=${newuser.emailToken}">Verify your email</a>`
+
+    }
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error)
+        } else {
+            console.log('Verification email is sent to your gmail account')
+        }
+    })
+    //res.redirect('/user/login')
+
+
+
+
 };
 
 
