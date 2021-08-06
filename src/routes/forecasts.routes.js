@@ -35,7 +35,6 @@ router.get("/:locality", async (req, res) => {
   const locality = req.params.locality;
   try {
     let location = await locationStorage.getLocationDataByCity(locality);
-    console.log(location);
 
     if (Array.isArray(location.data) && location.data.length > 0) {
       // Manage multiple location found.
@@ -74,6 +73,7 @@ router.get("/:locality", async (req, res) => {
     return res.status(200).json({ owm: results[0].data, tro: results[1].data });
   } catch (error) {
     // Return location error if any.
+    storageUtils.manageAxiosError(error);
     return res.status(500).json({ result: false, error, locality });
   }
 });

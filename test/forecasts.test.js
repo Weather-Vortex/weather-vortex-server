@@ -41,7 +41,6 @@ describe("GET forecasts for Cesena", () => {
       .get(base_url + "/Cesena")
       .set("content-type", "application/json")
       .set("Accept", "application/json");
-    console.log(result.body);
 
     expect(result).have.status(200);
     expect(result).to.be.an("object", "We expect that result is an object");
