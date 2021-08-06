@@ -37,7 +37,6 @@ describe("GET forecasts for Cesena", () => {
   });
 
   it("responds with successful result", async () => {
-    this.retries(2); // Retry up to 2 times if fails.
     const result = await request(app)
       .get(base_url + "/Cesena")
       .set("content-type", "application/json")
@@ -47,5 +46,6 @@ describe("GET forecasts for Cesena", () => {
     expect(result).to.be.an("object", "We expect that result is an object");
     expect(result.body).to.have.a.property("owm");
     expect(result.body).to.have.a.property("tro");
-  }).timeout(5000); // This test need more time.
+  }, 2) // Retry at least one more time after fail
+    .timeout(10000); // This test need more time.
 });
