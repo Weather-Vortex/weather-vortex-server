@@ -2,7 +2,7 @@
 
 Server for Weather Vortex Project.
 
-## Table of contents
+** Table of contents **
 
 - [How to](#how-to)
   - [Build](#build)
@@ -25,6 +25,6 @@ In your local environment, you can run with `npm start` command. You need a loca
 
 ### Test
 
-In your local environment, you can test with `npm run test` command. You can run a code coverage check wih `npm run test-cov` command.
+In your local environment, you can test with `npm test` command. You can run a code coverage check wih `npm run test-cov` command. You can run tests on single test file with `npx mocha <path>/<file name>`, adding `--exit` option if you wanna quit asap test suite.
 
 > In the future, here will be described the docker test procedure.

@@ -37,7 +37,7 @@ describe("Check if params contains a string", () => {
   });
 
   it("Try with a city name number value", (done) => {
-    const arg = { params: { city_name: undefined } };
+    const arg = { params: { locality: undefined } };
     const res = utils.checkCityNameType(arg);
     assert.typeOf(res, "boolean", "Result is boolean");
     assert.equal(res, false, "Arg should be invalid");
@@ -45,7 +45,7 @@ describe("Check if params contains a string", () => {
   });
 
   it("Try with a city name number value", (done) => {
-    const arg = { params: { city_name: 1 } };
+    const arg = { params: { locality: 1 } };
     const res = utils.checkCityNameType(arg);
     assert.typeOf(res, "boolean", "Result is boolean");
     assert.equal(res, false, "Arg should be invalid");
@@ -53,7 +53,7 @@ describe("Check if params contains a string", () => {
   });
 
   it("Try with a city_name string and number value", (done) => {
-    const arg = { params: { city_name: "1" } };
+    const arg = { params: { locality: "1" } };
     const res = utils.checkCityNameType(arg);
     assert.typeOf(res, "boolean", "Result is boolean");
     assert.equal(res, false, "Arg should be invalid");
@@ -61,7 +61,7 @@ describe("Check if params contains a string", () => {
   });
 
   it("Try with an only city_name string value", (done) => {
-    const arg = { params: { city_name: "Cesena" } };
+    const arg = { params: { locality: "Cesena" } };
     const res = utils.checkCityNameType(arg);
     assert.typeOf(res, "boolean", "Result is boolean");
     assert.equal(res, true, "Arg should be invalid");
