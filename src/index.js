@@ -20,12 +20,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyparser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const db = require("./config/config").get(process.env.NODE_ENV);
+// const db = require("./config/config").get(process.env.NODE_ENV);
 
 //database connection-> ps: l'ho modificato per tenere nascosto il link al database
 mongoose.Promise = global.Promise;
 mongoose
-  .connect(db.DATABASE, {
+  .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
