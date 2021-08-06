@@ -9,7 +9,7 @@ var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'silviadolomiti@gmail.com',
-        pass: 'password'
+        pass: 'password_da_inserire'
 
     },
     tls: {
@@ -66,12 +66,11 @@ const register = (req, res) => {
         }
     })
     //res.redirect('/user/login')
-
-
-
-
 };
 
+const verify=(req,res)=>{
+    ù
+}
 
 // login user
 const login = (req, res) => {
@@ -129,4 +128,5 @@ module.exports = {
     login,
     logout,
     loggedIn,
+    verify
 }
