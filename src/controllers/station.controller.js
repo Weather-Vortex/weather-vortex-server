@@ -33,12 +33,41 @@ const getAllStations = async (req, res) => {
   try {
     const stations = await storage.getStationsByLocality(locality);
     console.log("Station controller:", stations);
-    return res.status(200).json({ result: true, locality, stations });
+    if (typeof stations === "array" && stations.length > 0) {
+      return res.status(200).json({ result: true, locality, stations });
+    }
+    const message = "Stations not found.";
+    return res.status(404).json({ result: false, locality, message });
   } catch (error) {
     return res.status(500).json({ result: false, error, locality });
   }
 };
 
+const createStation = async (req, res) => {
+  if (
+    typeof req.body.authKey !== "string" ||
+    typeof req.body.name !== "string" ||
+    typeof req.body.owner !== "string" ||
+    typeof req.body.position.locality !== "string"
+  ) {
+    const message = "Wrong type of fields";
+    return res.status(400).json({ result: false, message, body: req.body });
+  }
+
+  try {
+    const saved = await storage.saveStation(
+      req.body.name,
+      req.body.position.locality,
+      req.body.owner,
+      req.body.authKey
+    );
+    return res.status(200).json({ result: true, saved });
+  } catch (error) {
+    return res.status(500).json({ result: false, error, body: req.body });
+  }
+};
+
 module.exports = {
+  createStation,
   getAllStations,
 };

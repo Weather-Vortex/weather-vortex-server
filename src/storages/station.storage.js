@@ -42,4 +42,25 @@ const getStationsByLocality = async (locality) => {
   }
 };
 
-module.exports = { getStationsByLocality };
+const saveStation = async (name, locality, owner, authKey) => {
+  try {
+    const station = new Station({
+      authKey,
+      name,
+      owner,
+      position: {
+        locality,
+      },
+    });
+    const result = await station.save();
+    console.log("Save station result:", result);
+    return result;
+  } catch (error) {
+    const message = "Mongoose save error";
+    const err = new Error(message);
+    err.internalError = err;
+    throw err;
+  }
+};
+
+module.exports = { getStationsByLocality, saveStation };

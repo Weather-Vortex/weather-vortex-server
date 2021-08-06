@@ -23,7 +23,7 @@ const router = express.Router();
 router
   .get("/", controller.getAllStations)
   .get("/:name") // TODO:
-  .post("") // TODO:
+  .post("", controller.createStation) // TODO:
   .put(":name") // TODO:
   .delete(":name"); // TODO:
 
