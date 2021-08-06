@@ -22,10 +22,6 @@ const register = (req, res) => {
             return res.status(400).json({ auth: false, message: "Invalid Email" });
         }
 
-    
-
-        //pulla, poi cancella questa branch e fanne un'altra
-        //aggiungi anche il controllo della password come da video JWT
         //qua al posto di salvare bisogna fare il lavorino dell'email di conferma, e guarda video sempre di lui
         newuser.save((err, doc) => {
             if (err) {
