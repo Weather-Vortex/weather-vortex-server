@@ -36,7 +36,7 @@ const providerProvider = (url) => new WeatherProvider(url, api_key);
 
 describe("Get forecast for a simple provider", () => {
   describe("using old get result function", () => {
-    it("responds with a successful result", async () => {
+    it.skip("responds with a successful result", async () => {
       const provider = providerProvider(base_url);
       const final_url = base_url + res_url + "";
       const result = await provider.fourDayForecast(final_url);
@@ -50,7 +50,7 @@ describe("Get forecast for a simple provider", () => {
     it("responds with a successful result", async () => {
       const provider = providerProvider(base_url);
       const final_url = base_url + res_url + "";
-      const { data } = await provider.fourDayForecastRequest(final_url);
+      const { data } = await provider.makeRequest(final_url);
       expect(data).to.be.an("object");
       expect(data).to.have.a.nested.property("forecast.rain", false);
       expect(data).to.have.a.nested.property("forecast.temp", 36);
@@ -59,8 +59,8 @@ describe("Get forecast for a simple provider", () => {
     it("responds with a successful result many times", async () => {
       const provider = providerProvider(base_url);
       const final_url = base_url + res_url + "";
-      const first = provider.fourDayForecastRequest(final_url);
-      const second = provider.fourDayForecastRequest(final_url);
+      const first = provider.makeRequest(final_url);
+      const second = provider.makeRequest(final_url);
 
       const data = await Promise.all([first, second]);
       data.map((val) => {
@@ -71,11 +71,12 @@ describe("Get forecast for a simple provider", () => {
     });
   });
 
+  nock(base_url).get(res_url).reply(500);
   describe("fail when call a fake domain", () => {
     it.skip("that doesn't exists", async () => {
-      const provider = providerProvider("https://weather.provider.it");
-      const final_url = "https://weather.provider.it" + res_url;
-      const fake = await provider.fourDayForecastRequest(final_url);
+      const provider = providerProvider(base_url);
+      const final_url = base_url + res_url + "";
+      const fake = await provider.makeRequest(final_url);
       expect(fake).to.be.an("array");
     });
   });

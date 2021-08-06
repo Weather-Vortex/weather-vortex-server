@@ -40,7 +40,7 @@ const provider = new TroposphereProvider(
 
 const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
   const url = provider.formatUrl(`/forecast/${latitude},${longitude}`);
-  return provider.fourDayForecastRequest(url);
+  return provider.makeRequest(url);
 };
 
 module.exports = {
