@@ -16,32 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const storage = require("../storages/station.storage");
-
-/**
- * Get all stations, optionally filtered by locality.
- * @param {Request} req Express request.
- * @param {Response} res Express response.
- * @returns Json response with stations or error.
- */
-const getAllStations = async (req, res) => {
-  let locality = "";
-  if (typeof req.query.locality === "string" && req.query.locality !== "") {
-    locality = req.query.locality;
-  }
-
-  try {
-    const stations = await storage.getStationsByLocality(locality);
-    console.log("Station controller:", stations);
-    if (typeof stations === "array" && stations.length > 0) {
-      return res.status(200).json({ result: true, locality, stations });
-    }
-    const message = "Stations not found.";
-    return res.status(404).json({ result: false, locality, message });
-  } catch (error) {
-    return res.status(500).json({ result: false, error, locality });
-  }
-};
 
 const createStation = async (req, res) => {
   if (
@@ -67,7 +44,41 @@ const createStation = async (req, res) => {
   }
 };
 
+/**
+ * Get stations, optionally filtered by locality.
+ * @param {Request} req Express request.
+ * @param {Response} res Express response.
+ * @returns Json response with Stations or Error.
+ */
+const getStations = async (req, res) => {
+  console.log("Params", req.params);
+  const filter = {};
+
+  if (validString(req.params.name)) {
+    filter.name = req.params.name;
+  }
+
+  if (validLocality(req.query.locality)) {
+    filter.position = { locality: req.query.locality };
+  }
+
+  try {
+    const stations = await storage.getStations(filter);
+    if (typeof stations === "array") {
+      return res.status(200).json({ result: true, filter, stations });
+    } else {
+      const message = "No Stations found with given filter.";
+      return res.status(404).json({ result: false, filter, message });
+    }
+  } catch (error) {
+    return res.status(500).json({ result: false, error, filter });
+  }
+};
+
+const validString = (locality) =>
+  typeof locality === "string" && locality !== "";
+
 module.exports = {
   createStation,
-  getAllStations,
+  getStations,
 };

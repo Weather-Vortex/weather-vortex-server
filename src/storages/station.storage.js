@@ -42,6 +42,20 @@ const getStationsByLocality = async (locality) => {
   }
 };
 
+const getStations = async (filters) => {
+  try {
+    const founds = await Station.find({ filters });
+    return { result: found !== null, filters, stations: founds };
+  } catch (err) {
+    const message = "Stations with given filters weren't found";
+    const error = new Error();
+    error.message = message;
+    error.filter = filters;
+    error.error = err;
+    throw error;
+  }
+};
+
 const saveStation = async (name, locality, owner, authKey) => {
   try {
     const station = new Station({
@@ -53,7 +67,15 @@ const saveStation = async (name, locality, owner, authKey) => {
       },
     });
     const result = await station.save();
-    console.log("Save station result:", result);
+    /*
+    {
+      _id: 610db612cbcdea5c35aeeec6,
+      name: 'station',
+      owner: 610db611cbcdea5c35aeeec1,
+      position: { locality: 'Cesena' },
+      __v: 0
+    }
+    */
     return result;
   } catch (error) {
     const message = "Mongoose save error";
@@ -63,4 +85,8 @@ const saveStation = async (name, locality, owner, authKey) => {
   }
 };
 
-module.exports = { getStationsByLocality, saveStation };
+module.exports = {
+  getStations,
+  getStationsByLocality,
+  saveStation,
+};

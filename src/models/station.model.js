@@ -22,7 +22,7 @@ const stationSchema = new mongoose.Schema({
   /**
    * Value to be used to authenticate requests to a remote station.
    */
-  auth_key: {
+  authKey: {
     type: String,
     minlength: 32,
     maxlength: 128,

@@ -18,8 +18,9 @@
 
 "use strict";
 
-const model = require("../src/models/station.model");
-const storage = require("../src/storages/station.storage");
+const Station = require("../src/models/station.model");
+const User = require("../src/models/user.model");
+const mongoose = require("mongoose");
 
 const request = require("supertest");
 const chai = require("chai");
@@ -31,25 +32,46 @@ chai.use(require("chai-as-promised"));
 
 describe("Test CRUD Operations for Stations", () => {
   const base_url = "/station";
+  let testUser;
+
+  before(async () => {
+    // Create a test user as a first thing before any test.
+    testUser = await createUser();
+  });
+
+  const createUser = async () => {
+    const user = new User({
+      firstName: "test",
+      lastName: "user",
+      password: "12345678",
+      email: "test.user@email.it",
+    });
+    const res = await user.save();
+    return res;
+  };
+
+  after(async () => {
+    // Delete the test user after all tests.
+    await User.deleteMany(testUser);
+  });
 
   beforeEach(async () => {
-    await model.deleteMany({});
+    await Station.deleteMany({});
   });
 
   it("Without stations", async () => {
-    const locality = "locality";
     const res = await request(app)
-      .get(`${base_url}/Cesena`)
+      .get(`${base_url}/`)
+      .set("Connection", "keep alive")
       .set("Content-Type", "application/json")
       .set("Accept", "application/json");
 
-    expect(res).to.have.status(404);
+    expect(res).to.have.status(500);
     expect(res).to.be.an("object");
-    expect(res.body).to.have.a.nested.property("result", false);
-    expect(res.body).to.have.a.nested.property("locality", locality);
+    expect(res.body).to.have.a.property("result", false);
     expect(res.body).to.have.a.nested.property(
-      "message",
-      "Stations not found."
+      "error.message",
+      "Stations with given filters weren't found"
     );
   });
 
@@ -57,13 +79,14 @@ describe("Test CRUD Operations for Stations", () => {
     const station = {
       authKey: "12341234123412341234123412341234",
       name: "station",
-      owner: "1",
+      owner: testUser._id,
       position: {
         locality: "Cesena",
       },
     };
-    const result = await result(app)
+    const result = await request(app)
       .post(`${base_url}`)
+      .set("Connection", "keep alive")
       .set("Content-Type", "application/json")
       .set("Accept", "application/json")
       .send(station);
@@ -71,8 +94,58 @@ describe("Test CRUD Operations for Stations", () => {
     expect(result).to.have.status(200);
     expect(result).to.be.an("object");
     expect(result.body).to.have.a.property("result", true);
-    expect(result.body).to.have.a.property("saved", station);
-    const saved = result.body.saved;
+    expect(result.body).to.have.a.property("saved");
+    expect(result.body.saved).to.be.an("object");
+    expect(result.body.saved).to.have.a.property("authKey", station.authKey);
+    expect(result.body.saved).to.have.a.property("name", station.name);
+    expect(result.body.saved).to.have.a.property(
+      "owner",
+      station.owner.toString()
+    );
+    expect(result.body.saved).to.have.a.nested.property(
+      "position.locality",
+      station.position.locality
+    );
+  });
+
+  const saveStation = async () => {
+    const name = "station";
+    const locality = "Cesena";
+    const station = new Station({
+      authKey: "12341234123412341234123412341234",
+      name,
+      owner: testUser._id,
+      position: {
+        locality,
+      },
+    });
+    const saved = await station.save();
     expect(saved).to.be.an("object");
+    expect(saved).to.have.a.property("name", "station");
+    return station;
+  };
+
+  it("Get a saved station", async () => {
+    const station = await saveStation();
+
+    console.log("Station:", station);
+    const result = await request(app)
+      .get(`${base_url}/${station.name}`)
+      .set("Connection", "keep alive")
+      .set("Content-Type", "application/json")
+      .set("Accept", "application/json");
+
+    console.error(result.error);
+
+    expect(result).to.have.status(200);
+    expect(result).to.have.a.property("body");
+    expect(result.body).to.be.an("object");
+    expect(result.body).to.have.a.property("authKey", station.authKey);
+    expect(result.body).to.have.a.property("name", station.name);
+    expect(result.body).to.have.a.property("owner", station.owner.toString());
+    expect(result.body).to.have.a.nested.property(
+      "position.locality",
+      station.position.locality
+    );
   });
 });

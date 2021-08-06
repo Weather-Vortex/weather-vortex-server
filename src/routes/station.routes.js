@@ -21,10 +21,10 @@ const controller = require("../controllers/station.controller");
 const router = express.Router();
 
 router
-  .get("/", controller.getAllStations)
-  .get("/:name") // TODO:
-  .post("", controller.createStation) // TODO:
-  .put(":name") // TODO:
-  .delete(":name"); // TODO:
+  .get("/:name", controller.getStations)
+  .get("/", controller.getStations)
+  .post("", controller.createStation)
+  .put("/:name") // TODO:
+  .delete("/:name"); // TODO:
 
 module.exports = router;
