@@ -41,7 +41,7 @@ const provider = new OpenWeatherMapProvider(base_url, api_key);
  */
 const fourDayForecastByCityRequest = (city_name) => {
   const url = provider.formatUrl(`q=${city_name}`);
-  return provider.fourDayForecastRequest(url);
+  return provider.makeRequest(url);
 };
 
 /**
@@ -52,7 +52,7 @@ const fourDayForecastByCityRequest = (city_name) => {
  */
 const fourDayForecastByLocationRequest = (latitude, longitude) => {
   const url = provider.formatUrl(`lat=${latitude}&lon=${longitude}`);
-  return provider.fourDayForecastRequest(url);
+  return provider.makeRequest(url);
 };
 
 module.exports = {

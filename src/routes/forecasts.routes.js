@@ -35,7 +35,6 @@ router.get("/:locality", async (req, res) => {
   const locality = req.params.locality;
   try {
     let location = await locationStorage.getLocationDataByCity(locality);
-    console.log(location);
 
     if (Array.isArray(location.data) && location.data.length > 0) {
       // Manage multiple location found.
