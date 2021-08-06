@@ -16,28 +16,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const mongoose = require("mongoose");
+const express = require("express");
+const controller = require("../controllers/station.controller");
+const router = express.Router();
 
-const locationSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  position: {
-    latitude: {
-      type: Number,
-      required: true,
-      max: 90,
-      min: -90,
-    },
-    longitude: {
-      type: Number,
-      required: true,
-      max: 180,
-      min: -180,
-    },
-  },
-});
+router
+  .get("/", controller.getAllStations)
+  .get("/:name") // TODO:
+  .post("") // TODO:
+  .put(":name") // TODO:
+  .delete(":name"); // TODO:
 
-module.exports = mongoose.model("Location", locationSchema);
+module.exports = router;

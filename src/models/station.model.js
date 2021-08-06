@@ -18,26 +18,44 @@
 
 const mongoose = require("mongoose");
 
-const locationSchema = new mongoose.Schema({
+const stationSchema = new mongoose.Schema({
+  /**
+   * Value to be used to authenticate requests to a remote station.
+   */
+  auth_key: {
+    type: String,
+    minlength: 32,
+    maxlength: 128,
+    trim: true,
+  },
   name: {
     type: String,
     required: true,
+    trim: true,
     unique: true,
   },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    // TODO: Check if object if is present.
+  },
   position: {
-    latitude: {
-      type: Number,
+    locality: {
+      type: String,
       required: true,
-      max: 90,
-      min: -90,
-    },
-    longitude: {
-      type: Number,
-      required: true,
-      max: 180,
-      min: -180,
+      trim: true,
     },
   },
 });
 
-module.exports = mongoose.model("Location", locationSchema);
+/**
+ * Fetch database for a station with the given name.
+ * @param {String} name Name of the station.
+ * @returns {Station} Station retrieved.
+ */
+stationSchema.statics.findByName = async (name) => {
+  return this.find({ name });
+};
+
+module.exports = mongoose.model("Station", stationSchema);

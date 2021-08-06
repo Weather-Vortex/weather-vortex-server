@@ -18,7 +18,6 @@
 
 const express = require("express");
 const mongoose = require("mongoose");
-const bodyparser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const db = require("./config/config").get(process.env.NODE_ENV);
 
@@ -53,6 +52,9 @@ app.use("/api", authRoutes);
 
 const forecastRoutes = require("./routes/forecasts.routes");
 app.use("/forecast", forecastRoutes);
+
+const stationRoutes = require("./routes/station.routes");
+app.use("/station", stationRoutes);
 
 app.listen(12000, () => {
   console.log(
