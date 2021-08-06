@@ -2,14 +2,15 @@
 const User = require('../models/user.model');
 const { auth } = require('../middlewares/auth');
 const nodemailer = require("nodemailer");
-
+const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 //email sender details
 var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'silviadolomiti@gmail.com',
-        pass: 'password_da_inserire'
+        pass: ''
 
     },
     tls: {
@@ -20,13 +21,17 @@ var transporter = nodemailer.createTransport({
 // adding new user (sign-up route)
 const register = (req, res) => {
     // taking a user
+
     const newuser = new User(req.body);
     //send verification mail to user
 
-
     console.log(newuser);
     const { firstName, lastName, email, password } = req.body
+    let { emailToken } = req.body
+
     //if(newuser.password!=newuser.password2)return res.status(400).json({message: "passwords not match"});
+    emailToken = crypto.randomBytes(64).toString('hex');//for email verification
+    console.log({ emailToken })
 
     if (!firstName || !lastName || !email || !password)
         return res.status(400).json({ auth: false, message: "some fields are mandatory" });
@@ -49,13 +54,14 @@ const register = (req, res) => {
             });
         });
     });
+    //TODO-> Com'è ora arriva la email sempre
     var mailOptions = {
         from: ' "Verify your email" <silviadolomiti@gmail.com>',
         to: newuser.email,
         subject: 'weather-vortex-verification -verify your email',
         html: `<h2>${newuser.firstName}! Thanks for registering on your site </h2>
-              <h4> Please verify your email to continue...</h4>
-              <a href="http://${req.headers.host}/api/verify-email?token=${newuser.emailToken}">Verify your email</a>`
+             <h4> Please verify your email to continue...</h4>
+             <a href="http://${req.headers.host}/api/verify-email?token=${newuser.emailToken}">Verify your email</a>`
 
     }
     transporter.sendMail(mailOptions, function (error, info) {
@@ -66,10 +72,40 @@ const register = (req, res) => {
         }
     })
     //res.redirect('/user/login')
+
 };
 
-const verify=(req,res)=>{
-    ù
+const verify = (req, res) => {
+    try {
+        const token = req.query.token
+        const user = User.findOne({ emailToken: token })
+        if (user) {
+            user.emailToken = null
+            user.isVerified = true
+            user.save()
+            res.redirect('/api/login')
+        } else {
+            res.redirect('/api/register')
+            console.log('email is not verified')
+        }
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+const verifyEmail = (req, res, next) => {
+    try {
+        const user = User.findOne({ email: req.body.email })
+        if (user.isVerified) {
+            next()
+        }
+        else {
+            console.log("Please check your email to verify your account")
+        }
+    }
+    catch (err) {
+        console.log(err)
+    }
 }
 
 // login user
