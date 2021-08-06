@@ -23,7 +23,7 @@ var userSchema = mongoose.Schema({
     minlength: 8,
     maxlength: 128,
   },
-  token: {
+  token: { //for login
     type: String,
   },
   createdDate: {
@@ -37,7 +37,7 @@ var userSchema = mongoose.Schema({
     trim: true,
     unique: 1,
   },
-  emailConfirmationCode: {
+  emailConfirmationCode: { //token for verifyng authentication emailToken
     //TODO
     type: String,
     //required: true,
