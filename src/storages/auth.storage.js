@@ -20,14 +20,24 @@ var transporter = nodemailer.createTransport({
 // adding new user (sign-up route)
 const register = (req, res) => {
     // taking a user
+    //const newuser = new User(req.body);
+   
+    const newuser = new User({
+        firstName:req.body.firstName,
+        lastName:req.body.lastName,
+        email:req.body.email,
+        password:req.body.password,
+        emailToken:crypto.randomBytes(64).toString('hex'),
+        isVerified:false
+    });
+
     
-    const newuser = new User(req.body);
     //send verification mail to user
-    //let { emailToken } = req.body
-     //emailToken = crypto.randomBytes(64).toString('hex');//for email verification
+    let { emailToken } = req.body
+     console.log('email token di user è'+newuser.emailToken)
      //bisognerebbe mettere quel valore all'email token ogni volta che si fa newUser
     console.log({ emailToken })
-    //console.log(newuser);
+    console.log(newuser);
 
     const { firstName, lastName, email, password } = req.body
    
@@ -84,8 +94,9 @@ const verify = (req, res) => {
         if (user) {
             user.emailToken = null
             user.isVerified = true
-            user.save()
-            res.redirect('/api/login')
+            //user.save()
+            
+            //res.redirect('/api/login')
         } else {
             res.redirect('/api/register')
             console.log('email is not verified')
@@ -95,10 +106,13 @@ const verify = (req, res) => {
     }
 }
 
+//TODO FARE LA ROTTA DI CONFERMA COME IN QUEL SITO BETTERPROGRAMMING
+
 const verifyEmail = (req, res, next) => {
     try {
         const user = User.findOne({ email: req.body.email })
         if (user.isVerified) {
+            console.log("verified!"+isVerified)
             next()
         }
         else {
@@ -166,5 +180,6 @@ module.exports = {
     login,
     logout,
     loggedIn,
-    verify
+    verify,
+    verifyEmail
 }
