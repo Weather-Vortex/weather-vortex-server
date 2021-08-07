@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const Station = require("../models/station.model");
 
 /**
@@ -42,6 +44,11 @@ const getStationsByLocality = async (locality) => {
   }
 };
 
+/**
+ * Returns all stations that matches given filters.
+ * @param {Object} filters Fields to use as a filter.
+ * @returns Filtered stations.
+ */
 const getStations = async (filters) => {
   try {
     const founds = await Station.find({ filters });
@@ -56,6 +63,14 @@ const getStations = async (filters) => {
   }
 };
 
+/**
+ * Saves a station on the db. Don't use this to update a value.
+ * @param {String} name Name of the station.
+ * @param {String} locality Locality of the station.
+ * @param {ObjectId} owner Owner of the station. // TODO: How can we get this in real world?
+ * @param {String} authKey AuthKey to authenticate requests to the station.
+ * @returns Saved station.
+ */
 const saveStation = async (name, locality, owner, authKey) => {
   try {
     const station = new Station({
@@ -85,8 +100,45 @@ const saveStation = async (name, locality, owner, authKey) => {
   }
 };
 
+/**
+ * Updates a station given its name and field to update, then return it.
+ * @param {String} name Name of the station. Used to filtering stations on db.
+ * @param {Object} update Updated fields to write on database.
+ * @returns Updated station.
+ */
+const updateStation = async (name, update) => {
+  try {
+    const res = await Station.findOneAndUpdate({ name }, update, { new: true });
+    return res;
+  } catch (error) {
+    const message = "Mongoose update station error";
+    const err = new Error(message);
+    err.internalError = err;
+    throw err;
+  }
+};
+
+/**
+ * Deletes a station given its name, then return it.
+ * @param {String} name Name of the station. Used to filtering stations on db.
+ * @returns Deleted station.
+ */
+const deleteStation = async (name) => {
+  try {
+    const res = await Station.findOneAndDelete({ name }, update);
+    return res;
+  } catch (error) {
+    const message = "Mongoose delete station error";
+    const err = new Error(message);
+    err.internalError = err;
+    throw err;
+  }
+};
+
 module.exports = {
+  deleteStation,
   getStations,
   getStationsByLocality,
   saveStation,
+  updateStation,
 };

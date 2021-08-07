@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const express = require("express");
 const controller = require("../controllers/station.controller");
 const router = express.Router();
@@ -24,7 +26,7 @@ router
   .get("/:name", controller.getStations)
   .get("/", controller.getStations)
   .post("", controller.createStation)
-  .put("/:name") // TODO:
-  .delete("/:name"); // TODO:
+  .put("/:name", controller.updateStation)
+  .delete("/:name", controller.deleteStation);
 
 module.exports = router;

@@ -20,7 +20,6 @@
 
 const Station = require("../src/models/station.model");
 const User = require("../src/models/user.model");
-const mongoose = require("mongoose");
 
 const request = require("supertest");
 const chai = require("chai");
@@ -34,11 +33,10 @@ describe("Test CRUD Operations for Stations", () => {
   const base_url = "/station";
   let testUser;
 
-  before(async () => {
-    // Create a test user as a first thing before any test.
-    testUser = await createUser();
-  });
-
+  /**
+   * Facility method to create a user in the database to use for tests.
+   * @returns The Test User created.
+   */
   const createUser = async () => {
     const user = new User({
       firstName: "test",
@@ -49,6 +47,11 @@ describe("Test CRUD Operations for Stations", () => {
     const res = await user.save();
     return res;
   };
+
+  before(async () => {
+    // Create a test user as a first thing before any test.
+    testUser = await createUser();
+  });
 
   after(async () => {
     // Delete the test user after all tests.
@@ -73,7 +76,7 @@ describe("Test CRUD Operations for Stations", () => {
       "error.message",
       "Stations with given filters weren't found"
     );
-  });
+  }).timeout(5000);
 
   it("Save a station", async () => {
     const station = {
@@ -106,8 +109,12 @@ describe("Test CRUD Operations for Stations", () => {
       "position.locality",
       station.position.locality
     );
-  });
+  }).timeout(5000);
 
+  /**
+   * Facility method to create a station. Use it whenever is possible instead other things, to reduce test time.
+   * @returns The station.
+   */
   const saveStation = async () => {
     const name = "station";
     const locality = "Cesena";
@@ -125,17 +132,25 @@ describe("Test CRUD Operations for Stations", () => {
     return station;
   };
 
+  /**
+   * Facility method to create a station, then change a data to make it fake (the name in this case).
+   * @returns The fake station.
+   */
+  const fakeStation = async () => {
+    const station = await saveStation();
+    station.name = "impossibile";
+    return station;
+  };
+
   it("Get a saved station", async () => {
+    // First assure that a station exists.
     const station = await saveStation();
 
-    console.log("Station:", station);
     const result = await request(app)
       .get(`${base_url}/${station.name}`)
       .set("Connection", "keep alive")
       .set("Content-Type", "application/json")
       .set("Accept", "application/json");
-
-    console.error(result.error);
 
     expect(result).to.have.status(200);
     expect(result).to.have.a.property("body");
@@ -147,5 +162,60 @@ describe("Test CRUD Operations for Stations", () => {
       "position.locality",
       station.position.locality
     );
+  });
+
+  describe("PUT: update a station", () => {
+    it("Try to update a station that not exists", async () => {
+      // First assure that a station exists and change its name.
+      const station = await fakeStation();
+
+      const result = await request(app)
+        .put(`${base_url}/${station.name}`)
+        .set("Connection", "keep alive")
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json");
+      console.log("Result:", result.body);
+
+      expect(result).to.have.status(404);
+    });
+
+    it("Try to update an existing station", async () => {
+      // First assure that a station exists.
+      const station = await saveStation();
+
+      const result = await request(app)
+        .put(`${base_url}/${station.name}`)
+        .set("Connection", "keep alive")
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json");
+
+      expect(result).to.have.status(200);
+    });
+  });
+
+  describe("DELETE: delete a station", () => {
+    it("Try to delete a station that not exists", async () => {
+      // First assure that a station exists and change its name.
+      const station = await fakeStation();
+
+      const result = await request(app)
+        .delete(`${base_url}/${station.name}`)
+        .set("Connection", "keep alive")
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json");
+      expect(result).to.have.status(404);
+    });
+
+    it("Try to delete a station that exists", async () => {
+      // First assure that a station exists.
+      const station = await saveStation();
+
+      const result = await request(app)
+        .delete(`${base_url}/${station.name}`)
+        .set("Connection", "keep alive")
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json");
+      expect(result).to.have.status(404);
+    });
   });
 });
