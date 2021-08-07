@@ -7,6 +7,13 @@ on:
     paths-ignore:
       - "**/*.md"
       - "**/*.data"
+  pull_request:
+    branches:
+      - "main"
+      - "dev"
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.data"
 
 jobs:
   build:
@@ -30,5 +37,5 @@ jobs:
           npm run build --if-present
           npm test
         env:
-          # NODE_ENV: "test"
+          SECRET: ${{ secrets.SECRET }}
           MONGODB_URI: ${{ secrets.MONGODB_URI }}

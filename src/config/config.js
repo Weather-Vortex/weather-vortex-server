@@ -21,14 +21,9 @@ const config = {
     SECRET: process.env.SECRET,
     DATABASE: process.env.MONGODB_URI,
   },
-  test: {
+  default: {
     SECRET: process.env.SECRET,
     DATABASE: process.env.MONGODB_URI,
-  },
-  default: {
-    SECRET: "mysecretkey",
-    DATABASE:
-      "mongodb+srv://weather-vortex-dev-user-not-for-tests:YyFwDz6JBTTtYz9L@cluster0.tlvvv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
   },
 };
 
