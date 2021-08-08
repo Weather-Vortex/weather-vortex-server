@@ -10,7 +10,7 @@ const config={
         SECRET: 'mysecretkey',
         DATABASE: 'mongodb://localhost:27017/test',
         USEREMAIL:'silviadolomiti@gmail.com',
-        PWD:'DA METTERE!'
+        PWD:'Da mettere'
     }
 }
 

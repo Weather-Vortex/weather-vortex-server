@@ -1,12 +1,14 @@
 const nodemailer=require("nodemailer");
-const secretvar=require("./config").get(process.env.NODE_ENV);
+//const secretvar=require("./config").get(process.env.NODE_ENV);
 
 //email sender details
 var transport = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: secretvar.USEREMAIL,
-        pass: secretvar.PWD
+      /*  user: secretvar.USEREMAIL,
+        pass: secretvar.PWD*/
+        user:"silviadolomiti@gmail.com",
+        pass: "Leonella966362svl"
 
     },
     tls: {

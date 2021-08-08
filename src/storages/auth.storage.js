@@ -1,3 +1,4 @@
+
 const User = require('../models/user.model');
 const crypto = require("crypto");
 const nodemailer = require("../config/nodemailer.config")
@@ -101,7 +102,6 @@ const login = (req, res) => {
         else {
             User.findOne({ 'email': req.body.email }, function (err, user) {
                 if (!user) return res.json({ isAuth: false, message: ' Auth failed ,email not found' });
-
                 /*NOTA BENE!At this moment, if the user clicks on the email’s confirmation link, they will find
              a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
              end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
