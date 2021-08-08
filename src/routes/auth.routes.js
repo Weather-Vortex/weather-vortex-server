@@ -8,7 +8,7 @@ router
 .post('/register',authStorage.register);
 
 router
-.post('/login',/*authStorage.verifyEmail,*/authStorage.login);
+.post('/login',authStorage.login);
 
 router
 .get('/logout',auth, authStorage.logout);

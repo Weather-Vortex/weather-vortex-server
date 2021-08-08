@@ -41,9 +41,8 @@ var userSchema = mongoose.Schema({
   emailToken: { //token for verifyng authentication emailToken
     //TODO
     type: String,
-    //default:crypto.randomBytes(64).toString('hex'), //forse non va qui, perchè sennò per tutti gli utenti è sempre lui
     //required: true,
-    //unique:true,
+    unique:true,
   },
   isVerified: {
     type: Boolean,

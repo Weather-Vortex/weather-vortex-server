@@ -21,29 +21,29 @@ var transporter = nodemailer.createTransport({
 const register = (req, res) => {
     // taking a user
     //const newuser = new User(req.body);
-   
+
     const newuser = new User({
-        firstName:req.body.firstName,
-        lastName:req.body.lastName,
-        email:req.body.email,
-        password:req.body.password,
-        emailToken:crypto.randomBytes(64).toString('hex'),
-        isVerified:false
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: req.body.password,
+        emailToken: crypto.randomBytes(64).toString('hex'),
+        isVerified: false
     });
 
-    
+
     //send verification mail to user
     let { emailToken } = req.body
-     console.log('email token di user è'+newuser.emailToken)
-     //bisognerebbe mettere quel valore all'email token ogni volta che si fa newUser
+    console.log('email token di user è' + newuser.emailToken)
+    //bisognerebbe mettere quel valore all'email token ogni volta che si fa newUser
     console.log({ emailToken })
     console.log(newuser);
 
     const { firstName, lastName, email, password } = req.body
-   
+
 
     //if(newuser.password!=newuser.password2)return res.status(400).json({message: "passwords not match"});
-   
+
 
     if (!firstName || !lastName || !email || !password)
         return res.status(400).json({ auth: false, message: "some fields are mandatory" });
@@ -64,25 +64,25 @@ const register = (req, res) => {
                 succes: true,
                 user: doc
             });
-        });
-    });
-    //TODO-> Com'è ora arriva la email sempre
-    var mailOptions = {
-        from: ' "Verify your email" <silviadolomiti@gmail.com>',
-        to: newuser.email,
-        subject: 'weather-vortex-verification -verify your email',
-        html: `<h2>${newuser.firstName}! Thanks for registering on your site </h2>
+            var mailOptions = {
+                from: ' "Verify your email" <silviadolomiti@gmail.com>',
+                to: newuser.email,
+                subject: 'weather-vortex-verification -verify your email',
+                html: `<h2>${newuser.firstName}! Thanks for registering on your site </h2>
              <h4> Please verify your email to continue...</h4>
              <a href="http://${req.headers.host}/api/verify-email?token=${newuser.emailToken}">Verify your email</a>`
 
-    }
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error)
-        } else {
-            console.log('Verification email is sent to your gmail account')
-        }
-    })
+            }
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error)
+                } else {
+                    console.log('Verification email is sent to your gmail account')
+                }
+            })
+        });
+    });
+
     //res.redirect('/user/login')
 
 };
@@ -95,7 +95,7 @@ const verify = (req, res) => {
             user.emailToken = null
             user.isVerified = true
             //user.save()
-            
+
             //res.redirect('/api/login')
         } else {
             res.redirect('/api/register')
@@ -112,7 +112,7 @@ const verifyEmail = (req, res, next) => {
     try {
         const user = User.findOne({ email: req.body.email })
         if (user.isVerified) {
-            console.log("verified!"+isVerified)
+            console.log("verified!" + isVerified)
             next()
         }
         else {
@@ -137,6 +137,12 @@ const login = (req, res) => {
         else {
             User.findOne({ 'email': req.body.email }, function (err, user) {
                 if (!user) return res.json({ isAuth: false, message: ' Auth failed ,email not found' });
+                //If the user isn't verified, cannot login
+                if (user.isVerified == false) {
+                    return res.status(401).send({
+                        message: "Pending Account. Please Verify Your Email!",
+                    });
+                }
 
                 user.comparePassword(req.body.password, (err, isMatch) => {
                     if (!isMatch) return res.json({ isAuth: false, message: "password doesn't match" });
