@@ -8,7 +8,7 @@ var transport = nodemailer.createTransport({
       /*  user: secretvar.USEREMAIL,
         pass: secretvar.PWD*/
         user:"silviadolomiti@gmail.com",
-        pass: "Leonella966362svl"
+        pass: ""
 
     },
     tls: {
