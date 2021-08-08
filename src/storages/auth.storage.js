@@ -1,6 +1,4 @@
-
 const User = require('../models/user.model');
-const { auth } = require('../middlewares/auth');
 const crypto = require("crypto");
 const nodemailer = require("../config/nodemailer.config")
 
@@ -10,7 +8,7 @@ const register = (req, res) => {
     //const newuser = new User(req.body);
 
     const newuser = new User({
-        //todo insert other parameters
+        //insert other parameters of the model if you want
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         email: req.body.email,
@@ -19,12 +17,6 @@ const register = (req, res) => {
         isVerified: false
     });
 
-
-    //send verification mail to user
-    let { emailToken } = req.body
-    console.log('email token di user è' + newuser.emailToken)
-    //bisognerebbe mettere quel valore all'email token ogni volta che si fa newUser
-    console.log({ emailToken })
     console.log(newuser);
 
     const { firstName, lastName, email, password } = req.body
@@ -42,7 +34,7 @@ const register = (req, res) => {
     }
     User.findOne({ email: newuser.email }, function (err, user) {
         if (user) return res.status(400).json({ auth: false, message: "email exists" });
-        //qua al posto di salvare bisogna fare il lavorino dell'email di conferma, e guarda video sempre di lui
+        
         newuser.save((err, doc) => {
             if (err) {
                 console.log(err);
@@ -60,6 +52,7 @@ const register = (req, res) => {
                 newuser.email,
                 newuser.emailToken
             );
+            console.log("before email not verified ",newuser.isVerified)
         });
     });
 
@@ -75,15 +68,22 @@ const verifyUser = (req, res, next) => {
             if (!user) {
                 return res.status(404).send({ message: "User Not found." });
             }
-
-            user.isVerified=true;
-            console.log(user.isVerified + " User is verified")
+            user.isVerified=true
+            
+            //user.isVerified=true;
+            console.log(user.isVerified + " User is verified after the click on email")
             user.save((err) => {
                 if (err) {
                     res.status(500).send({ message: err });
                     return;
                 }
+                
+                
             });
+            /*NOTA BENE : At this moment, if the user clicks on the email’s confirmation link, they will find
+             a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
+             end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
+            //res.redirect('./api/login')
         })
         .catch((e) => console.log("error", e));
 }
@@ -101,6 +101,11 @@ const login = (req, res) => {
         else {
             User.findOne({ 'email': req.body.email }, function (err, user) {
                 if (!user) return res.json({ isAuth: false, message: ' Auth failed ,email not found' });
+
+                /*NOTA BENE!At this moment, if the user clicks on the email’s confirmation link, they will find
+             a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
+             end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
+            //res.redirect('./api/login')*/ 
                 //If the user isn't verified, cannot login
                 if (user.isVerified == false) {
                     return res.status(401).send({

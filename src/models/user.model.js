@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 //(JWT) is an open standard that defines a compact and self-contained way of securely
 //transmitting information between parties as a JSON object
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
 const bcrypt = require("bcrypt"); // It is used for hashing and comparing the passwords.
 const confiq = require("../config/config").get(process.env.NODE_ENV); //per la chiave segreta
 const salt = 10; //per la password
@@ -38,7 +37,7 @@ var userSchema = mongoose.Schema({
     trim: true,
     unique: 1,
   },
-  emailToken: { //token for verifyng authentication emailToken
+  emailToken: { //token for verifying authentication emailToken
     //TODO
     type: String,
     //required: true,
