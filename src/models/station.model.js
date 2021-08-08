@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const mongoose = require("mongoose");
 
 const stationSchema = new mongoose.Schema({
@@ -38,13 +40,26 @@ const stationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
-    // TODO: Check if object if is present.
+    // TODO: Check if object id is present.
   },
   position: {
     locality: {
       type: String,
       required: true,
       trim: true,
+    },
+  },
+  url: {
+    type: String,
+    required: true,
+    trim: true,
+    validate: {
+      validator: (v) => {
+        var regexp =
+          /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))/i;
+        return regexp.test(v);
+      },
+      message: (props) => `${props.value} is not a valid url`,
     },
   },
 });

@@ -42,11 +42,12 @@ const createStation = async (req, res) => {
       req.body.name,
       req.body.position.locality,
       req.body.owner,
-      req.body.authKey
+      req.body.authKey,
+      req.body.url
     );
-    return res.status(200).json({ result: true, saved });
+    return res.status(200).json({ result: true, body: req.body, saved });
   } catch (error) {
-    return res.status(500).json({ result: false, error, body: req.body });
+    return res.status(500).json({ result: false, body: req.body, error });
   }
 };
 
@@ -59,18 +60,28 @@ const createStation = async (req, res) => {
 const getStations = async (req, res) => {
   const filter = {};
 
-  if (validString(req.params.name)) {
+  if (req.params.name) {
     filter.name = req.params.name;
   }
 
-  if (validLocality(req.query.locality)) {
+  if (req.query.locality) {
     filter.position = { locality: req.query.locality };
   }
 
   try {
-    const stations = await storage.getStations(filter);
-    if (typeof stations === "array") {
-      return res.status(200).json({ result: true, filter, stations });
+    let stations = await storage.getStations(filter);
+    if (stations.length > 0) {
+      const json = {
+        result: true,
+        filter,
+      };
+      if (filter.name) {
+        // If user search for a given station, return it only.
+        json.station = stations[0];
+      } else {
+        json.stations = stations;
+      }
+      return res.status(200).json(json);
     } else {
       const message = "No Stations found with given filter.";
       return res.status(404).json({ result: false, filter, message });
@@ -83,7 +94,10 @@ const getStations = async (req, res) => {
 const updateStation = async (req, res) => {
   const filter = {};
 
-  if (validString(req.params.name)) {
+  if (!validString(req.params.name)) {
+    const message = "PUT request: you have to identify the resource to modify.";
+    res.status(404).json({ result: false, message, name: req.params.name });
+  } else {
     filter.name = req.params.name;
   }
 
@@ -95,13 +109,13 @@ const updateStation = async (req, res) => {
   const update = req.body;
 
   try {
-    const station = await storage.updateStation(req.params.name, update);
-    console.error(station);
-    if (typeof station === "null") {
-      const message = "PUT request: resource not found";
-      return res.status(404).json({ result: false, message, station, update });
+    const station = await storage.updateStations(req.params.name, update);
+    if (station) {
+      return res.status(200).json({ result: true, station, update });
     }
-    return res.status(200).json({ result: true, station, update });
+
+    const message = "PUT request: resource not found.";
+    return res.status(404).json({ result: false, message, station, update });
   } catch (error) {
     return res.status(500).json({ result: false, error, update });
   }
@@ -110,25 +124,28 @@ const updateStation = async (req, res) => {
 const deleteStation = async (req, res) => {
   const filter = {};
 
-  if (validString(req.params.name)) {
+  if (!validString(req.params.name)) {
+    const message =
+      "DELETE request: you have to identify the resource to delete.";
+    res.status(404).json({ result: false, message, name: req.params.name });
+  } else {
     filter.name = req.params.name;
   }
 
   try {
-    const station = await storage.deleteStation(req.params.name);
-    console.error(station);
-    if (typeof station === "null") {
-      const message = "DELETE request: resource not found";
-      return res.status(404).json({ result: false, update, message });
+    const station = await storage.deleteStations(filter);
+    if (station) {
+      return res.status(200).json({ result: true, update });
     }
-    return res.status(200).json({ result: false, update });
+
+    const message = "DELETE request: resource not found";
+    return res.status(404).json({ result: false, update, message });
   } catch (error) {
     return res.status(500).json({ result: false, error, update });
   }
 };
 
-const validString = (locality) =>
-  typeof locality === "string" && locality !== "";
+const validString = (str) => typeof str === "string" && str !== "";
 
 module.exports = {
   createStation,

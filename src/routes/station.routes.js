@@ -23,8 +23,8 @@ const controller = require("../controllers/station.controller");
 const router = express.Router();
 
 router
+  .get("", controller.getStations)
   .get("/:name", controller.getStations)
-  .get("/", controller.getStations)
   .post("", controller.createStation)
   .put("/:name", controller.updateStation)
   .delete("/:name", controller.deleteStation);

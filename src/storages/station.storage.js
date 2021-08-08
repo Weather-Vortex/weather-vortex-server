@@ -18,31 +18,8 @@
 
 "use strict";
 
+const { assert } = require("chai");
 const Station = require("../models/station.model");
-
-/**
- * Retrieve all stations in a given locality.
- * @param {String} locality Locality name.
- * @returns {Array<Station>} Stations found.
- */
-const getStationsByLocality = async (locality) => {
-  try {
-    let founds;
-    if (typeof locality === "string" && locality !== "") {
-      founds = await Station.find({ position: { locality } });
-    } else {
-      founds = await Station.find();
-    }
-
-    return { result: founds !== null, locality, stations: founds };
-  } catch (err) {
-    const message = "Stations with given locality wasn't found";
-    const error = new Error(message);
-    error.locality = locality;
-    error.error = err;
-    throw error;
-  }
-};
 
 /**
  * Returns all stations that matches given filters.
@@ -51,14 +28,14 @@ const getStationsByLocality = async (locality) => {
  */
 const getStations = async (filters) => {
   try {
-    const founds = await Station.find({ filters });
-    return { result: found !== null, filters, stations: founds };
+    const founds = await Station.find(filters).exec();
+    return founds;
   } catch (err) {
-    const message = "Stations with given filters weren't found";
+    const message = "Internal mongodb error";
     const error = new Error();
     error.message = message;
     error.filter = filters;
-    error.error = err;
+    error.internalError = err;
     throw error;
   }
 };
@@ -71,7 +48,7 @@ const getStations = async (filters) => {
  * @param {String} authKey AuthKey to authenticate requests to the station.
  * @returns Saved station.
  */
-const saveStation = async (name, locality, owner, authKey) => {
+const saveStation = async (name, locality, owner, authKey, url) => {
   try {
     const station = new Station({
       authKey,
@@ -80,21 +57,15 @@ const saveStation = async (name, locality, owner, authKey) => {
       position: {
         locality,
       },
+      url,
     });
+    assert(station instanceof Station);
     const result = await station.save();
-    /*
-    {
-      _id: 610db612cbcdea5c35aeeec6,
-      name: 'station',
-      owner: 610db611cbcdea5c35aeeec1,
-      position: { locality: 'Cesena' },
-      __v: 0
-    }
-    */
     return result;
   } catch (error) {
     const message = "Mongoose save error";
-    const err = new Error(message);
+    const err = new Error();
+    err.message = message;
     err.internalError = err;
     throw err;
   }
@@ -106,14 +77,17 @@ const saveStation = async (name, locality, owner, authKey) => {
  * @param {Object} update Updated fields to write on database.
  * @returns Updated station.
  */
-const updateStation = async (name, update) => {
+const updateStations = async (name, update) => {
   try {
     const res = await Station.findOneAndUpdate({ name }, update, { new: true });
     return res;
   } catch (error) {
     const message = "Mongoose update station error";
-    const err = new Error(message);
+    const err = new Error();
     err.internalError = err;
+    err.message = message;
+    err.name = name;
+    err.update = update;
     throw err;
   }
 };
@@ -123,22 +97,23 @@ const updateStation = async (name, update) => {
  * @param {String} name Name of the station. Used to filtering stations on db.
  * @returns Deleted station.
  */
-const deleteStation = async (name) => {
+const deleteStations = async (name) => {
   try {
     const res = await Station.findOneAndDelete({ name }, update);
     return res;
   } catch (error) {
     const message = "Mongoose delete station error";
-    const err = new Error(message);
+    const err = new Error();
     err.internalError = err;
+    err.message = message;
+    err.name = name;
     throw err;
   }
 };
 
 module.exports = {
-  deleteStation,
+  deleteStations,
   getStations,
-  getStationsByLocality,
   saveStation,
-  updateStation,
+  updateStations,
 };

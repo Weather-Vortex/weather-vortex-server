@@ -24,7 +24,7 @@ const troposphereStorage = require("../storages/troposhpere.storage");
 const stationStorage = require("../storages/station.storage");
 const storageUtils = require("../storages/storage.utils");
 
-const getForecastByLocality = async (locality) => {
+const getForecastByLocality = async (req, res) => {
   // Check if param is valid.
   if (!storageUtils.checkCityNameType(req)) {
     return res.status(400).json({

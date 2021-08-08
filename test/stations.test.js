@@ -23,14 +23,14 @@ const User = require("../src/models/user.model");
 
 const request = require("supertest");
 const chai = require("chai");
-const app = require("../src/index");
+const { app, mongoConnection } = require("../src/index");
+const chaiHttp = require("chai-http");
 
 const expect = chai.expect;
-chai.use(require("chai-http"));
-chai.use(require("chai-as-promised"));
+chai.use(chaiHttp);
+// chai.use(require("chai-as-promised"));
 
 describe("Test CRUD Operations for Stations", () => {
-  const base_url = "/station";
   let testUser;
 
   /**
@@ -48,68 +48,30 @@ describe("Test CRUD Operations for Stations", () => {
     return res;
   };
 
-  before(async () => {
+  before((done) => {
     // Create a test user as a first thing before any test.
-    testUser = await createUser();
+    mongoConnection
+      .then(() => {
+        createUser().then((res) => {
+          console.log("Created user:", res);
+          testUser = res;
+          done();
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        done(error);
+      });
   });
 
-  after(async () => {
+  after((done) => {
     // Delete the test user after all tests.
-    await User.deleteMany(testUser);
+    User.deleteMany(testUser)
+      .then(() => done())
+      .catch((err) => done(err));
   });
 
-  beforeEach(async () => {
-    await Station.deleteMany({});
-  });
-
-  it("Without stations", async () => {
-    const res = await request(app)
-      .get(`${base_url}/`)
-      .set("Connection", "keep alive")
-      .set("Content-Type", "application/json")
-      .set("Accept", "application/json");
-
-    expect(res).to.have.status(500);
-    expect(res).to.be.an("object");
-    expect(res.body).to.have.a.property("result", false);
-    expect(res.body).to.have.a.nested.property(
-      "error.message",
-      "Stations with given filters weren't found"
-    );
-  }).timeout(5000);
-
-  it("Save a station", async () => {
-    const station = {
-      authKey: "12341234123412341234123412341234",
-      name: "station",
-      owner: testUser._id,
-      position: {
-        locality: "Cesena",
-      },
-    };
-    const result = await request(app)
-      .post(`${base_url}`)
-      .set("Connection", "keep alive")
-      .set("Content-Type", "application/json")
-      .set("Accept", "application/json")
-      .send(station);
-
-    expect(result).to.have.status(200);
-    expect(result).to.be.an("object");
-    expect(result.body).to.have.a.property("result", true);
-    expect(result.body).to.have.a.property("saved");
-    expect(result.body.saved).to.be.an("object");
-    expect(result.body.saved).to.have.a.property("authKey", station.authKey);
-    expect(result.body.saved).to.have.a.property("name", station.name);
-    expect(result.body.saved).to.have.a.property(
-      "owner",
-      station.owner.toString()
-    );
-    expect(result.body.saved).to.have.a.nested.property(
-      "position.locality",
-      station.position.locality
-    );
-  }).timeout(5000);
+  const base_url = "/station";
 
   /**
    * Facility method to create a station. Use it whenever is possible instead other things, to reduce test time.
@@ -125,6 +87,7 @@ describe("Test CRUD Operations for Stations", () => {
       position: {
         locality,
       },
+      url: "https://iot-weather-simulator.herokuapp.com/info",
     });
     const saved = await station.save();
     expect(saved).to.be.an("object");
@@ -142,26 +105,96 @@ describe("Test CRUD Operations for Stations", () => {
     return station;
   };
 
-  it("Get a saved station", async () => {
-    // First assure that a station exists.
-    const station = await saveStation();
+  beforeEach((done) => {
+    Station.deleteMany({}, (err, res) => {
+      if (err) {
+        done(err);
+      } else {
+        done();
+      }
+    });
+  });
 
-    const result = await request(app)
-      .get(`${base_url}/${station.name}`)
-      .set("Connection", "keep alive")
-      .set("Content-Type", "application/json")
-      .set("Accept", "application/json");
+  describe("POST a new station", () => {
+    it("Save a station", async () => {
+      const station = {
+        authKey: "12341234123412341234123412341234",
+        name: "station",
+        owner: testUser._id,
+        position: {
+          locality: "Cesena",
+        },
+        url: "https://iot-weather-simulator.herokuapp.com/info",
+      };
+      const result = await request(app)
+        .post(`${base_url}`)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .send(station);
 
-    expect(result).to.have.status(200);
-    expect(result).to.have.a.property("body");
-    expect(result.body).to.be.an("object");
-    expect(result.body).to.have.a.property("authKey", station.authKey);
-    expect(result.body).to.have.a.property("name", station.name);
-    expect(result.body).to.have.a.property("owner", station.owner.toString());
-    expect(result.body).to.have.a.nested.property(
-      "position.locality",
-      station.position.locality
-    );
+      expect(result).to.have.status(200);
+      expect(result).to.be.an("object");
+      expect(result.body).to.have.a.property("result", true);
+      expect(result.body).to.have.a.property("saved");
+      expect(result.body.saved).to.be.an("object");
+      expect(result.body.saved).to.have.a.property("authKey", station.authKey);
+      expect(result.body.saved).to.have.a.property("name", station.name);
+      expect(result.body.saved).to.have.a.property(
+        "owner",
+        station.owner.toString()
+      );
+      expect(result.body.saved).to.have.a.nested.property(
+        "position.locality",
+        station.position.locality
+      );
+    });
+  });
+
+  describe("GET one or more stations", () => {
+    it("Without stations", async () => {
+      const res = await request(app)
+        .get(`${base_url}`)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json");
+
+      expect(res).to.have.status(404);
+      expect(res).to.be.an("object");
+      expect(res.body).to.have.a.property("result", false);
+      expect(res.body).to.have.a.property(
+        "message",
+        "No Stations found with given filter."
+      );
+    });
+
+    it("Get a saved station", async () => {
+      // First assure that a station exists.
+      const station = await saveStation();
+
+      const result = await request(app)
+        .get(`${base_url}/${station.name}`)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json");
+
+      expect(result).to.have.status(200);
+      expect(result).to.have.a.property("body");
+      expect(result.body).to.be.an("object");
+      expect(result.body).to.have.a.nested.property(
+        "station.authKey",
+        station.authKey
+      );
+      expect(result.body).to.have.a.nested.property(
+        "station.name",
+        station.name
+      );
+      expect(result.body).to.have.a.nested.property(
+        "station.owner",
+        station.owner.toString()
+      );
+      expect(result.body).to.have.a.nested.property(
+        "station.position.locality",
+        station.position.locality
+      );
+    });
   });
 
   describe("PUT: update a station", () => {
@@ -171,12 +204,17 @@ describe("Test CRUD Operations for Stations", () => {
 
       const result = await request(app)
         .put(`${base_url}/${station.name}`)
-        .set("Connection", "keep alive")
         .set("Content-Type", "application/json")
         .set("Accept", "application/json");
       console.log("Result:", result.body);
+      console.log("Error:", result.error);
 
       expect(result).to.have.status(404);
+      expect(result).to.have.a.property("body");
+      expect(result.body).to.have.a.property(
+        "message",
+        "PUT request: resource not found."
+      );
     });
 
     it("Try to update an existing station", async () => {
@@ -185,7 +223,6 @@ describe("Test CRUD Operations for Stations", () => {
 
       const result = await request(app)
         .put(`${base_url}/${station.name}`)
-        .set("Connection", "keep alive")
         .set("Content-Type", "application/json")
         .set("Accept", "application/json");
 
@@ -200,7 +237,6 @@ describe("Test CRUD Operations for Stations", () => {
 
       const result = await request(app)
         .delete(`${base_url}/${station.name}`)
-        .set("Connection", "keep alive")
         .set("Content-Type", "application/json")
         .set("Accept", "application/json");
       expect(result).to.have.status(404);
@@ -212,10 +248,9 @@ describe("Test CRUD Operations for Stations", () => {
 
       const result = await request(app)
         .delete(`${base_url}/${station.name}`)
-        .set("Connection", "keep alive")
         .set("Content-Type", "application/json")
         .set("Accept", "application/json");
-      expect(result).to.have.status(404);
+      expect(result).to.have.status(200);
     });
   });
 });
