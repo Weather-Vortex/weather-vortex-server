@@ -17,7 +17,9 @@ router
 //wiew informations about the user logged in
 .get('/profile',auth,authStorage.loggedIn);
 
+
 router
-.get('/verify-email/:emailToken',authStorage.verify);
+.get("/confirm/:confirmationCode", authStorage.verifyUser)
+
 
 module.exports = router;

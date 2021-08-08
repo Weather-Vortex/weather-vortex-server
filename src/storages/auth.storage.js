@@ -1,28 +1,16 @@
 
 const User = require('../models/user.model');
 const { auth } = require('../middlewares/auth');
-const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const nodemailer = require("../config/nodemailer.config")
 
-//email sender details
-var transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'silviadolomiti@gmail.com',
-        pass: 'DAMETTERE'
-
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-
-})
 // adding new user (sign-up route)
 const register = (req, res) => {
     // taking a user
     //const newuser = new User(req.body);
 
     const newuser = new User({
+        //todo insert other parameters
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         email: req.body.email,
@@ -62,24 +50,16 @@ const register = (req, res) => {
             }
             res.status(200).json({
                 succes: true,
-                user: doc
+                user: doc,
+                message: "User was registered successfully! Please check your email",
             });
-            var mailOptions = {
-                from: ' "Verify your email" <silviadolomiti@gmail.com>',
-                to: newuser.email,
-                subject: 'weather-vortex-verification -verify your email',
-                html: `<h2>${newuser.firstName}! Thanks for registering on your site </h2>
-             <h4> Please verify your email to continue...</h4>
-             <a href="http://${req.headers.host}/api/verify-email?token=${newuser.emailToken}">Verify your email</a>`
 
-            }
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error)
-                } else {
-                    console.log('Verification email is sent to your gmail account')
-                }
-            })
+
+            nodemailer.sendConfirmationEmail(
+                newuser.firstName,
+                newuser.email,
+                newuser.emailToken
+            );
         });
     });
 
@@ -87,41 +67,25 @@ const register = (req, res) => {
 
 };
 
-const verify = (req, res) => {
-    try {
-        const token = req.query.token
-        const user = User.findOne({ emailToken: token })
-        if (user) {
-            user.emailToken = null
-            user.isVerified = true
-            //user.save()
+const verifyUser = (req, res, next) => {
+    User.findOne({
+        confirmationCode: req.params.emailToken,
+    })
+        .then((user) => {
+            if (!user) {
+                return res.status(404).send({ message: "User Not found." });
+            }
 
-            //res.redirect('/api/login')
-        } else {
-            res.redirect('/api/register')
-            console.log('email is not verified')
-        }
-    } catch (err) {
-        console.log(err)
-    }
-}
-
-//TODO FARE LA ROTTA DI CONFERMA COME IN QUEL SITO BETTERPROGRAMMING
-
-const verifyEmail = (req, res, next) => {
-    try {
-        const user = User.findOne({ email: req.body.email })
-        if (user.isVerified) {
-            console.log("verified!" + isVerified)
-            next()
-        }
-        else {
-            console.log("Please check your email to verify your account")
-        }
-    }
-    catch (err) {
-        console.log(err)
-    }
+            user.isVerified=true;
+            console.log(user.isVerified + " User is verified")
+            user.save((err) => {
+                if (err) {
+                    res.status(500).send({ message: err });
+                    return;
+                }
+            });
+        })
+        .catch((e) => console.log("error", e));
 }
 
 // login user
@@ -186,6 +150,5 @@ module.exports = {
     login,
     logout,
     loggedIn,
-    verify,
-    verifyEmail
+    verifyUser
 }
