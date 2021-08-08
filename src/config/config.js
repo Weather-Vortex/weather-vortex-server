@@ -2,11 +2,15 @@
 const config={
     production :{
         SECRET: process.env.SECRET,
-        DATABASE: process.env.MONGODB_URI
+        DATABASE: process.env.MONGODB_URI,
+        USEREMAIL:process.env.USER_EMAIL,
+        PWD:process.env.PWD
     },
     default : {
         SECRET: 'mysecretkey',
-        DATABASE: 'mongodb://localhost:27017/test'
+        DATABASE: 'mongodb://localhost:27017/test',
+        USEREMAIL:'silviadolomiti@gmail.com',
+        PWD:'DA METTERE!'
     }
 }
 
