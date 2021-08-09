@@ -26,7 +26,7 @@ in route folder to install all dependencies.
 To build Docker image, run the following command:
 
 ```sh
-sudo docker build . -t <your username>/weather-vortex-server
+docker build . -t <your username>/weather-vortex-server
 ```
 
 You can see your container image with `docker images`.
@@ -40,14 +40,14 @@ In your local environment, you can run with `npm start` command. You need a loca
 To run your container, use the following command:
 
 ```sh
-sudo docker run -p 49161:12000 -d <your username>/weather-vortex-server
+docker run -p 49161:12000 -d <your username>/weather-vortex-server
 ```
 
 Since this is a detached container, to see all logs run
 
 ```sh
-sudo docker ps
-sudo docker logs <container id>
+docker ps
+docker logs <container id>
 ```
 
 ### Test
@@ -57,5 +57,28 @@ In your local environment, you can test with `npm run test` command. You can run
 Navigate in your browser to `localhost:12000` to see the server ok page, or in your shell use those commands:
 
 ```sh
-curl -i localhost:49161
+$ curl -i localhost:49161
+
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Content-Type: application/json; charset=utf-8
+Content-Length: 15
+ETag: W/"f-51rzdr5zfwWQpf+iUepheZg7siQ"
+Date: Mon, 09 Aug 2021 20:38:01 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"result":"ok"}
+```
+
+In local environment, you should have a working mongodb installation or use a container:
+
+```sh
+docker run -p 27017:27017 -d mongo
+
+docker ps
+
+CONTAINER ID   IMAGE                                    CREATED         STATUS          PORTS
+2fffd3d83939   mongo                                    4 seconds ago   Up 3 seconds    0.0.0.0:27017->27017/tcp, :::27017->27017/tcp
+64bbb7ec15d7   daniele.tentoni2/weather-vortex-server   4 minutes ago   Up 4 minutes    15600/tcp, 0.0.0.0:49161->12000/tcp, :::49161->12000/tcp
 ```

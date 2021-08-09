@@ -19,7 +19,7 @@
 
 FROM node:14-alpine
 
-ENV WORKINGDIR = /app
+ENV WORKINGDIR=/app
 
 RUN mkdir -p ${WORKINGDIR}
 
@@ -27,13 +27,13 @@ WORKDIR ${WORKINGDIR}
 
 # Install dependecies
 
-COPY ./src/package*.json ${WORKINGDIR}/
+COPY ./package*.json ${WORKINGDIR}/
 
-RUN cd ${WORKINGDIR} && npm install --silent
+RUN npm install --silent
 
 # Copy app source code
 
-COPY ./src ${WORKINGDIR}
+COPY ./src ${WORKINGDIR}/src
 
 RUN adduser -D myuser
 USER myuser
