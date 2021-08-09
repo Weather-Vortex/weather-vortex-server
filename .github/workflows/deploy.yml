@@ -1,0 +1,10 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - "main"
+    # Ignore paths without code or useful runtime files.
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.data"
