@@ -2,8 +2,10 @@ name: Node Unit Tests
 
 on:
   push:
+    # Main branch will have different purposes ;)
     branches-ignore:
       - "main"
+    # Ignore paths without code or useful runtime files.
     paths-ignore:
       - "**/*.md"
       - "**/*.data"
@@ -29,6 +31,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Create mongoDB Docker container for API testing
+        uses: DigiPie/mongo-action@v1.0.1
+
       - name: Run tests
         run: |
           npm --version
@@ -36,7 +41,7 @@ jobs:
           npm run build --if-present
           npm test
         env:
-          SECRET: ${{ secrets.SECRET }}
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          NODE_ENV: "test"
+          MONGODB_URI: mongodb://localhost:27017/test # Access mongoDB Docker container
           OPEN_WEATHER_MAP_API_KEY: ${{ secrets.OPEN_WEATHER_MAP_API_KEY }}
           TROPOSPHERE_API_KEY: ${{ secrets.TROPOSPHERE_API_KEY }}
