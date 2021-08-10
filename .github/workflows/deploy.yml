@@ -10,7 +10,7 @@ on:
       - "**/*.data"
 
 jobs:
-  deploy:
+  Deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -33,3 +33,39 @@ jobs:
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_MAIL}}
           usedocker: true
+
+  TelegramJobDeploy:
+      needs: [Deploy]
+      if: success() 
+      runs-on: ubuntu-latest
+      steps:
+      - name: Send custom Telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+              ${{ github.event_name }} event,
+              on github.com/${{ github.repository }}, 
+              <b>${{ github.event.head_commit.message }}</b>
+              ✅ <b>SUCCEDED</b>✅ 
+          format: html
+          disable_web_page_preview: true
+     
+  TelegramJobFailure:
+      needs: [Deploy]
+      if: failure() 
+      runs-on: ubuntu-latest
+      steps:
+      - name: Send custom Telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+              ${{ github.event_name }} event,
+              on github.com/${{ github.repository }}, 
+              <b>${{ github.event.head_commit.message }}</b>
+              ❌ <b>FAILED</b> ❌ 
+          format: html
+          disable_web_page_preview: true
