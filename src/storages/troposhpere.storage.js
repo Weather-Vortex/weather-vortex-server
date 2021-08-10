@@ -16,30 +16,27 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const troposphere_base_url = "https://api.troposphere.io";
-const troposphere_api_key = process.env.TROPOSPHERE_API_KEY; // TODO: Read from env
+"use strict";
 
 const { WeatherProvider } = require("./weatherProvider");
 
 class TroposphereProvider extends WeatherProvider {
   constructor(base_url, api_key) {
-    super(base_url, api_key);
+    super(base_url, `?token=${api_key}`);
     this.name = "Troposphere Provider";
-  }
-
-  formatUrl(data) {
-    return `${this.base_url}${data}?token=${troposphere_api_key}`;
   }
 }
 
+const troposphere_base_url = "https://api.troposphere.io";
+const troposphere_api_key = process.env.TROPOSPHERE_API_KEY;
 const provider = new TroposphereProvider(
   troposphere_base_url,
   troposphere_api_key
 );
 
 const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
-  const url = provider.formatUrl(`/forecast/${latitude},${longitude}`);
-  return provider.makeRequest(url);
+  const resource = `forecast/${latitude},${longitude}`;
+  return provider.makeRequest(resource);
 };
 
 module.exports = {
