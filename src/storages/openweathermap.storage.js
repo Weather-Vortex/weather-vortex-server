@@ -16,9 +16,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const base_url = "https://api.openweathermap.org/data/2.5/forecast?";
-const api_key = "095e72fe0e443261be9fa4aeb5248a57"; // TODO: Read from env
-
 const { WeatherProvider } = require("./weatherProvider");
 
 class OpenWeatherMapProvider extends WeatherProvider {
@@ -32,7 +29,10 @@ class OpenWeatherMapProvider extends WeatherProvider {
   }
 }
 
-const provider = new OpenWeatherMapProvider(base_url, api_key);
+// Instance the forecast provider.
+const base_url = "https://api.openweathermap.org/data/2.5/forecast?";
+const owm_api_key = process.env.OPEN_WEATHER_MAP_API_KEY; // TODO: Read from env
+const provider = new OpenWeatherMapProvider(base_url, owm_api_key);
 
 /**
  * Retrieve weather forecasts for given city.
@@ -41,7 +41,7 @@ const provider = new OpenWeatherMapProvider(base_url, api_key);
  */
 const fourDayForecastByCityRequest = (city_name) => {
   const url = provider.formatUrl(`q=${city_name}`);
-  return provider.fourDayForecastRequest(url);
+  return provider.makeRequest(url);
 };
 
 /**
@@ -52,7 +52,7 @@ const fourDayForecastByCityRequest = (city_name) => {
  */
 const fourDayForecastByLocationRequest = (latitude, longitude) => {
   const url = provider.formatUrl(`lat=${latitude}&lon=${longitude}`);
-  return provider.fourDayForecastRequest(url);
+  return provider.makeRequest(url);
 };
 
 module.exports = {

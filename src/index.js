@@ -18,14 +18,12 @@
 
 const express = require("express");
 const mongoose = require("mongoose");
-const bodyparser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const db = require("./config/config").get(process.env.NODE_ENV);
 
 //database connection-> ps: l'ho modificato per tenere nascosto il link al database
 mongoose.Promise = global.Promise;
 mongoose
-  .connect(db.DATABASE, {
+  .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
@@ -39,7 +37,6 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.json());
 
 app.get("/", (req, res) => {
   res.status(200).json({ result: "ok" });
@@ -54,7 +51,9 @@ app.use("/api", authRoutes);
 const forecastRoutes = require("./routes/forecasts.routes");
 app.use("/forecast", forecastRoutes);
 
-app.listen(12000, () => {
+const port = process.env.PORT || 12000;
+
+app.listen(port, () => {
   console.log(
     "Weather Vortex  Copyright (C) 2021  Lirussi Igor, Tentoni Daniele, Zandoli Silvia"
   );

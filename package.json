@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "mocha --recursive --exit",
+    "start:local": "node -r dotenv/config src/index.js",
+    "test": "mocha --recursive -r dotenv/config --timeout 3000 --exit",
     "test-cov": "nyc --reporter=text npm run test",
     "test-cov:html": "nyc --reporter=html npm run test"
   },
@@ -36,6 +37,7 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-http": "^4.3.0",
+    "dotenv": "^10.0.0",
     "mocha": "^9.0.3",
     "nock": "^13.1.1",
     "nyc": "^15.1.0",
