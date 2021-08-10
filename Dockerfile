@@ -38,6 +38,7 @@ COPY ./src ${WORKINGDIR}/src
 RUN adduser -D myuser
 USER myuser
 
-EXPOSE 15600
+# Hidden by Heroku
+# EXPOSE 15600
 
 CMD ["npm", "start"]
