@@ -39,7 +39,6 @@ var userSchema = mongoose.Schema({
     unique: 1,
   },
   emailToken: { //token for verifying authentication emailToken
-    //TODO
     type: String,
     //required: true,
     unique:true,

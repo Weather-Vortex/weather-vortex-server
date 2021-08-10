@@ -1,5 +1,6 @@
 
 const User = require('../models/user.model');
+//libreria bcrypt per le passsword, per generare token random invece serve crypto
 const crypto = require("crypto");
 const nodemailer = require("../config/nodemailer.config")
 
@@ -33,29 +34,29 @@ const register = (req, res) => {
     if (!email.match(validRegex)) {
         return res.status(400).json({ auth: false, message: "Invalid Email" });
     }
-    User.findOne({ email: newuser.email }, function (err, user) {
-        if (user) return res.status(400).json({ auth: false, message: "email exists" });
-        
-        newuser.save((err, doc) => {
-            if (err) {
-                console.log(err);
-                return res.status(500).json({ success: false });
-            }
-            res.status(200).json({
-                succes: true,
-                user: doc,
-                message: "User was registered successfully! Please check your email",
-            });
+    // User.findOne({ email: newuser.email }, function (err, user) {
+    //if (user) return res.status(400).json({ auth: false, message: "email exists" });
 
-
-            nodemailer.sendConfirmationEmail(
-                newuser.firstName,
-                newuser.email,
-                newuser.emailToken
-            );
-            console.log("before email not verified ",newuser.isVerified)
+    newuser.save((err, doc) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ success: false });
+        }
+        res.status(200).json({
+            succes: true,
+            user: doc,
+            message: "User was registered successfully! Please check your email",
         });
+
+
+        nodemailer.sendConfirmationEmail(
+            newuser.firstName,
+            newuser.email,
+            newuser.emailToken
+        );
+        console.log("before email not verified ", newuser.isVerified)
     });
+    // });
 
     //res.redirect('/user/login')
 
@@ -69,8 +70,8 @@ const verifyUser = (req, res, next) => {
             if (!user) {
                 return res.status(404).send({ message: "User Not found." });
             }
-            user.isVerified=true
-            
+            user.isVerified = true
+
             //user.isVerified=true;
             console.log(user.isVerified + " User is verified after the click on email")
             user.save((err) => {
@@ -78,8 +79,8 @@ const verifyUser = (req, res, next) => {
                     res.status(500).send({ message: err });
                     return;
                 }
-                
-                
+
+
             });
             /*NOTA BENE : At this moment, if the user clicks on the email’s confirmation link, they will find
              a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
@@ -101,23 +102,23 @@ const login = (req, res) => {
 
         else {
             User.findOne({ 'email': req.body.email }, function (err, user) {
-                if (!user) return res.json({ isAuth: false, message: ' Auth failed ,email not found' });
+                if (!user) return res.status(500).json({ isAuth: false, message: ' Auth failed ,email not found' });
                 /*NOTA BENE!At this moment, if the user clicks on the email’s confirmation link, they will find
              a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
              end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
-            //res.redirect('./api/login')*/ 
+                //res.redirect('./api/login')*/ 
                 //If the user isn't verified, cannot login
-                if (user.isVerified == false) {
-                    return res.status(401).send({
-                        message: "Pending Account. Please Verify Your Email!",
-                    });
-                }
+                 if (user.isVerified == false) {
+                     return res.status(401).send({
+                         message: "Pending Account. Please Verify Your Email!",
+                     });
+                 }
 
                 user.comparePassword(req.body.password, (err, isMatch) => {
-                    if (!isMatch) return res.json({ isAuth: false, message: "password doesn't match" });
+                    if (!isMatch) return res.status(401).json({ isAuth: false, message: "password doesn't match" });
 
                     user.generateToken((err, user) => {
-                        if (err) return res.status(400).send(err);
+                        if (err) return res.status(500).send(err);
                         res.cookie('auth', user.token).json({
                             isAuth: true,
                             id: user._id,
@@ -141,14 +142,18 @@ const logout = (req, res) => {
 
 // get logged in user, view its informations
 const loggedIn = (req, res) => {
-    res.json({
-        isAuth: true,
-        id: req.user._id,
-        email: req.user.email,
-        name: req.user.firstName + req.user.lastName
+    try {
+        res.json({
+            isAuth: true,
+            id: req.user._id,
+            email: req.user.email,
+            name: req.user.firstName + req.user.lastName
 
-    })
-};
+        })
+    } catch {
+        res.status(400).json({isAuth:false, message:"Any user authenticated"})
+    }
+}
 
 module.exports = {
     register,

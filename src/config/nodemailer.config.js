@@ -7,8 +7,7 @@ var transport = nodemailer.createTransport({
     auth: {
       user: secretvar.USEREMAIL,
       pass: secretvar.PWD
-      
-
+    
     },
     tls: {
         rejectUnauthorized: false
