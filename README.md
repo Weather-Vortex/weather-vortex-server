@@ -2,7 +2,7 @@
 
 Server for Weather Vortex Project.
 
-## Table of contents
+** Table of contents **
 
 - [How to](#how-to)
   - [Build](#build)
