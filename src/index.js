@@ -18,7 +18,6 @@
 
 const express = require("express");
 const mongoose = require("mongoose");
-const bodyparser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const db = require("./config/config").get(process.env.NODE_ENV);
 
