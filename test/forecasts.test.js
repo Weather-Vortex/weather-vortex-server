@@ -20,11 +20,16 @@ const request = require("supertest");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
 const app = require("../src/index");
+const locationModel = require("../src/models/location.model");
 
 chai.use(chaiHttp);
 const expect = chai.expect;
 
 describe("GET forecasts for Cesena", () => {
+  beforeEach(async () => {
+    await locationModel.deleteMany({});
+  });
+
   const base_url = "/forecast";
   it("responds with unsuccessful result", async () => {
     const result = await request(app)
