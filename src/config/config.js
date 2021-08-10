@@ -9,8 +9,8 @@ const config={
     default : {
         SECRET: 'mysecretkey',
         DATABASE: 'mongodb://localhost:27017/test',
-        USEREMAIL:'silviadolomiti@gmail.com',
-        PWD:'Da mettere'
+        USEREMAIL:'weathervortex2@gmail.com',
+        PWD:'progettoWeb'
     }
 }
 
