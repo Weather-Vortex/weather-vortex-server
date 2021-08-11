@@ -20,18 +20,20 @@ const createUser = (req, res) => {
 };
 
 //an ADMINISTRATOR can obtain a user from its id
+//togli la password
 const getUser = (req, res) => {
   var id = req.params.id;
   User.findById(id, function (err, docs) {
-      if (err){
-          console.log(err);
-      }
-      else{
-          console.log("Result : ", docs);
-          res.send(docs)
-      }
+    if (err) {
+      console.log(err);
+      return res.status(400).send(err)
+    }
+    else {
+      console.log("Result : ", docs);
+      res.json(docs)
+    }
   });
-} 
+}
 
 //these options are for the users-> to do in auth storage
 const updateUser = (req, res) => {
@@ -45,20 +47,24 @@ const deleteUser = (req, res) => {
 };
 
 //THE ADMINISTRATOR can view the list of users
+//togli la password
 const getAllUsers = (req, res) => {
   console.log("Get all users");
   User.find({}, function (err, users) {
+    if (err) {
+      return res.status(400).send(err)
+    } else {
 
-    var userMap = {};
+      var userMap = {};
 
-    users.forEach(function (user) {
+      users.forEach(function (user) {
 
-      userMap[user._id] = user;
+        userMap[user._id] = user;
 
-    });
+      });
 
-    res.send(userMap);
-
+      res.json(userMap);
+    }
   });
 
 };

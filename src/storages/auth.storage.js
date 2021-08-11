@@ -108,11 +108,11 @@ const login = (req, res) => {
              end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
                 //res.redirect('./api/login')*/ 
                 //If the user isn't verified, cannot login
-                 if (user.isVerified == false) {
-                     return res.status(401).send({
-                         message: "Pending Account. Please Verify Your Email!",
-                     });
-                 }
+                if (user.isVerified == false) {
+                    return res.status(401).send({
+                        message: "Pending Account. Please Verify Your Email!",
+                    });
+                }
 
                 user.comparePassword(req.body.password, (err, isMatch) => {
                     if (!isMatch) return res.status(401).json({ isAuth: false, message: "password doesn't match" });
@@ -140,7 +140,7 @@ const logout = (req, res) => {
 
 };
 
-// get logged in user, he can view its informations (profile)
+// get logged in user, the user can view its informations (profile)
 const loggedIn = (req, res) => {
     try {
         res.json({
@@ -151,7 +151,7 @@ const loggedIn = (req, res) => {
 
         })
     } catch {
-        res.status(400).json({isAuth:false, message:"Any user authenticated"})
+        res.status(400).json({ isAuth: false, message: "Any user authenticated" })
     }
 }
 
