@@ -21,43 +21,66 @@ const utils = require("./storage.utils");
 
 /**
  * Base class for any Weather Provider.
- * @param {String} base_url Base url of the service.
- * @param {String} api_key Api Key of the service.
  */
 class WeatherProvider {
   /**
    * Initialize the Weather Provider with some common data.
    * @param {String} base_url Base url of the service.
-   * @param {String} api_key Api Key of the service.
+   * @param {String} api_key_part Api Key Url Part of the service.
    */
-  constructor(base_url, api_key) {
+  constructor(base_url, api_key_part) {
     this.name = "Base Weather Provider";
     this.base_url = base_url;
-    this.api_key = api_key;
+    this.api_key_part = api_key_part;
   }
 
-  formatUrl(data) {
-    if (typeof data === "undefined") {
-      throw new TypeError("Type must be defined and a string");
+  /**
+   * Compose an url with a resource properly.
+   * @param {String} resource Resource to compose.
+   * @returns Url composed.
+   */
+  formatUrl = (resource) => {
+    if (typeof resource !== "string") {
+      throw new TypeError(
+        "Weather Provider: param resource have to be a string."
+      );
     }
 
-    return data;
-  }
+    let tmp;
+    if (this.base_url.endsWith("/") && resource.startsWith("/")) {
+      tmp = this.base_url.substr(0, this.base_url.length - 1).concat(resource);
+    } else if (
+      (this.base_url.endsWith("/") && !resource.startsWith("/")) ||
+      (!this.base_url.endsWith("/") && resource.startsWith("/"))
+    ) {
+      tmp = this.base_url.concat(resource);
+    } else if (!this.base_url.endsWith("/") && !resource.startsWith("/")) {
+      tmp = `${this.base_url}/${resource}`;
+    }
+
+    return tmp.concat(this.api_key_part);
+  };
 
   /**
    * Get a resource from an url with Axios.
    * @param {String} url Url to get with Axios.
    * @returns {Promise<any>} Axios promise.
    */
-  makeRequest = (url) => {
+  makeRequest = (resource) => {
+    // Format url. Let error flow up to inherited provider.
+    const data_url = this.formatUrl(resource);
+
     try {
       // Return the real Promise from Axios.
-      const data_url = this.formatUrl(url);
-      return axios.get(url);
+      return axios.get(data_url);
     } catch (error) {
       utils.manageAxiosError(error);
+      const err = new Error();
+      err.message = "Error in axios call";
+      err.internalError = error;
+      err.url = url;
       // Return a rejected Promise.
-      return new Promise.reject("Error in axios call");
+      throw err;
     }
   };
 }

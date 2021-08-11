@@ -1,6 +1,6 @@
 /*
     Web server for Weather Vortex project.
-    Copyright (C) 2021  Daniele Tentoni
+    Copyright (C) 2021  Tentoni Daniele
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,10 +21,51 @@
 const openWeatherStorage = require("../storages/openweathermap.storage");
 const locationStorage = require("../storages/location.storage");
 const troposphereStorage = require("../storages/troposhpere.storage");
+<<<<<<< HEAD
 const stationStorage = require("../storages/station.storage");
 const storageUtils = require("../storages/storage.utils");
 
 const getForecastByLocality = async (req, res) => {
+=======
+const storageUtils = require("../storages/storage.utils");
+
+const getCurrentForecasts = async (req, res) => {
+  // Check if param is valid.
+  if (!storageUtils.checkCityNameType(req)) {
+    return res.status(400).json({
+      error: "Req.params.locality is not correctly declared.",
+      value: req.params.locality,
+    });
+  }
+
+  const locality = req.params.locality;
+  try {
+    let location = await locationStorage.getLocationDataByCity(locality);
+
+    if (Array.isArray(location.data) && location.data.length > 0) {
+      // Manage multiple location found.
+      // TODO: How can we manage them smarter?
+      location = location.data[0];
+    }
+    if (typeof location.position.latitude === "undefined") {
+      // Return location missing error if empty.
+      return res.status(500).json("No latitude for the object");
+    }
+    if (typeof location.position.longitude === "undefined") {
+      // Return location missing error if empty.
+      return res.status(500).json("No longitude for the object");
+    }
+
+    // TODO: Add current forecasts.
+  } catch (error) {
+    // Return location error if any.
+    storageUtils.manageAxiosError(error);
+    return res.status(500).json({ result: false, error, locality });
+  }
+};
+
+const getThreeDaysForecasts = async (req, res) => {
+>>>>>>> dev
   // Check if param is valid.
   if (!storageUtils.checkCityNameType(req)) {
     return res.status(400).json({
@@ -73,12 +114,20 @@ const getForecastByLocality = async (req, res) => {
 
     return res.status(200).json({ owm: results[0].data, tro: results[1].data });
   } catch (error) {
+<<<<<<< HEAD
     // Return location error if any.
+=======
+>>>>>>> dev
     storageUtils.manageAxiosError(error);
     return res.status(500).json({ result: false, error, locality });
   }
 };
 
 module.exports = {
+<<<<<<< HEAD
   getForecastByLocality,
+=======
+  getCurrentForecasts,
+  getThreeDaysForecasts,
+>>>>>>> dev
 };

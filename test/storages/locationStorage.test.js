@@ -16,13 +16,40 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const Location = require("../../src/models/location.model");
 const {
   getLocationDataByCity,
 } = require("../../src/storages/location.storage");
 const chai = require("chai");
-const expect = chai.expect;
+const nock = require("nock");
+const { expect } = chai;
 chai.use(require("chai-as-promised"));
+
+const troposphereUrl = "https://api.troposphere.io";
+const rimininelloUrl = `/place/name/Rimininello?token=${process.env.TROPOSPHERE_API_KEY}`;
+const rimininelloData = {
+  error: null,
+  data: [
+    {
+      id: 8972789,
+      name: "Rimininello",
+      latitude: 42.46964,
+      longitude: 11.62925,
+      continent: "EU",
+      country: "Italy",
+      countryEmoji: "🇮🇹",
+      admin1: "Latium",
+      admin2: "Provincia di Viterbo",
+      admin3: "Canino",
+      admin4: null,
+      type: "place",
+    },
+  ],
+};
+const cccUrl = `/place/name/CCC?token=${process.env.TROPOSPHERE_API_KEY}`;
+const cccData = { error: null, data: [] };
 
 describe("Ask for a Location", () => {
   beforeEach(async () => {
@@ -31,8 +58,16 @@ describe("Ask for a Location", () => {
   });
 
   it("that exists", async () => {
+    nock(troposphereUrl).get(rimininelloUrl).reply(200, rimininelloData);
     const city_name = "Rimininello";
     const result = await getLocationDataByCity(city_name);
+
+    /*if (result.error?.error === "Usage limit reached") {
+      // If we reach the api quota, don't mark the test as failed.
+      assert.ok(true);
+      return;
+    }*/
+
     expect(result).to.be.an("object");
     expect(result).to.have.a.property("id");
     expect(result).to.have.a.property("name", city_name);
@@ -62,10 +97,9 @@ describe("Ask for a Location", () => {
   });
 
   it("that not exists", async () => {
+    nock(troposphereUrl).get(cccUrl).reply(200, cccData);
     const city_name = "CCC";
-    // const expectedError = new Error("No location found");
     const result = getLocationDataByCity(city_name);
     await expect(result).to.be.rejectedWith(Error);
-    // expect(() => result).to.throw(expectedError, "location");
   });
 });

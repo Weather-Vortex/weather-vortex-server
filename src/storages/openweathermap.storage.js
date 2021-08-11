@@ -16,22 +16,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const { WeatherProvider } = require("./weatherProvider");
 
 class OpenWeatherMapProvider extends WeatherProvider {
   constructor(base_url, api_key) {
-    super(base_url, api_key);
+    super(base_url, `&appid=${api_key}`);
     this.name = "OpenWeatherMap Provider";
-  }
-
-  formatUrl(data) {
-    return `${this.base_url}${data}&appid=${this.api_key}`;
   }
 }
 
 // Instance the forecast provider.
-const base_url = "https://api.openweathermap.org/data/2.5/forecast?";
-const owm_api_key = process.env.OPEN_WEATHER_MAP_API_KEY; // TODO: Read from env
+const base_url = "https://api.openweathermap.org/data/2.5/";
+const owm_api_key = process.env.OPEN_WEATHER_MAP_API_KEY;
 const provider = new OpenWeatherMapProvider(base_url, owm_api_key);
 
 /**
@@ -40,8 +38,8 @@ const provider = new OpenWeatherMapProvider(base_url, owm_api_key);
  * @returns {Promise<any>} Weather Forecast Promise.
  */
 const fourDayForecastByCityRequest = (city_name) => {
-  const url = provider.formatUrl(`q=${city_name}`);
-  return provider.makeRequest(url);
+  const resource = `forecast?q=${city_name}`;
+  return provider.makeRequest(resource);
 };
 
 /**
@@ -51,11 +49,17 @@ const fourDayForecastByCityRequest = (city_name) => {
  * @returns {Promise<any>} Weather Forecast Promise.
  */
 const fourDayForecastByLocationRequest = (latitude, longitude) => {
-  const url = provider.formatUrl(`lat=${latitude}&lon=${longitude}`);
-  return provider.makeRequest(url);
+  const resource = `forecast?lat=${latitude}&lon=${longitude}`;
+  return provider.makeRequest(resource);
+};
+
+const currentWeatherForecastByLocationRequest = (latitude, longitude) => {
+  const resource = `weather?lat=${latitude}&lon=${longitude}`;
+  return provider.makeRequest(resource);
 };
 
 module.exports = {
   fourDayForecastByCityRequest,
   fourDayForecastByLocationRequest,
+  currentWeatherForecastByLocationRequest,
 };
