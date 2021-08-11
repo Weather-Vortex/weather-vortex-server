@@ -19,11 +19,21 @@ const createUser = (req, res) => {
   });
 };
 
+//an ADMINISTRATOR can obtain a user from its id
 const getUser = (req, res) => {
-  
-}
+  var id = req.params.id;
+  User.findById(id, function (err, docs) {
+      if (err){
+          console.log(err);
+      }
+      else{
+          console.log("Result : ", docs);
+          res.send(docs)
+      }
+  });
+} 
 
-
+//these options are for the users-> to do in auth storage
 const updateUser = (req, res) => {
   // TODO: Update some info about user.
   console.log("Update user", req.body);
@@ -34,8 +44,9 @@ const deleteUser = (req, res) => {
   console.log("Delete user", req.params.id);
 };
 
+//THE ADMINISTRATOR can view the list of users
 const getAllUsers = (req, res) => {
-  console.log("Get all user");
+  console.log("Get all users");
   User.find({}, function (err, users) {
 
     var userMap = {};
@@ -49,9 +60,6 @@ const getAllUsers = (req, res) => {
     res.send(userMap);
 
   });
-
-
-
 
 };
 
