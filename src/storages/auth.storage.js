@@ -140,7 +140,7 @@ const logout = (req, res) => {
 
 };
 
-// get logged in user, view its informations
+// get logged in user, he can view its informations (profile)
 const loggedIn = (req, res) => {
     try {
         res.json({

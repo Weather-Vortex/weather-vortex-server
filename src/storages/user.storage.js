@@ -1,5 +1,6 @@
-const userModel = require("../models/user.model");
-
+const User = require("../models/user.model");
+const db = require("../config/config").get(process.env.NODE_ENV);
+//administrator operations
 /**
  * Create a new user and send back data.
  * @param {express.Request} req Express request from route.
@@ -14,18 +15,18 @@ const createUser = (req, res) => {
     }
 
     // saved!
-    res.status(200).json({ message: "User cerated!", doc });
+    res.status(200).json({ message: "User created!", doc });
   });
 };
 
 const getUser = (req, res) => {
-  // TODO: Return some info about user, not sensitive info like password.
-  console.log("Get user", req.params.id);
-};
+  
+}
+
 
 const updateUser = (req, res) => {
   // TODO: Update some info about user.
-  console.log("Update user", req.params.id);
+  console.log("Update user", req.body);
 };
 
 const deleteUser = (req, res) => {
@@ -34,8 +35,24 @@ const deleteUser = (req, res) => {
 };
 
 const getAllUsers = (req, res) => {
-  // TODO: What informations we can return about users?
   console.log("Get all user");
+  User.find({}, function (err, users) {
+
+    var userMap = {};
+
+    users.forEach(function (user) {
+
+      userMap[user._id] = user;
+
+    });
+
+    res.send(userMap);
+
+  });
+
+
+
+
 };
 
 module.exports = {
