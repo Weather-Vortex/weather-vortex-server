@@ -1,14 +1,6 @@
 name: Node Unit Tests
 
 on:
-  push:
-    # Main branch will have different purposes ;)
-    branches-ignore:
-      - "main"
-    # Ignore paths without code or useful runtime files.
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.data"
   pull_request:
     branches:
       - "main"
@@ -22,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [12.x, 14.x, 16.x]
     steps:
       - uses: actions/checkout@v2
 
