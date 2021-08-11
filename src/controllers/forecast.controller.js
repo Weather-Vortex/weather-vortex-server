@@ -21,12 +21,6 @@
 const openWeatherStorage = require("../storages/openweathermap.storage");
 const locationStorage = require("../storages/location.storage");
 const troposphereStorage = require("../storages/troposhpere.storage");
-<<<<<<< HEAD
-const stationStorage = require("../storages/station.storage");
-const storageUtils = require("../storages/storage.utils");
-
-const getForecastByLocality = async (req, res) => {
-=======
 const storageUtils = require("../storages/storage.utils");
 
 const getCurrentForecasts = async (req, res) => {
@@ -65,7 +59,6 @@ const getCurrentForecasts = async (req, res) => {
 };
 
 const getThreeDaysForecasts = async (req, res) => {
->>>>>>> dev
   // Check if param is valid.
   if (!storageUtils.checkCityNameType(req)) {
     return res.status(400).json({
@@ -114,20 +107,12 @@ const getThreeDaysForecasts = async (req, res) => {
 
     return res.status(200).json({ owm: results[0].data, tro: results[1].data });
   } catch (error) {
-<<<<<<< HEAD
-    // Return location error if any.
-=======
->>>>>>> dev
     storageUtils.manageAxiosError(error);
     return res.status(500).json({ result: false, error, locality });
   }
 };
 
 module.exports = {
-<<<<<<< HEAD
-  getForecastByLocality,
-=======
   getCurrentForecasts,
   getThreeDaysForecasts,
->>>>>>> dev
 };
