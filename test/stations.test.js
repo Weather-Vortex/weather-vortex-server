@@ -53,7 +53,6 @@ describe("Test CRUD Operations for Stations", () => {
     mongoConnection
       .then(() => {
         createUser().then((res) => {
-          console.log("Created user:", res);
           testUser = res;
           done();
         });
@@ -71,7 +70,7 @@ describe("Test CRUD Operations for Stations", () => {
       .catch((err) => done(err));
   });
 
-  const base_url = "/station";
+  const base_url = "/stations";
 
   /**
    * Facility method to create a station. Use it whenever is possible instead other things, to reduce test time.
@@ -206,8 +205,6 @@ describe("Test CRUD Operations for Stations", () => {
         .put(`${base_url}/${station.name}`)
         .set("Content-Type", "application/json")
         .set("Accept", "application/json");
-      console.log("Result:", result.body);
-      console.log("Error:", result.error);
 
       expect(result).to.have.status(404);
       expect(result).to.have.a.property("body");

@@ -1,37 +1,22 @@
-/*
-    Web server for Weather Vortex project.
-    Copyright (C) 2021  Tentoni Daniele, Zandoli Silvia
+//npm install express body-parser cookie-parser bcrypt mongoose jsonwebtoken nodemon
+const config={
+    production :{
+        SECRET: process.env.SECRET,
+        DATABASE: process.env.MONGODB_URI,
+        USEREMAIL:process.env.USER_EMAIL,
+        PWD:process.env.PWD,
+        CONFIRM:process.env.CONFIRM
+    },
+    default : {
+        SECRET: 'mysecretkey',
+        DATABASE: 'mongodb://localhost:27017/test',
+        USEREMAIL:'weathervortex2@gmail.com',
+        PWD:'progettoWeb',
+        CONFIRM:'http://localhost:12000/api/confirm/'
+    }
+}
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
-const config = {
-  production: {
-    SECRET: process.env.SECRET,
-    DATABASE: process.env.MONGODB_URI,
-  },
-  test: {
-    SECRET: process.env.SECRET,
-    DATABASE: process.env.MONGODB_URI,
-  },
-  default: {
-    SECRET: "mysecretkey",
-    DATABASE:
-      "mongodb+srv://weather-vortex-dev-user-not-for-tests:YyFwDz6JBTTtYz9L@cluster0.tlvvv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-  },
-};
-
-module.exports.get = function get(env) {
-  return config[env] || config.default;
-};
+exports.get = function get(env){
+    return config[env] || config.default
+}

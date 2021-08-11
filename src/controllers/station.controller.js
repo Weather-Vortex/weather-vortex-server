@@ -133,15 +133,15 @@ const deleteStation = async (req, res) => {
   }
 
   try {
-    const station = await storage.deleteStations(filter);
-    if (station) {
-      return res.status(200).json({ result: true, update });
+    const station = await storage.deleteStations(filter.name);
+    if (station && typeof station === "object" && station.deletedCount > 0) {
+      return res.status(200).json({ result: true, station });
     }
 
     const message = "DELETE request: resource not found";
-    return res.status(404).json({ result: false, update, message });
+    return res.status(404).json({ result: false, station, message });
   } catch (error) {
-    return res.status(500).json({ result: false, error, update });
+    return res.status(500).json({ result: false, error, filter });
   }
 };
 

@@ -52,9 +52,11 @@ const forecastRoutes = require("./routes/forecasts.routes");
 app.use("/forecast", forecastRoutes);
 
 const stationRoutes = require("./routes/station.routes");
-app.use("/station", stationRoutes);
+app.use("/stations", stationRoutes);
 
-app.listen(12000, () => {
+const port = process.env.PORT || 12000;
+
+app.listen(port, () => {
   console.log(
     "Weather Vortex  Copyright (C) 2021  Lirussi Igor, Tentoni Daniele, Zandoli Silvia"
   );

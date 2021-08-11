@@ -18,7 +18,6 @@
 
 "use strict";
 
-const { assert } = require("chai");
 const Station = require("../models/station.model");
 
 /**
@@ -59,7 +58,6 @@ const saveStation = async (name, locality, owner, authKey, url) => {
       },
       url,
     });
-    assert(station instanceof Station);
     const result = await station.save();
     return result;
   } catch (error) {
@@ -99,7 +97,7 @@ const updateStations = async (name, update) => {
  */
 const deleteStations = async (name) => {
   try {
-    const res = await Station.findOneAndDelete({ name }, update);
+    const res = await Station.deleteOne({ name });
     return res;
   } catch (error) {
     const message = "Mongoose delete station error";
