@@ -28,6 +28,7 @@ jobs:
 
       - name: Run tests
         run: |
+          rm -r node_modules/
           npm --version
           npm i
           npm run build --if-present
