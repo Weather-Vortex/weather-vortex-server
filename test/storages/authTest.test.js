@@ -3,7 +3,7 @@ let mongoose = require("mongoose");
 const User = require('../../src/models/user.model');
 let chai = require('chai');
 let chaiHttp = require('chai-http');
-let server = require('../../src/index');
+let { app } = require('../../src/index');
 let should = chai.should();
 chai.use(chaiHttp);
 
@@ -24,7 +24,7 @@ describe('Users', () => {
                 lastName: "Doe",
                 password: "ffffffff"
             }
-            chai.request(server)
+            chai.request(app)
                 .post('/api/register')
                 .send(user)
                 .end((err, res) => {
@@ -42,7 +42,7 @@ describe('Users', () => {
                 email: "doe@email.com",
                 password: "ffffffff"
             }
-            chai.request(server)
+            chai.request(app)
                 .post('/api/register')
                 .send(user)
                 .end((err, res) => {
@@ -62,7 +62,7 @@ describe('Users', () => {
         it('it should update a user given an id', (done) => {
             let user = new User({ firstName: "John", lastName: "Doe", email: "doe@email.com", password: "ffffffff" })
             user.save((err, user) => {
-                chai.request(server)
+                chai.request(app)
                     .put('/api/update/' + user.id)
                     .send({ firstName: "Sissa", lastName: "Doe", email: "john@email.com", password: "ffffffff" })
                     .end((err, res) => {
@@ -80,7 +80,7 @@ describe('Users', () => {
         it('it should delete a user given an id', (done) => {
             let user = new User({ firstName: "Sissa", lastName: "Doe", email: "john@email.com", password: "ffffffff" })
             user.save((err, user) => {
-                chai.request(server)
+                chai.request(app)
                     .delete('/api/deleteuser/' + user.id)
                     .end((err, res) => {
                         res.should.have.status(200);
