@@ -16,9 +16,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+const { configureCors } = require("./config/cors.config");
+const cookieParser = require("cookie-parser");
 const express = require("express");
 const mongoose = require("mongoose");
-const cookieParser = require("cookie-parser");
+
 const db = require("./config/config").get(process.env.NODE_ENV);
 
 //database connection-> ps: l'ho modificato per tenere nascosto il link al database
@@ -33,10 +35,11 @@ mongoConnection
   .catch((err) => console.error(err));
 
 const app = express();
+
+configureCors(app);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.json());
 
 app.get("/", (req, res) => {
   res.status(200).json({ result: "ok" });
