@@ -16,29 +16,36 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/*
-
-# Cors support
-
-Vue.axios on client application block requests from domains others than this. If you wanna run this server and use cors restriction policies, set properly your .env file. If left empty, allow any domain.
-
-*/
+"use strict";
 
 const cors = require("cors");
 
+/*
+## Cors support
+
+Read Origin from env vars or allow anyone.
+
+## Motivations
+
+Client applications block requests from domains others than this. If you wanna run this server using cors restriction policies, set properly your .env file. If left empty, allow any origin to make request to any route.
+
+*/
 const origin = process.env.CLIENT_URL || "*";
 
-const corsOptions = {
+/**
+ * Cors options configured for this project.
+ */
+const options = {
   origin,
-  optionsSuccessStatus: 200,
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
 /**
- * 
+ * Add [Cors Middleware](http://expressjs.com/en/resources/middleware/cors.html) and configure it.
  * @param {Express} app Express application to configure.
  */
-const configureCors = (app) => {
-  app.use(cors(corsOptions));
+const configure = (app) => {
+  app.use(cors(options));
 };
 
-module.exports = 
+module.exports = { configure, options };

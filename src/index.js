@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const { configureCors } = require("./config/cors.config");
+const cors = require("./config/cors.config");
 const cookieParser = require("cookie-parser");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -36,7 +36,7 @@ mongoConnection
 
 const app = express();
 
-configureCors(app);
+cors.configure(app);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
@@ -64,7 +64,10 @@ app.listen(port, () => {
     "Weather Vortex  Copyright (C) 2021  Lirussi Igor, Tentoni Daniele, Zandoli Silvia"
   );
   console.log("This program comes with ABSOLUTELY NO WARRANTY\n");
-  console.log("Application running on http://localhost:12000");
+
+  console.log("Application running on http://localhost:12000\n");
+
+  console.log("Weather Vortex is running those CORS options:", cors.options);
 });
 
 // Export app to use it in unit testing.
