@@ -55,11 +55,21 @@ var userSchema = mongoose.Schema({
       y: Number,
     },
   },
+  stations: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Station",
+    },
+  ],
   // TODO: Add Telegram Id when ready.
 });
-// to signup a user
-//pre functions which will execute when particular functionality has been called
+
 userSchema.pre("save", function (next) {
+  /*
+  To signup a user
+  pre functions which will execute when particular functionality has been called
+  */
+
   var user = this;
 
   if (user.isModified("password")) {
@@ -77,9 +87,22 @@ userSchema.pre("save", function (next) {
   }
 });
 
-//to login
-// comparing the user password when user tries to login
+/***************
+ = Query Helpers (https://mongoosejs.com/docs/guide.html#query-helpers)
+ **************/
+userSchema.methods.getStations = async (name) => {
+  const populated = await this.populate("stations");
+  const stations = populated.stations;
+  const filtered = stations.find({ name });
+  console.log("Filtered:", filtered);
+  return filtered;
+};
+
 userSchema.methods.comparePassword = function (password, cb) {
+  /*
+  To login
+  Comparing the user password when user tries to login
+  */
   bcrypt.compare(password, this.password, function (err, isMatch) {
     if (err) return cb(next);
     cb(null, isMatch);

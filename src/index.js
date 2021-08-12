@@ -23,15 +23,13 @@ const db = require("./config/config").get(process.env.NODE_ENV);
 
 //database connection-> ps: l'ho modificato per tenere nascosto il link al database
 mongoose.Promise = global.Promise;
-mongoose
-  .connect(db.DATABASE, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-  })
-  .then(() => {
-    /* do nothing */
-  })
+const mongoConnection = mongoose.connect(db.DATABASE, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+});
+mongoConnection
+  .then(() => console.log("Database connected"))
   .catch((err) => console.error(err));
 
 const app = express();
@@ -53,6 +51,9 @@ app.use("/api", authRoutes);
 const forecastRoutes = require("./routes/forecasts.routes");
 app.use("/forecast", forecastRoutes);
 
+const stationRoutes = require("./routes/station.routes");
+app.use("/stations", stationRoutes);
+
 const port = process.env.PORT || 12000;
 
 app.listen(port, () => {
@@ -64,4 +65,7 @@ app.listen(port, () => {
 });
 
 // Export app to use it in unit testing.
-module.exports = app;
+module.exports = {
+  app,
+  mongoConnection,
+};

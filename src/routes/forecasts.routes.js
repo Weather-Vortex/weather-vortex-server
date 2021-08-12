@@ -1,6 +1,6 @@
 /*
     Web server for Weather Vortex project.
-    Copyright (C) 2021  Daniele Tentoni
+    Copyright (C) 2021  Tentoni Daniele
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 "use strict";
 
 const express = require("express");
-const forecastController = require("../controllers/forecast.controller");
 const router = express.Router();
+const forecastController = require("../controllers/forecast.controller");
 
 router
   .get("/:locality", forecastController.getThreeDaysForecasts)
