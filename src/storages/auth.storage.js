@@ -1,6 +1,6 @@
 
 const User = require('../models/user.model');
-//libreria bcrypt per le passsword, per generare token random invece serve crypto
+//libreria bcrypt per le password, per generare token random invece serve crypto
 const crypto = require("crypto");
 const nodemailer = require("../config/nodemailer.config")
 
@@ -107,12 +107,13 @@ const login = (req, res) => {
              a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
              end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
                 //res.redirect('./api/login')*/ 
-                //If the user isn't verified, cannot login
-             /*   if (user.isVerified == false) {
-                    return res.status(401).send({
-                        message: "Pending Account. Please Verify Your Email!",
-                    });
-                }*/
+
+                //If the user isn't verified, cannot login-> da descommentare
+                /*   if (user.isVerified == false) {
+                       return res.status(401).send({
+                           message: "Pending Account. Please Verify Your Email!",
+                       });
+                   }*/
 
                 user.comparePassword(req.body.password, (err, isMatch) => {
                     if (!isMatch) return res.status(401).json({ isAuth: false, message: "password doesn't match" });
@@ -155,31 +156,46 @@ const loggedIn = (req, res) => {
     }
 }
 
-const deleteUser=(req,res)=>{
-
+//delete temporanea
+const deleteUser = (req, res) => {
+    User.findOneAndDelete(req.params.id).then(
+        () => {
+            res.status(200).json({
+                message: 'Deleted!'
+            });
+        }
+    ).catch(
+        (error) => {
+            res.status(400).json({
+                error: error
+            });
+        }
+    );
 }
 
-const updateUser=(req,res,next)=>{
-    var user={
-        firstName:req.body.firstName,
+const updateUser = (req, res, next) => {
+    var user = {
+        firstName: req.body.firstName,
         lastName: req.body.lastName,
         email: req.body.email,
         password: req.body.password
-      }
-        User.updateOne(req.params._id,user).then(
-          () => {
+    }
+    User.updateOne(req.params._id, user).then(
+        () => {
             res.status(201).json({
-              message: 'User updated successfully!'
+                message: 'User updated successfully!'
             });
-          }
-        ).catch(
-          (error) => {
+        }
+    ).catch(
+        (error) => {
             res.status(400).json({
-              error: error
+                error: error
             });
-          }
-        );
-     
+        }
+    );
+
+  
+
 }
 
 module.exports = {

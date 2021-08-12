@@ -35,7 +35,7 @@ const getUser = (req, res) => {
     }
   });
 }
-
+/*
 //these options are for the users-> to do in auth storage
 const updateUser = (req, res) => {
   // TODO: An administrator can update info of a user?
@@ -45,7 +45,7 @@ const updateUser = (req, res) => {
 const deleteUser = (req, res) => {
   // TODO: An administrator can delete users?
   console.log("Delete user", req.params.id);
-};
+};*/
 
 //THE ADMINISTRATOR can view the list of users
 //togli la password
@@ -72,9 +72,7 @@ const getAllUsers = (req, res) => {
 
 module.exports = {
   createUser,
-  deleteUser,
   getAllUsers,
   getUser,
   getAllUsers,
-  updateUser,
 };

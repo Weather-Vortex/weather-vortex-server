@@ -25,7 +25,7 @@ router
     .put("/update/:id", authStorage.updateUser)
 
 router
-    .delete("/update/:id", authStorage.deleteUser);
+    .delete("/deleteuser/:id", authStorage.deleteUser);
 
 
 module.exports = router;

@@ -69,26 +69,26 @@ describe('Users', () => {
                         res.should.have.status(201);
                         res.body.should.be.a('object');
                         res.body.should.have.property('message').eql('User updated successfully!');
-                        //res.body.user.should.have.property('email').eql("john@email.com");
+                        
                         done();
                     });
             });
         });
     });
 
-    /* describe('/DELETE/:id user', () => {
-     it('it should delete a user given an id', (done) => {
-     let user = new User({firstName: "John", lastName: "Doe", emailAddress: "doe@email.com", username: "user", password: "pass"})
-     user.save((err, user) => {
-   chai.request(server)
-       .delete('/user/' + user.id)
-       .end((err, res) => {
-     res.should.have.status(200);
-     res.body.should.be.a('object');
-     res.body.should.have.property('message').eql('User deleted');
-         done();
-       });
-     });
-     });
-     });*/
+    describe('/DELETE/:id user', () => {
+        it('it should delete a user given an id', (done) => {
+            let user = new User({ firstName: "Sissa", lastName: "Doe", email: "john@email.com", password: "ffffffff" })
+            user.save((err, user) => {
+                chai.request(server)
+                    .delete('/api/deleteuser/' + user.id)
+                    .end((err, res) => {
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        res.body.should.have.property('message').eql('Deleted!');
+                        done();
+                    });
+            });
+        });
+    });
 });
