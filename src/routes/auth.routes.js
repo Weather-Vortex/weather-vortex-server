@@ -14,7 +14,7 @@ router
     .get('/logout', auth, authStorage.logout);
 
 router
-    //wiew informations about the user logged in
+    //view informations about the user logged in
     .get('/profile', auth, authStorage.loggedIn);
 
 
@@ -22,10 +22,10 @@ router
     .get("/confirm/:confirmationCode", authStorage.verifyUser)
 
 router
-    .put("/update/:id", authStorage.updateUser)
+    .put("/:id", authStorage.updateUser)
 
 router
-    .delete("/deleteuser/:id", authStorage.deleteUser);
+    .delete("/:id", authStorage.deleteUser);
 
 
 module.exports = router;

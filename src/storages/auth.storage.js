@@ -156,7 +156,7 @@ const loggedIn = (req, res) => {
     }
 }
 
-//delete temporanea
+
 const deleteUser = (req, res) => {
     User.findOneAndDelete(req.params.id).then(
         () => {

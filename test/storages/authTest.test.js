@@ -63,7 +63,7 @@ describe('Users', () => {
             let user = new User({ firstName: "John", lastName: "Doe", email: "doe@email.com", password: "ffffffff" })
             user.save((err, user) => {
                 chai.request(app)
-                    .put('/api/update/' + user.id)
+                    .put('/api/' + user.id)
                     .send({ firstName: "Sissa", lastName: "Doe", email: "john@email.com", password: "ffffffff" })
                     .end((err, res) => {
                         res.should.have.status(201);
@@ -81,7 +81,7 @@ describe('Users', () => {
             let user = new User({ firstName: "Sissa", lastName: "Doe", email: "john@email.com", password: "ffffffff" })
             user.save((err, user) => {
                 chai.request(app)
-                    .delete('/api/deleteuser/' + user.id)
+                    .delete('/api/' + user.id)
                     .end((err, res) => {
                         res.should.have.status(200);
                         res.body.should.be.a('object');
