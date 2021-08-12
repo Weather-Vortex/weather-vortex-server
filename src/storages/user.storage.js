@@ -6,7 +6,7 @@ const db = require("../config/config").get(process.env.NODE_ENV);
  * @param {express.Request} req Express request from route.
  * @param {express.Response} res Express response from route.
  */
-//administrator operations
+//ADMINISTRATOR operations
 const createUser = (req, res) => {
   const user = req.body;
   const newUser = new userModel(user);

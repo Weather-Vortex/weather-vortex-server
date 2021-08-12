@@ -1,25 +1,31 @@
 const express = require("express");
 const authStorage = require("../storages/auth.storage");
-const {auth} =require('../middlewares/auth');
+const { auth } = require('../middlewares/auth');
 
 const router = express.Router();
 
 router
-.post('/register',authStorage.register);
+    .post('/register', authStorage.register);
 
 router
-.post('/login',authStorage.login);
+    .post('/login', authStorage.login);
 
 router
-.get('/logout',auth, authStorage.logout);
+    .get('/logout', auth, authStorage.logout);
 
 router
-//wiew informations about the user logged in
-.get('/profile',auth,authStorage.loggedIn);
+    //wiew informations about the user logged in
+    .get('/profile', auth, authStorage.loggedIn);
 
 
 router
-.get("/confirm/:confirmationCode", authStorage.verifyUser)
+    .get("/confirm/:confirmationCode", authStorage.verifyUser)
+
+router
+    .put("/update/:id", authStorage.updateUser)
+
+router
+    .delete("/update/:id", authStorage.deleteUser);
 
 
 module.exports = router;

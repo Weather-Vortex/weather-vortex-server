@@ -40,7 +40,7 @@ const register = (req, res) => {
     newuser.save((err, doc) => {
         if (err) {
             console.log(err);
-            return res.status(500).json({ success: false });
+            return res.status(500).json({ success: false, message: "Error registration" });
         }
         res.status(200).json({
             succes: true,
@@ -108,11 +108,11 @@ const login = (req, res) => {
              end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
                 //res.redirect('./api/login')*/ 
                 //If the user isn't verified, cannot login
-                if (user.isVerified == false) {
+             /*   if (user.isVerified == false) {
                     return res.status(401).send({
                         message: "Pending Account. Please Verify Your Email!",
                     });
-                }
+                }*/
 
                 user.comparePassword(req.body.password, (err, isMatch) => {
                     if (!isMatch) return res.status(401).json({ isAuth: false, message: "password doesn't match" });
@@ -155,10 +155,39 @@ const loggedIn = (req, res) => {
     }
 }
 
+const deleteUser=(req,res)=>{
+
+}
+
+const updateUser=(req,res,next)=>{
+    var user={
+        firstName:req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: req.body.password
+      }
+        User.updateOne(req.params._id,user).then(
+          () => {
+            res.status(201).json({
+              message: 'User updated successfully!'
+            });
+          }
+        ).catch(
+          (error) => {
+            res.status(400).json({
+              error: error
+            });
+          }
+        );
+     
+}
+
 module.exports = {
     register,
     login,
     logout,
     loggedIn,
-    verifyUser
+    verifyUser,
+    deleteUser,
+    updateUser
 }
