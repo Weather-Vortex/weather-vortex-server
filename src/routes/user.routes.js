@@ -11,9 +11,8 @@ router.use(function timeLog(req, res, next) {
 
 router
   .get("/:id", userStorage.getUser)
-  .put("/:id", userStorage.updateUser)
-  .delete("/:id", userStorage.deleteUser);
 
-router.get("/", userStorage.getAllUsers).post("/", userStorage.createUser);
+
+router.get("/", userStorage.getAllUsers)
 
 module.exports = router;
