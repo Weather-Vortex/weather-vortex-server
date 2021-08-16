@@ -16,24 +16,27 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+const cors = require("./config/cors.config");
+const cookieParser = require("cookie-parser");
 const express = require("express");
 const mongoose = require("mongoose");
-const cookieParser = require("cookie-parser");
+
+const db = require("./config/config").get(process.env.NODE_ENV);
 
 //database connection-> ps: l'ho modificato per tenere nascosto il link al database
 mongoose.Promise = global.Promise;
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-  })
-  .then(() => {
-    /* do nothing */
-  })
+const mongoConnection = mongoose.connect(db.DATABASE, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+});
+mongoConnection
+  .then(() => console.log("Database connected"))
   .catch((err) => console.error(err));
 
 const app = express();
+
+cors.configure(app);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
@@ -51,6 +54,9 @@ app.use("/api", authRoutes);
 const forecastRoutes = require("./routes/forecasts.routes");
 app.use("/forecast", forecastRoutes);
 
+const stationRoutes = require("./routes/station.routes");
+app.use("/stations", stationRoutes);
+
 const port = process.env.PORT || 12000;
 
 app.listen(port, () => {
@@ -58,8 +64,14 @@ app.listen(port, () => {
     "Weather Vortex  Copyright (C) 2021  Lirussi Igor, Tentoni Daniele, Zandoli Silvia"
   );
   console.log("This program comes with ABSOLUTELY NO WARRANTY\n");
-  console.log("Application running on http://localhost:12000");
+
+  console.log("Application running on http://localhost:12000\n");
+
+  console.log("Weather Vortex is running those CORS options:", cors.options);
 });
 
 // Export app to use it in unit testing.
-module.exports = app;
+module.exports = {
+  app,
+  mongoConnection,
+};

@@ -45,37 +45,44 @@ const getLocationDataByCity = async (city_name) => {
 
 /**
  * Fetch the location data from a remote source and cache them.
- * @param {String} locationName Name of the Location.
+ * @param {String} localityName Name of the Location.
  * @returns Location data.
  */
-const fetchLocationByName = async (locationName) => {
+const fetchLocationByName = async (localityName) => {
+  let result;
   try {
     // After ask to Troposphere service.
-    const result = await getRemoteLocationByName(locationName);
-    // Then add to local cache.
+    result = await getRemoteLocationByName(localityName);
+  } catch (error) {
+    // At this time, don't resolve error here, but throw it up.
+    throw error;
+  }
+  if (result) {
+    // If exists, add to local cache.
     const added = await addCachedLocation(
       result.name,
       result.latitude,
       result.longitude
     );
-
     // Then return the cached result.
     return added.added;
-  } catch (error) {
-    // At this time, don't resolve error here, but throw it up.
-    throw error;
   }
+  throw new Error({ localityName, message: "Location not found" });
 };
 
 /**
  * Find a Location given its name.
- * @param {String} locationName Name of the Location.
+ * @param {String} localityName Name of the Location.
  * @returns Cached location if present.
  */
-const getCachedLocationByName = async (locationName) => {
+const getCachedLocationByName = async (localityName) => {
   try {
-    const found = await Location.findOne({ name: locationName }).exec();
-    return { result: found !== null, locationName, location: found };
+    const found = await Location.findOne({ name: localityName }).exec();
+    return {
+      result: found !== null,
+      locationName: localityName,
+      location: found,
+    };
   } catch (error) {
     return { result: false, error: err, message: "Location not found" };
   }
@@ -108,29 +115,21 @@ const addCachedLocation = async (name, latitude, longitude) => {
 };
 
 /**
- * Find a Location from Troposphere service.
- * @param {String} locationName Name of the Location.
+ * Find a Locality from Troposphere service.
+ * @param {String} locality Name of the Locality.
  * @returns Location result from API call.
  */
-const getRemoteLocationByName = async (locationName) => {
-  const url = `${troposphere_base_url}/place/name/${locationName}?token=${troposphere_api_key}`;
-  let result;
+const getRemoteLocationByName = async (locality) => {
+  const url = `${troposphere_base_url}/place/name/${locality}?token=${troposphere_api_key}`;
   try {
-    result = { data } = await axios.get(url);
+    const { data } = await axios.get(url);
+    // If locality exists, return the first result retrieved. If not, return undefined anywhere.
+    return data.data[0];
   } catch (error) {
     utils.manageAxiosError(error);
     const message = "Axios error";
     throw new Error(message);
   }
-
-  // Return data if are correct.
-  if (checkResponse(data)) {
-    return data.data[0];
-  }
-
-  const message = "No location found";
-  // TODO: Generate error to throw with this.
-  throw new Error(message);
 };
 
 /**
@@ -144,8 +143,5 @@ const checkResponse = (data) =>
   data.data.length !== 0;
 
 module.exports = {
-  fetchLocationByName,
   getLocationDataByCity,
-  getRemoteLocationByName,
-  getCachedLocationByName,
 };

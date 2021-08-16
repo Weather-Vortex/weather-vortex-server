@@ -2,12 +2,13 @@
 
 Server for Weather Vortex Project.
 
-** Table of contents **
+**Table of contents**
 
 - [How to](#how-to)
   - [Build](#build)
   - [Run](#run)
   - [Test](#test)
+- [Structure](#structure)
 
 ## How to
 
@@ -82,3 +83,33 @@ CONTAINER ID   IMAGE                                    CREATED         STATUS  
 2fffd3d83939   mongo                                    4 seconds ago   Up 3 seconds    0.0.0.0:27017->27017/tcp, :::27017->27017/tcp
 64bbb7ec15d7   daniele.tentoni2/weather-vortex-server   4 minutes ago   Up 4 minutes    15600/tcp, 0.0.0.0:49161->12000/tcp, :::49161->12000/tcp
 ```
+
+## Structure
+
+The structure of the project is something like this:
+
+```
+-> /src
+   |
+   +-> /controllers: where we respond to user requests
+   |
+   +-> /models: where we define our data models
+   |
+   +-> /routes: where we define out rest api routes for user requests
+   |
+   +-> /storages: where we define all operations to do on our data
+   |
+   +-> /index.js: where we put all together
+
+-> /test: where we define unit and functional tests
+```
+
+You can read a generic request flow as:
+
+```
+-> index.js -> route -> controller -> storage -> model -+
+                                                        |
+                           user <- controller storage <-+
+```
+
+In the controller, the instruction `res.status().json({})` send the response to the user.
