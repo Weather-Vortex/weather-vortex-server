@@ -16,40 +16,29 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const axios = require("axios");
-const utils = require("./storage.utils");
-const troposphere_base_url = "https://api.troposphere.io";
-const troposphere_api_key =
-  "02a505c1a967cd777252ff263bdf78c9fb80de6d9703bae9f3"; // TODO: Read from env
+"use strict";
 
-/**
- * @deprecated Since 0.2, use request method instead.
- * @param {*} latitude
- * @param {*} longitude
- * @returns
- */
-const get7DaysForecastByLocation = async (latitude, longitude) => {
-  const url = `${troposphere_base_url}/forecast/${latitude},${longitude}?token=${troposphere_api_key}`;
-  try {
-    const { data } = await axios.get(url);
-    return data;
-  } catch (error) {
-    utils.manageAxiosError(error);
-    return undefined;
+const { WeatherProvider } = require("./weatherProvider");
+
+class TroposphereProvider extends WeatherProvider {
+  constructor(base_url, api_key) {
+    super(base_url, `?token=${api_key}`);
+    this.name = "Troposphere Provider";
   }
-};
+}
+
+const troposphere_base_url = "https://api.troposphere.io";
+const troposphere_api_key = process.env.TROPOSPHERE_API_KEY;
+const provider = new TroposphereProvider(
+  troposphere_base_url,
+  troposphere_api_key
+);
 
 const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
-  const url = `${troposphere_base_url}/forecast/${latitude},${longitude}?token=${troposphere_api_key}`;
-  try {
-    return axios.get(url);
-  } catch (error) {
-    utils.manageAxiosError(error);
-    return undefined;
-  }
+  const resource = `forecast/${latitude},${longitude}`;
+  return provider.makeRequest(resource);
 };
 
 module.exports = {
-  get7DaysForecastByLocation,
   getSevenDaysForecastByLocationRequest,
 };

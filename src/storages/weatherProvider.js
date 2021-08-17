@@ -21,43 +21,68 @@ const utils = require("./storage.utils");
 
 /**
  * Base class for any Weather Provider.
- * @param {String} base_url Base url of the service.
- * @param {String} api_key Api Key of the service.
  */
 class WeatherProvider {
-  constructor(base_url, api_key) {
+  /**
+   * Initialize the Weather Provider with some common data.
+   * @param {String} base_url Base url of the service.
+   * @param {String} api_key_part Api Key Url Part of the service.
+   */
+  constructor(base_url, api_key_part) {
     this.name = "Base Weather Provider";
     this.base_url = base_url;
-    this.api_key = api_key;
+    this.api_key_part = api_key_part;
   }
 
   /**
-   * Get the four day forecast from the current provider.
-   * @deprecated Since version 0.2, use request method instead for Promise use.
-   * @param {String} url Well formed url.
-   * @returns Forecast result.
+   * Compose an url with a resource properly.
+   * @param {String} resource Resource to compose.
+   * @returns Url composed.
    */
-  fourDayForecast = async (url) => {
-    try {
-      const { data } = await this.fourDayForecastRequest(url);
-      return data;
-    } catch (error) {
-      console.error(
-        "Error in axios call for %s:\nHost:%s",
-        this.name,
-        error.host
+  formatUrl = (resource) => {
+    if (typeof resource !== "string") {
+      throw new TypeError(
+        "Weather Provider: param resource have to be a string."
       );
-      utils.manageAxiosError(error);
-      return undefined;
     }
+
+    let tmp;
+    if (this.base_url.endsWith("/") && resource.startsWith("/")) {
+      tmp = this.base_url.substr(0, this.base_url.length - 1).concat(resource);
+    } else if (
+      (this.base_url.endsWith("/") && !resource.startsWith("/")) ||
+      (!this.base_url.endsWith("/") && resource.startsWith("/"))
+    ) {
+      tmp = this.base_url.concat(resource);
+    } else if (!this.base_url.endsWith("/") && !resource.startsWith("/")) {
+      tmp = `${this.base_url}/${resource}`;
+    }
+
+    return tmp.concat(this.api_key_part);
   };
 
   /**
-   * Get a resource from an url with axios.
-   * @param {String} url Url to get with axios.
+   * Get a resource from an url with Axios.
+   * @param {String} url Url to get with Axios.
    * @returns {Promise<any>} Axios promise.
    */
-  fourDayForecastRequest = (url) => axios.get(url);
+  makeRequest = (resource) => {
+    // Format url. Let error flow up to inherited provider.
+    const data_url = this.formatUrl(resource);
+
+    try {
+      // Return the real Promise from Axios.
+      return axios.get(data_url);
+    } catch (error) {
+      utils.manageAxiosError(error);
+      const err = new Error();
+      err.message = "Error in axios call";
+      err.internalError = error;
+      err.url = url;
+      // Return a rejected Promise.
+      throw err;
+    }
+  };
 }
 
 module.exports = {

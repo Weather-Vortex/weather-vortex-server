@@ -1,6 +1,6 @@
 /*
     Web server for Weather Vortex project.
-    Copyright (C) 2021  Daniele Tentoni
+    Copyright (C) 2021  Tentoni Daniele
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,12 +19,17 @@
 const request = require("supertest");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
-const app = require("../src/index");
+const { app } = require("../src/index");
+const locationModel = require("../src/models/location.model");
 
 chai.use(chaiHttp);
 const expect = chai.expect;
 
 describe("GET forecasts for Cesena", () => {
+  beforeEach(async () => {
+    await locationModel.deleteMany({});
+  });
+
   const base_url = "/forecast";
   it("responds with unsuccessful result", async () => {
     const result = await request(app)
@@ -42,9 +47,10 @@ describe("GET forecasts for Cesena", () => {
       .set("content-type", "application/json")
       .set("Accept", "application/json");
 
-    expect(result).have.status(200);
+    expect(result).to.have.status(200);
     expect(result).to.be.an("object", "We expect that result is an object");
     expect(result.body).to.have.a.property("owm");
     expect(result.body).to.have.a.property("tro");
-  }).timeout(5000); // This test need more time.
+  }, 2) // Retry at least one more time after fail
+    .timeout(10000); // This test need more time.
 });

@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+const cors = require("./config/cors.config");
+const cookieParser = require("cookie-parser");
 const express = require("express");
 const app = express();
 const http = require("http");
@@ -26,19 +28,23 @@ const io = new Server(server);
 // Database
 const mongoose = require("mongoose");
 
-mongoose
-  .connect("mongodb://localhost:27017/test", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then((res) => {
-    console.log("Mongodb connection result:", res);
-  })
-  .catch((error) => {
-    console.error("Mongodb connection error:", error);
-  });
+const db = require("./config/config").get(process.env.NODE_ENV);
 
+//database connection-> ps: l'ho modificato per tenere nascosto il link al database
+mongoose.Promise = global.Promise;
+const mongoConnection = mongoose.connect(db.DATABASE, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+});
+mongoConnection
+  .then(() => console.log("Database connected"))
+  .catch((err) => console.error(err));
+
+cors.configure(app);
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.status(200).json({ result: "ok" });
@@ -47,16 +53,30 @@ app.get("/", (req, res) => {
 const userRoutes = require("./routes/user.routes");
 app.use("/users", userRoutes);
 
+const authRoutes = require("./routes/auth.routes");
+app.use("/api", authRoutes);
+
 const { configRouter } = require("./routes/forecasts.routes");
 app.use("/forecast", configRouter(io));
 
-server.listen(12000, () => {
+const stationRoutes = require("./routes/station.routes");
+app.use("/stations", stationRoutes);
+
+const port = process.env.PORT || 12000;
+
+app.listen(port, () => {
   console.log(
     "Weather Vortex  Copyright (C) 2021  Lirussi Igor, Tentoni Daniele, Zandoli Silvia"
   );
   console.log("This program comes with ABSOLUTELY NO WARRANTY\n");
-  console.log("Application running on http://localhost:12000");
+
+  console.log("Application running on http://localhost:12000\n");
+
+  console.log("Weather Vortex is running those CORS options:", cors.options);
 });
 
 // Export app to use it in unit testing.
-module.exports = app;
+module.exports = {
+  app,
+  mongoConnection,
+};
