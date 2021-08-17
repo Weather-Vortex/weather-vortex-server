@@ -1,4 +1,4 @@
-# weather-vortex-server
+# Weather Vortex Server
 
 Server for Weather Vortex Project.
 
@@ -55,7 +55,7 @@ docker logs <container id>
 
 In your local environment, you can test with `npm run test` command. You can run a code coverage check wih `npm run test-cov` command. Produce an html report with `npm run test-cov:html`.
 
-Navigate in your browser to `localhost:12000` to see the server ok page, or in your shell use those commands:
+Navigate in your browser to `localhost:12000` to see the server ok page, or in your shell using those commands:
 
 ```sh
 $ curl -i localhost:49161
