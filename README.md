@@ -84,6 +84,25 @@ CONTAINER ID   IMAGE                                    CREATED         STATUS  
 64bbb7ec15d7   daniele.tentoni2/weather-vortex-server   4 minutes ago   Up 4 minutes    15600/tcp, 0.0.0.0:49161->12000/tcp, :::49161->12000/tcp
 ```
 
+---
+
+If you run into this test failure message:
+
+```
+GET forecasts for Cesena
+    1) "before each" hook for "responds with unsuccessful result"
+
+...
+
+1) GET forecasts for Cesena
+       "before each" hook for "responds with unsuccessful result":
+     Error: Timeout of 3000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (/Users/d.tentoni/Documents/uni/weather-vortex-server/test/forecasts.test.js)
+      at listOnTimeout (node:internal/timers:557:17)
+      at processTimers (node:internal/timers:500:7)
+```
+
+It's very likely you don't have configured mongodb as needed. Read some rows before this paragraph how to configure Mongodb in your local environment or use it in a container.
+
 ## Structure
 
 The structure of the project is something like this:
