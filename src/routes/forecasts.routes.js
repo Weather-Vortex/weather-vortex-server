@@ -38,10 +38,21 @@ const configRouter = (app, io) => {
       });
     }
     console.log("User connected:", socket.id);
+    io.fetchSockets().then((sockets) =>
+      console.log(
+        "Current connected:",
+        sockets.map((s) => s.id)
+      )
+    );
 
     socket.on("current", (arg) => {
       console.log("Received a current forecast request with arg:", arg);
       controller.getCurrentForecastsWithIo(socket, arg.locality);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected:", socket.id);
+      socket.disconnect();
     });
   });
 

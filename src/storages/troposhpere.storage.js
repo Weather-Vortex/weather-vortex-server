@@ -36,7 +36,34 @@ const provider = new TroposphereProvider(
 
 const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
   const resource = `forecast/${latitude},${longitude}`;
-  return provider.makeRequest(resource);
+  return provider.makeRequest(resource).then((result) => {
+    const current = result.data.data.current;
+    if (current.type === "partly-cloudy") {
+      current.weatherIcon = "mdi-weather-partly-cloudy";
+      current.weatherDescription = "Partly Cloudy";
+    }
+    /*
+    Missing:
+    airQualityIndex: 2.02
+    time: "2021-08-19T17:00:00+02:00"
+    uvIndex: 2.12
+    windBearing: -99.12
+    windGustsSpeed: 10.61
+    windSpeed: 5.36
+    */
+    return {
+      temp: current.temperature,
+      tempMin: current.temperatureMin,
+      tempMax: current.temperatureMax,
+      pressure: current.preasure,
+      humidity: current.relHumidity,
+      weatherIcon: current.weatherIcon,
+      weatherDescription: current.weatherDescription,
+      clouds: current.cloudCover,
+      rain: current.rain,
+      snow: current.snow,
+    };
+  });
 };
 
 module.exports = {

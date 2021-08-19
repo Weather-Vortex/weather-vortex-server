@@ -55,7 +55,24 @@ const fourDayForecastByLocationRequest = (latitude, longitude) => {
 
 const currentWeatherForecastByLocationRequest = (latitude, longitude) => {
   const resource = `weather?lat=${latitude}&lon=${longitude}`;
-  return provider.makeRequest(resource);
+  return provider.makeRequest(resource).then((result) => {
+    if (result.weather.id === 800) {
+      result.weatherIcon = "mdi-weather-sunny";
+      result.weather.description = "Clear Sky";
+    }
+    return {
+      temp: result.main.temp,
+      tempMin: result.main.temp_min,
+      tempMax: result.main.temp_max,
+      pressure: result.main.pressure,
+      humidity: result.main.humidity,
+      weatherIcon: result.weatherIcon,
+      weatherDescription: result.weather.description,
+      clouds: result.clouds.all,
+      rain: result.rain,
+      snow: result.snow,
+    };
+  });
 };
 
 module.exports = {

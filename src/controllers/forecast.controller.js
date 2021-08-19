@@ -33,8 +33,9 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
     const locations = await locationStorage.getLocationDataByCity(locality);
     location = getLocation(locations);
   } catch (error) {
-    console.log("Emitted error %0", error);
+    console.log("Emitted error %o", error);
     socket.emit("forecast_error", { error, message: error.message, locality });
+    return;
   }
 
   try {
@@ -67,10 +68,11 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
       .then((result) => {
         socket.emit("result", {
           provider: "Troposphere",
-          data: result.data,
+          data: result,
         });
       })
       .catch((error) => {
+        console.log(error);
         socket.emit("forecast_error", { provider: "Troposphere" }, { error });
       });
 

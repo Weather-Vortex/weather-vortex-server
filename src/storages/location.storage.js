@@ -133,6 +133,7 @@ const addCachedLocation = async (name, latitude, longitude) => {
  */
 const getRemoteLocationByName = async (locality) => {
   const url = `${troposphere_base_url}/place/name/${locality}?token=${troposphere_api_key}`;
+  console.log("Required url:", url);
   try {
     const { data } = await axios.get(url);
     // If locality exists, return the first result retrieved. If not, return undefined anywhere.
