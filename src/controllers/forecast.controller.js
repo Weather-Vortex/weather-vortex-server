@@ -45,14 +45,12 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
         location.position.longitude
       )
       .then((result) => {
-        console.log("OWM RESULT:", result.data);
         socket.emit("result", {
           provider: "Open Weather Map",
           data: result.data,
         });
       })
       .catch((error) => {
-        console.log("OWM:", error);
         socket.emit(
           "forecast_error",
           { provider: "OpenWeatherMap" },
@@ -67,14 +65,12 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
         location.position.longitude
       )
       .then((result) => {
-        console.log("TROPO RESULT:", result.data);
         socket.emit("result", {
           provider: "Troposphere",
           data: result.data,
         });
       })
       .catch((error) => {
-        console.log("Tropo:", error);
         socket.emit("forecast_error", { provider: "Troposphere" }, { error });
       });
 
