@@ -16,21 +16,24 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const cors = require("./config/cors.config");
-const cookieParser = require("cookie-parser");
+"use strict";
+
+// Express Application initialization.
 const express = require("express");
 const app = express();
+
+// Http Server initialization, attaching him Express Application.
 const http = require("http");
 const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
 
-// Database
-const mongoose = require("mongoose");
+// Socket.IO initialization, attaching him Http Server.
+const { Server } = require("socket.io");
+const io = new Server(server, { cors: { origin: "*" } }); // TODO: Change this.
 
 const db = require("./config/config").get(process.env.NODE_ENV);
 
-//database connection-> ps: l'ho modificato per tenere nascosto il link al database
+// Database connection-> ps: l'ho modificato per tenere nascosto il link al database
+const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
 const mongoConnection = mongoose.connect(db.DATABASE, {
   useNewUrlParser: true,
@@ -41,9 +44,14 @@ mongoConnection
   .then(() => console.log("Database connected"))
   .catch((err) => console.error(err));
 
+// Cors policies initialization.
+const cors = require("./config/cors.config");
 cors.configure(app);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+// Configure Cookie parsing from clients.
+const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
@@ -57,14 +65,15 @@ const authRoutes = require("./routes/auth.routes");
 app.use("/api", authRoutes);
 
 const { configRouter } = require("./routes/forecasts.routes");
-app.use("/forecast", configRouter(io));
+configRouter(app, io);
 
 const stationRoutes = require("./routes/station.routes");
 app.use("/stations", stationRoutes);
 
 const port = process.env.PORT || 12000;
 
-app.listen(port, () => {
+// Since Socket.IO introduction, now we have to listen to server changes, since Express Application would have listened the wrong source instead of the shared instance from http server module from Node.
+server.listen(port, () => {
   console.log(
     "Weather Vortex  Copyright (C) 2021  Lirussi Igor, Tentoni Daniele, Zandoli Silvia"
   );

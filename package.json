@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "start:local": "node -r dotenv/config src/index.js",
+    "start:local": "node --trace-warnings -r dotenv/config src/index.js",
     "test": "mocha --recursive -r dotenv/config --timeout 3000 --exit",
     "test-cov": "nyc --reporter=text npm run test",
     "test-cov:html": "nyc --reporter=html npm run test"

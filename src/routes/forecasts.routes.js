@@ -22,33 +22,37 @@ const express = require("express");
 
 /**
  * Initialize a new Router for forecasts requests. Give a Socket.io Server to use real time notifications.
+ * @param {express.Application} app Express Application to link router with.
  * @param {*} io Socket.io server instance.
  * @returns Forecast router configured with io sockets.
  */
-const configRouter = (io) => {
-  // TODO: Move connection to proper controller.
+const configRouter = (app, io) => {
+  const controller = require("../controllers/forecast.controller");
+
   io.on("connection", (socket) => {
-    // Connection event.
-    // TODO: Send to the user his identifier that have to be used with forecast rest api call and for other direct notifications.
-    console.log("a user connected with data:", socket);
-    // TODO: This socket has to get passed as argument to forecast call to send data back to user when ready.
-    socket.on("disconnect", () => {
-      // Client disconnect event.
-      console.log("user disconnected");
+    const users = [];
+    for (let [id, socket] of io.of("/").sockets) {
+      users.push({
+        userID: id,
+        locality: socket.locality,
+      });
+    }
+    console.log("User connected:", socket.id);
+
+    socket.on("current", (arg) => {
+      console.log("Received a current forecast request with arg:", arg);
+      controller.getCurrentForecastsWithIo(socket, arg.locality);
     });
-    // TODO: Try to add unit tests with https://socket.io/docs/v4/testing/#Example-with-mocha
   });
 
   const router = express.Router();
-  const { ForecastController } = require("../controllers/forecast.controller");
-  const controller = new ForecastController(io);
 
   router
     .get("/:locality", controller.getThreeDaysForecasts)
     .get("/:locality/current", controller.getCurrentForecasts)
     .get("/:locality/threedays", controller.getThreeDaysForecasts);
 
-  return router;
+  app.use("/forecast", router);
 };
 
 module.exports = { configRouter };
