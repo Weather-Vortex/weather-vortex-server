@@ -38,12 +38,12 @@ const getLocationDataByCity = async (locality) => {
   try {
     // First search in local cache.
     let cached = await getCachedLocationByName(locality);
-    if (cached.result === false) {
-      // Then in remote service.
-      cached = await fetchLocationByName(locality);
+    if (cached !== null) {
+      return cached;
     }
 
-    return cached;
+    // Then in remote service.
+    return await fetchLocationByName(locality);
   } catch (error) {
     // At this time, don't resolve error here, but throw it up.
     throw error;
@@ -90,15 +90,22 @@ const fetchLocationByName = async (localityName) => {
 const getCachedLocationByName = async (localityName) => {
   try {
     const found = await Location.findOne({ name: localityName }).exec();
-    return {
-      result: found !== null,
-      locationName: localityName,
-      location: found,
-    };
-  } catch (error) {
-    return { result: false, error: error, message: "Location not found" };
+    return found;
+  } catch (internalError) {
+    const error = new CacheError("Cached location not found.");
+    error.internalError = internalError;
+    error.locality = localityName;
+    throw error;
   }
 };
+
+class CacheError extends Error {
+  constructor(locality, message) {
+    super(message);
+    this.locality = locality;
+    this.name = "Cache Error";
+  }
+}
 
 /**
  * Add a Location to the collection of cached locations.
@@ -133,7 +140,6 @@ const addCachedLocation = async (name, latitude, longitude) => {
  */
 const getRemoteLocationByName = async (locality) => {
   const url = `${troposphere_base_url}/place/name/${locality}?token=${troposphere_api_key}`;
-  console.log("Required url:", url);
   try {
     const { data } = await axios.get(url);
     // If locality exists, return the first result retrieved. If not, return undefined anywhere.

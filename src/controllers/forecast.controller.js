@@ -41,17 +41,18 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
   try {
     // First pending request.
     openWeatherStorage
-      .fourDayForecastByLocationRequest(
+      .currentWeatherForecastByLocationRequest(
         location.position.latitude,
         location.position.longitude
       )
       .then((result) => {
         socket.emit("result", {
           provider: "Open Weather Map",
-          data: result.data,
+          data: result,
         });
       })
       .catch((error) => {
+        console.log("Open Weather Map socket error:", error);
         socket.emit(
           "forecast_error",
           { provider: "OpenWeatherMap" },
@@ -61,7 +62,7 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
 
     // Second pending request.
     troposphereStorage
-      .getSevenDaysForecastByLocationRequest(
+      .getCurrentForecastsByLocation(
         location.position.latitude,
         location.position.longitude
       )
@@ -72,7 +73,7 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
         });
       })
       .catch((error) => {
-        console.log(error);
+        console.log("Troposphere socket error:", error);
         socket.emit("forecast_error", { provider: "Troposphere" }, { error });
       });
 
@@ -145,7 +146,7 @@ const getThreeDaysForecasts = async (req, res) => {
       troposphereForecast,
     ]);
 
-    return res.status(200).json({ owm: results[0].data, tro: results[1].data });
+    return res.status(200).json({ owm: results[0].data, tro: results[1] });
   } catch (error) {
     storageUtils.manageAxiosError(error);
     return res.status(500).json({ result: false, error, locality });
@@ -158,8 +159,12 @@ const getThreeDaysForecasts = async (req, res) => {
  * @returns The selected location.
  */
 const getLocation = (location) => {
-  if (typeof location !== "object" || !location.result) {
-    const error = new LocationError("No locality found with given name");
+  if (typeof location !== "object" || location === null) {
+    const error = new LocationError(
+      location,
+      "No locality found with given name"
+    );
+    error.message;
     error.statusCode = 404;
     throw error;
   }
@@ -169,25 +174,27 @@ const getLocation = (location) => {
   https://api.troposphere.io/place/name/Cesenatico?token=<add_token> and https://api.troposphere.io/place/name/Spiaggia,Cesenatico?token=<add_token>
   */
 
-  if (typeof location.location.position.latitude === "undefined") {
+  if (typeof location.position.latitude === "undefined") {
     // Throw location missing error if empty.
     const error = new LocationError("No latitude for the location object");
     error.statusCode = 500;
     throw error;
   }
-  if (typeof location.location.position.longitude === "undefined") {
+  if (typeof location.position.longitude === "undefined") {
     // Throw location missing error if empty.
     const error = new LocationError("No longitude for the location object");
     error.statusCode = 500;
     throw error;
   }
 
-  return location.location;
+  return location;
 };
 
 class LocationError extends Error {
-  constructor(message) {
+  constructor(location, message) {
     super(message);
+    this.location = location;
+    this.name = "Location Error";
   }
 }
 
