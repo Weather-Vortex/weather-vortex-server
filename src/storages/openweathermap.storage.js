@@ -61,7 +61,7 @@ const currentWeatherForecastByLocationRequest = (latitude, longitude) => {
     if (typeof current.weather === "object" && current.weather.length > 0) {
       if (current.weather[0].id === 800) {
         current.weatherIcon = "mdi-weather-sunny";
-        current.weather.description = "Clear Sky";
+        current.weatherDescription = "Clear Sky";
       }
     }
     return {
@@ -71,7 +71,7 @@ const currentWeatherForecastByLocationRequest = (latitude, longitude) => {
       pressure: current.main.pressure,
       humidity: current.main.humidity,
       weatherIcon: current.weatherIcon,
-      weatherDescription: current.weather.description,
+      weatherDescription: current.weatherDescription,
       clouds: current.clouds.all,
       rain: current.rain,
       snow: current.snow,

@@ -55,6 +55,9 @@ const mapFields = (forecast) => {
   if (forecast.type === "partly-cloudy") {
     forecast.weatherIcon = "mdi-weather-partly-cloudy";
     forecast.weatherDescription = "Partly Cloudy";
+  } else if (forecast.type === "clear") {
+    forecast.weatherIcon = "mdi-weather-sunny";
+    forecast.weatherDescription = "Clear Sky";
   }
   /*
     Missing:
