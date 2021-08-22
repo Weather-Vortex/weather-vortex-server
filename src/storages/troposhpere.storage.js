@@ -84,7 +84,7 @@ const mapFields = (forecast) => {
  * @param {Number} latitude Latitude.
  * @param {Number} longitude Longitude.
  */
-const getCurrentForecastsByLocation = (latitute, longitude) =>
+const getCurrentForecastsByLocation = (latitude, longitude) =>
   getRequest(latitude, longitude).then((result) => {
     const current = result.data.data.current;
     return mapFields(current);
