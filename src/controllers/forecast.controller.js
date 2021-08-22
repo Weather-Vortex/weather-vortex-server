@@ -107,7 +107,13 @@ const getCurrentForecasts = async (req, res) => {
   } catch (error) {
     // Return location error if any.
     storageUtils.manageAxiosError(error);
-    const statusCode = error.statusCode ?? 500;
+    // On Node 14.x we can use const statusCode = error.statusCode ?? 500;
+    let statusCode;
+    if (error == null || error.statusCode == null) {
+      statusCode = 500;
+    } else {
+      statusCode = error.statusCode;
+    }
     return res.status(statusCode).json({ result: false, error, locality });
   }
 };
