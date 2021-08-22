@@ -32,8 +32,51 @@ const base_url = "https://api.openweathermap.org/data/2.5/";
 const owm_api_key = process.env.OPEN_WEATHER_MAP_API_KEY;
 const provider = new OpenWeatherMapProvider(base_url, owm_api_key);
 
+const { openWeatherMap, vortex } = require("./data/conditionCodes");
+
+const mapFields = (forecast) => {
+  if (typeof forecast.weather === "object" && forecast.weather.length > 0) {
+    const weather = forecast.weather[0];
+    const owm = openWeatherMap.find((f) => f.id === weather.id);
+    if (owm == null) {
+      throw new Error(`Didn't found ${weather.id} in owm codes.`);
+    }
+    const elem = vortex.find((f) => f.id === owm.vortex);
+    if (vortex == null) {
+      throw new Error(`Didn't found ${owm.vortex} in Vortex codes.`);
+    }
+    forecast.weatherIcon = elem.icon;
+    forecast.weatherDescription = elem.description;
+  }
+
+  // In Node 14.x we can write as `forecast.rain?.3h ?? 0`.
+  if (typeof forecast.rain === "object") {
+    forecast.rain = forecast.rain["3h"];
+  } else {
+    forecast.rain = 0;
+  }
+
+  return {
+    temp: forecast.main.temp,
+    tempMin: forecast.main.temp_min,
+    tempMax: forecast.main.temp_max,
+    pressure: forecast.main.pressure,
+    humidity: forecast.main.humidity,
+    weatherIcon: forecast.weatherIcon,
+    weatherDescription: forecast.weatherDescription,
+    clouds: forecast.clouds.all,
+    /*
+      Rain
+      * 3h: Rain volume for last 3 hours, mm
+    */
+    rain: forecast.rain,
+    snow: forecast.snow,
+  };
+};
+
 /**
  * Retrieve weather forecasts for given city.
+ * @deprecated Since 0.4.0, this method will be deprecated for moreDaysForecastByLocation and will be removed in a next release.
  * @param {String} city_name City Name for weather forecasts.
  * @returns {Promise<any>} Weather Forecast Promise.
  */
@@ -44,6 +87,7 @@ const fourDayForecastByCityRequest = (city_name) => {
 
 /**
  * Return request promise for forecast for given position.
+ * @deprecated Since 0.4.0, this method will be deprecated for moreDaysForecastByLocation and will be removed in a next release.
  * @param {Number} latitude Latitude of the position.
  * @param {Number} longitude Longitude of the position.
  * @returns {Promise<any>} Weather Forecast Promise.
@@ -53,34 +97,25 @@ const fourDayForecastByLocationRequest = (latitude, longitude) => {
   return provider.makeRequest(resource);
 };
 
-const currentWeatherForecastByLocationRequest = (latitude, longitude) => {
-  const resource = `weather?lat=${latitude}&lon=${longitude}`;
-  return provider.makeRequest(resource).then((result) => {
-    const current = result.data;
-    console.log("Result", typeof current.weather);
-    if (typeof current.weather === "object" && current.weather.length > 0) {
-      if (current.weather[0].id === 800) {
-        current.weatherIcon = "mdi-weather-sunny";
-        current.weatherDescription = "Clear Sky";
-      }
-    }
-    return {
-      temp: current.main.temp,
-      tempMin: current.main.temp_min,
-      tempMax: current.main.temp_max,
-      pressure: current.main.pressure,
-      humidity: current.main.humidity,
-      weatherIcon: current.weatherIcon,
-      weatherDescription: current.weatherDescription,
-      clouds: current.clouds.all,
-      rain: current.rain,
-      snow: current.snow,
-    };
-  });
-};
+/**
+ * Return request promise for forecast for given position.
+ * @param {Number} latitude Latitude of the position.
+ * @param {Number} longitude Longitude of the position.
+ * @returns {Promise<any>} Weather Forecast Promise.
+ */
+const currentByLocation = (latitude, longitude) =>
+  provider
+    .makeRequest(`weather?lat=${latitude}&lon=${longitude}`)
+    .then((result) => result.data.mapFields(current));
+
+const moreDayByLocation = (latitude, longitude) =>
+  provider
+    .makeRequest(`forecast?lat=${latitude}&lon=${longitude}`)
+    .then((result) => result.data.list.map((val) => mapFields(val)));
 
 module.exports = {
   fourDayForecastByCityRequest,
   fourDayForecastByLocationRequest,
-  currentWeatherForecastByLocationRequest,
+  currentByLocation,
+  moreDayByLocation,
 };
