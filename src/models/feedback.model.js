@@ -29,9 +29,10 @@ const feedbackSchema = new mongoose.Schema({
    */
   rating: {
     type: Number,
-    min: 0,
+    min: 1,
     max: 5,
     required: true,
+    default: 3,
   },
   /**
    * UserId of the feedback Giver.
@@ -71,6 +72,6 @@ const feedbackSchema = new mongoose.Schema({
   },
 });
 
-const Feedback = mongoose.model("Feedback", feedbackSchema);
+// const Feedback = mongoose.model("Feedback", feedbackSchema);
 
-module.exports = { Feedback };
+module.exports = { feedbackSchema };

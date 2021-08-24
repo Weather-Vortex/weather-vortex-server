@@ -21,6 +21,8 @@
 const Station = require("../src/models/station.model");
 const User = require("../src/models/user.model");
 
+const { createUser } = require("./utils/user.utils");
+
 const request = require("supertest");
 const chai = require("chai");
 const { app, mongoConnection } = require("../src/index");
@@ -32,21 +34,6 @@ chai.use(chaiHttp);
 
 describe("Test CRUD Operations for Stations", () => {
   let testUser;
-
-  /**
-   * Facility method to create a user in the database to use for tests.
-   * @returns The Test User created.
-   */
-  const createUser = async () => {
-    const user = new User({
-      firstName: "test",
-      lastName: "user",
-      password: "12345678",
-      email: "test.user@email.it",
-    });
-    const res = await user.save();
-    return res;
-  };
 
   before((done) => {
     // Create a test user as a first thing before any test.

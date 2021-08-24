@@ -19,7 +19,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const { Feedback } = require("./feedback.model");
+const { feedbackSchema } = require("./feedback.model");
 
 /**
  * Weather Forecast Provider.
@@ -46,9 +46,25 @@ const providerSchema = new mongoose.Schema({
    * List of feedbacks given by users.
    */
   feedbacks: {
-    type: [Feedback],
-    default: [],
+    type: [feedbackSchema],
+    default: () => [],
   },
+  /*{
+    type: Array,
+    default: [],
+    validate: {
+      validator: (v) => v.rating && v.userId && v.creationDate,
+      message: (p) => `${p} must be a Feedback`,
+    },
+  }
+  */
+});
+
+feedbackSchema.pre("save", (next) => {
+  if (typeof this.rating === "undefined" || this.rating === null) {
+    return next(new Error("this.rating is null"));
+  }
+  next();
 });
 
 providerSchema.post("save", async (doc) => {

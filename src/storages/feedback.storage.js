@@ -19,26 +19,23 @@
 "use strict";
 
 const { Provider } = require("../models/provider.model");
-const { Feedback } = require("../models/feedback.model");
+const { feedbackSchema } = require("../models/feedback.model");
 
 const createFeedback = async (providerId, feedback) => {
-  let provider;
   try {
-    provider = await Provider.findById(providerId).exec();
+    const res = await Provider.findByIdAndUpdate(
+      providerId,
+      {
+        $push: { feedbacks: feedback },
+      },
+      { new: true }
+    );
+    return res;
+    // provider.feedbacks.push(fb);
+    // return await provider.save();
   } catch (error) {
-    const err = new Error("Error while fetching providers");
-    err.providerId = providerId;
-    err.stack = `createFeedback -> ${error.stack}`;
-    throw err;
-  }
-
-  try {
-    const fb = new Feedback(feedback);
-    provider.feedbacks.push(fb);
-    return await provider.save();
-  } catch (error) {
-    const message = "Mongoose save error";
-    const err = new Error();
+    const message = `Mongoose save error: ${error}`;
+    const err = new Error(message);
     err.message = message;
     err.internalError = error;
     throw err;
@@ -72,7 +69,7 @@ const createProvider = async (name) => {
     const provider = new Provider({ name });
     return await provider.save();
   } catch (error) {
-    const message = "Mongoose save error";
+    const message = `Mongoose save error: ${error}`;
     const err = new Error();
     err.message = message;
     err.internalError = error;
