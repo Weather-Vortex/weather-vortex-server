@@ -60,21 +60,6 @@ const providerSchema = new mongoose.Schema({
   */
 });
 
-feedbackSchema.pre("save", (next) => {
-  if (typeof this.rating === "undefined" || this.rating === null) {
-    return next(new Error("this.rating is null"));
-  }
-  next();
-});
-
-providerSchema.post("save", async (doc) => {
-  console.log(
-    "%s(%s) has been saved. Get the average again!",
-    doc._id,
-    doc.name
-  );
-});
-
 const Provider = mongoose.model("Provider", providerSchema);
 
 module.exports = { Provider };

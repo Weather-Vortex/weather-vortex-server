@@ -39,12 +39,17 @@ describe("Feedbacks Storage", () => {
 
   before((done) => {
     connection
-      .then(() =>
-        createUser().then((res) => {
-          testUser = res;
+      .then(async () => {
+        try {
+          // Delete the test user after all tests.
+          await User.deleteMany(testUser);
+          const cre = await createUser();
+          testUser = cre;
           done();
-        })
-      )
+        } catch (err) {
+          done(err);
+        }
+      })
       .catch((error) => done(error));
   });
 
@@ -98,6 +103,60 @@ describe("Feedbacks Storage", () => {
       expect(result).to.have.a.property("feedbacks");
       expect(result.feedbacks.length).to.be.equals(1);
       expect(result.feedbacks[0]).to.have.a.property("rating", rating);
+      expect(result.feedbacks[0]).to.have.a.property("userId");
+      expect(result.feedbacks[0].userId.toString()).to.be.equals(
+        testUser._id.toString()
+      );
+    });
+  });
+
+  describe("Delete a Feedback", () => {
+    const rating = 4;
+    let provider;
+
+    beforeEach(async () => {
+      const tmp = await Provider.findOne({ name });
+      tmp.set({
+        feedbacks: [
+          {
+            rating,
+            userId: testUser._id,
+          },
+        ],
+      });
+      provider = await tmp.save();
+    });
+
+    it("Fail deleting a feedback with a string instead of a provider/user objectid object", async () => {
+      const then = await storage.deleteFeedback(
+        testUser._id.toString(),
+        provider.feedbacks[0]._id
+      );
+      expect(then).to.be.null;
+    });
+
+    it("Delete a Feedback with provider id", async () => {
+      expect(provider.feedbacks).to.have.lengthOf(1);
+      const then = await storage.deleteFeedback(
+        { provider: provider._id },
+        provider.feedbacks[0]._id
+      );
+
+      expect(then).to.not.be.null;
+      expect(then).to.be.an("object");
+      expect(then.feedbacks).to.have.lengthOf(0);
+    });
+
+    it("Delete a Feedback with user id", async () => {
+      expect(provider.feedbacks).to.have.lengthOf(1);
+      // First create the Feedback.
+      const then = await storage.deleteFeedback(
+        { user: testUser._id },
+        provider.feedbacks[0]._id
+      );
+      console.log(then);
+      expect(then).to.not.be.null;
+      expect(then).to.be.an("object");
     });
   });
 });

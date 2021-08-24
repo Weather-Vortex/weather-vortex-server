@@ -19,6 +19,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const User = require("../models/user.model");
 
 /**
  * Feedback given by users to a Provider.
@@ -72,6 +73,34 @@ const feedbackSchema = new mongoose.Schema({
   },
 });
 
-// const Feedback = mongoose.model("Feedback", feedbackSchema);
+feedbackSchema.post("save", async (doc) => {
+  console.log(
+    "%s(%s) has been saved. Get the average again!",
+    doc._id,
+    doc.userId
+  );
+  const first = await User.findById(doc.userId);
+  first.feedbacks.push(doc._id);
+  await first.save();
+});
+
+feedbackSchema.pre("remove", { query: true, document: true }, async (doc) => {
+  console.log(
+    "%s(%s) has been deleted. Get the average again!",
+    doc._id,
+    doc.rating
+  );
+
+  const first = await User.findById(doc.userId);
+  first.feedbacks.pull(doc._id);
+  await first.save();
+  console.log("User updated after delete:", second);
+});
+
+feedbackSchema.pre("save", async (doc) => {
+  console.log("User updated pre save:", doc.userId);
+});
+
+const Feedback = mongoose.model("Feedback", feedbackSchema);
 
 module.exports = { feedbackSchema };

@@ -18,21 +18,15 @@
 
 "use strict";
 
+const mongoose = require("mongoose");
 const { Provider } = require("../models/provider.model");
-const { feedbackSchema } = require("../models/feedback.model");
+const User = require("../models/user.model");
 
 const createFeedback = async (providerId, feedback) => {
   try {
-    const res = await Provider.findByIdAndUpdate(
-      providerId,
-      {
-        $push: { feedbacks: feedback },
-      },
-      { new: true }
-    );
-    return res;
-    // provider.feedbacks.push(fb);
-    // return await provider.save();
+    const provider = await Provider.findById(providerId);
+    provider.feedbacks.push(feedback);
+    return await provider.save();
   } catch (error) {
     const message = `Mongoose save error: ${error}`;
     const err = new Error(message);
@@ -44,19 +38,44 @@ const createFeedback = async (providerId, feedback) => {
 
 /**
  * Delete a feedback given his id.
- * @param {mongoose.Schema.Type.ObjectId} feedbackId ObjectId of the feedback to delete.
+ * @param {mongoose.ObjectId} id Can be the ProviderId or the UserId.
+ * @param {mongoose.ObjectId} feedbackId ObjectId of the feedback to delete.
  * @returns Operation result.
  */
-const deleteFeedback = async (feedbackId) => {
-  try {
-    return await Feedback.findByIdAndDelete(feedbackId);
-  } catch (error) {
-    const message = "Mongoose delete error";
-    const err = new Error();
-    err.message = message;
-    err.internalError = error;
-    throw err;
+const deleteFeedback = async (id, feedbackId) => {
+  if (typeof id === "object") {
+    if (typeof id.provider === "string") {
+      const objectId = new mongoose.ObjectId(id.provider);
+      return await deleteFeedbackByProvider(objectId, feedbackId);
+    } else if (typeof id.provider === "object") {
+      return await deleteFeedbackByProvider(id.provider, feedbackId);
+    } else if (typeof id.user === "string") {
+      const objectId = new mongoose.ObjectId(id.user);
+      return await deleteFeedbackByUser(objectId, feedbackId);
+    } else if (typeof id.user === "object") {
+      return await deleteFeedbackByUser(id.user, feedbackId);
+    }
   }
+
+  return null;
+};
+
+const deleteFeedbackByProvider = async (id, feedbackId) => {
+  const provider = await Provider.findById(id);
+  provider.feedbacks.pull(feedbackId);
+  console.log("Midlle", provider);
+  return await provider.save();
+};
+
+const deleteFeedbackByUser = async (id, feedbackId) => {
+  const user = await User.findById(id).populate("feedbacks");
+  console.log("User fetched", user);
+  const feedback = user.feedbacks.find(
+    (f) => f.toString() === feedbackId.toString()
+  );
+  const res = await feedback.remove();
+  console.log("Removed:", res);
+  return res;
 };
 
 /**
