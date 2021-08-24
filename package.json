@@ -1,6 +1,6 @@
 {
   "name": "weather-vortex-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Server for Weather Vortex Project.",
   "main": "src/index.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "Server"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/Weather-Vortex/weather-vortex-server/issues"
   },
