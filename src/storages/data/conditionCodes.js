@@ -1,4 +1,4 @@
-module.exports.openWeatherMap = [
+module.exports.openWeatherMap = new Map([
   {
     id: 200,
     main: "Thunderstorm",
@@ -41,48 +41,55 @@ module.exports.openWeatherMap = [
     icon: "11d",
   },
   {
-    ID: "221",
-    Main: "Thunderstorm",
-    Description: "ragged thunderstorm",
-    Icon: "11d",
-  }, // To convert
+    id: 221,
+    main: "Thunderstorm",
+    description: "ragged thunderstorm",
+    icon: "11d",
+    vortex: 18,
+  },
   {
-    ID: "230",
-    Main: "Thunderstorm",
-    Description: "thunderstorm with light drizzle",
-    Icon: "11d",
-  }, // To convert
+    id: 230,
+    main: "Thunderstorm",
+    description: "thunderstorm with light drizzle",
+    icon: "11d",
+    vortex: 19,
+  },
   {
-    ID: "231",
-    Main: "Thunderstorm",
-    Description: "thunderstorm with drizzle",
-    Icon: "11d",
-  }, // To convert
+    id: 231,
+    main: "Thunderstorm",
+    description: "thunderstorm with drizzle",
+    icon: "11d",
+    vortex: 20,
+  },
   {
-    ID: "232",
-    Main: "Thunderstorm",
-    Description: "thunderstorm with heavy drizzle",
-    Icon: "11d",
-  }, // To convert
+    id: 232,
+    main: "Thunderstorm",
+    description: "thunderstorm with heavy drizzle",
+    icon: "11d",
+    vortex: 21,
+  },
   {
-    ID: "300",
-    Main: "Drizzle",
-    Description: "light intensity drizzle",
-    Icon: "09d",
-  }, // To convert
-  { ID: "301", Main: "Drizzle", Description: "drizzle", Icon: "09d" }, // To convert
+    id: 300,
+    main: "Drizzle",
+    description: "light intensity drizzle",
+    icon: "09d",
+    vortex: 22,
+  },
+  { id: 301, main: "Drizzle", description: "drizzle", icon: "09d", vortex: 23 },
   {
-    ID: "302",
-    Main: "Drizzle",
-    Description: "heavy intensity drizzle",
-    Icon: "09d",
-  }, // To convert
+    id: 302,
+    main: "Drizzle",
+    description: "heavy intensity drizzle",
+    icon: "09d",
+    vortex: 24,
+  },
   {
-    ID: "310",
-    Main: "Drizzle",
-    Description: "light intensity drizzle rain",
-    Icon: "09d",
-  }, // To convert
+    id: 310,
+    main: "Drizzle",
+    description: "light intensity drizzle rain",
+    icon: "09d",
+    vortex: 25,
+  },
   { ID: "311", Main: "Drizzle", Description: "drizzle rain", Icon: "09d" }, // To convert
   {
     ID: "312",
@@ -209,12 +216,12 @@ module.exports.openWeatherMap = [
     icon: "04d  04n",
     vortex: 5,
   },
-];
+]);
 
 /*
 Troposphere missing by those vortex condition codes [2, 4].
 */
-module.exports.troposphere = [
+module.exports.troposphere = new Map([
   { type: "clear", description: "Clear sky", vortex: 1 },
   { type: "partly-cloudy", description: "Partly cloudy", vortex: 3 },
   { type: "cloudy", description: "Cloudy", vortex: 5 },
@@ -238,54 +245,18 @@ module.exports.troposphere = [
   { "": "", "Weather type": "snow-hail", Description: "Snow / Hail" }, // To convert
   { "": "", "Weather type": "hail", Description: "Hail" }, // To convert
   { type: "thunderstorm", description: "Thunderstorm", vortex: 16 },
-];
+]);
 
-module.exports.vortex = [
-  {
-    id: 1,
-    description: "Clear sky",
-    icon: "mdi-weather-sunny",
-  },
-  {
-    id: 2,
-    description: "Few clouds",
-    icon: "mdi-partly-cloudy",
-  },
-  {
-    id: 3,
-    description: "Scattered clouds",
-    icon: "mdi-partly-cloudy",
-  },
-  {
-    id: 4,
-    description: "Broken clouds",
-    icon: "mdi-weather-cloudy",
-  },
-  {
-    id: 5,
-    description: "Overcast clouds",
-    icon: "mdi-weather-cloudy",
-  },
-  {
-    id: 6,
-    description: "Light rain",
-    icon: "mdi-weather-partly-rainy",
-  },
-  {
-    id: 7,
-    description: "Moderate rain",
-    icon: "mdi-weather-partly-rainy",
-  },
-  {
-    id: 8,
-    description: "Heavy intensity rain",
-    icon: "mdi-weather-rainy",
-  },
-  {
-    id: 9,
-    description: "Very heavy rain",
-    icon: "mdi-weather-pouring",
-  },
+module.exports.vortex = new Map([
+  { id: 1, description: "Clear sky", icon: "mdi-weather-sunny" },
+  { id: 2, description: "Few clouds", icon: "mdi-partly-cloudy" },
+  { id: 3, description: "Scattered clouds", icon: "mdi-partly-cloudy" },
+  { id: 4, description: "Broken clouds", icon: "mdi-weather-cloudy" },
+  { id: 5, description: "Overcast clouds", icon: "mdi-weather-cloudy" },
+  { id: 6, description: "Light rain", icon: "mdi-weather-partly-rainy" },
+  { id: 7, description: "Moderate rain", icon: "mdi-weather-partly-rainy" },
+  { id: 8, description: "Heavy intensity rain", icon: "mdi-weather-rainy" },
+  { id: 9, description: "Very heavy rain", icon: "mdi-weather-pouring" },
   { id: 10, description: "Extreme rain", icon: "mdi-weather-pouring" },
   { id: 11, description: "Freezing rain", icon: "mdi-weather-snowy-rainy" },
   {
@@ -298,34 +269,34 @@ module.exports.vortex = [
     description: "Thunderstorm with rain",
     icon: "mdi-weather-lightning",
   },
+  { id: 14, description: "Thunderstorm with heavy rain" },
+  { id: 15, description: "Light thunderstorm", icon: "mdi-weather-lightning" },
+  { id: 16, description: "Thunderstorm", icon: "mdi-weather-lightning" },
+  { id: 17, description: "Heavy thunderstorm", icon: "mdi-weather-lightning" },
+  { id: 18, description: "Ragged Thunderstorm", icon: "mdi-weather-lightning" },
   {
-    id: 14,
-    description: "Thunderstorm with heavy rain",
+    id: 19,
+    description: "Thunderstorm with light drizzle",
+    icon: "mdi-weather-lighting",
+  },
+  {
+    id: 20,
+    description: "Thunderstorm with drizzle",
     icon: "mdi-weather-lightning",
   },
   {
-    id: 15,
-    description: "Light thunderstorm",
+    id: 21,
+    description: "Thunderstorm with heavy drizzle",
     icon: "mdi-weather-lightning",
   },
+  { id: 22, description: "Light intensity drizzle", icon: "mdi-weather-rainy" },
+  { id: 23, description: "drizzle", icon: "mdi-weather-rainy" },
+  { id: 24, description: "Heavy intensity drizzle", icon: "mdi-weather-rainy" },
   {
-    id: 16,
-    description: "Thunderstorm",
-    icon: "mdi-weather-lightning",
+    id: 25,
+    description: "Light intensity drizzle rain",
+    icon: "mdi-weather-rainy",
   },
-  {
-    id: 17,
-    description: "Heavy thunderstorm",
-    icon: "mdi-weather-lightning",
-  },
-  { id: 18, description: "", icon: "" }, // Reserved for 221
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
   { id: 18, description: "", icon: "" }, // Reserved for 230
   { id: 18, description: "", icon: "" }, // Reserved for 230
   { id: 18, description: "", icon: "" }, // Reserved for 230
@@ -351,4 +322,4 @@ module.exports.vortex = [
   { id: 18, description: "", icon: "" }, // Reserved for 230
   { id: 18, description: "", icon: "" }, // Reserved for 230
   { id: 50, description: "Fog", icon: "mdi-weather-fog" }, // Reserved for 230
-];
+]);
