@@ -1,11 +1,11 @@
 {
   "name": "weather-vortex-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Server for Weather Vortex Project.",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "start:local": "node -r dotenv/config src/index.js",
+    "start:local": "node --trace-warnings -r dotenv/config src/index.js",
     "test": "mocha --recursive -r dotenv/config --timeout 3000 --exit",
     "test-cov": "nyc --reporter=text npm run test",
     "test-cov:html": "nyc --reporter=html npm run test"
@@ -20,7 +20,7 @@
     "Server"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/Weather-Vortex/weather-vortex-server/issues"
   },
@@ -35,7 +35,8 @@
     "jsonwebtoken": "^8.5.1",
     "link-check": "^5.0.0",
     "mongoose": "^5.13.5",
-    "nodemailer": "^6.6.3"
+    "nodemailer": "^6.6.3",
+    "socket.io": "^4.1.3"
   },
   "devDependencies": {
     "chai": "^4.3.4",

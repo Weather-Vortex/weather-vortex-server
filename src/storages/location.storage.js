@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const axios = require("axios");
 const utils = require("./storage.utils");
 const Location = require("../models/location.model");
@@ -24,19 +26,24 @@ const troposphere_api_key = process.env.TROPOSPHERE_API_KEY; // TODO: Read from 
 
 /**
  * Get the location data of a city by its name.
- * @param {string} city_name Name of the city to get location of.
+ * @param {string} locality Name of the city to get location of.
  * @returns Location data.
  */
-const getLocationDataByCity = async (city_name) => {
+const getLocationDataByCity = async (locality) => {
+  if (typeof locality !== "string") {
+    console.error("Locality of wrong type: %0. Must be a string", locality);
+    throw new TypeError("Locality must be a string");
+  }
+
   try {
     // First search in local cache.
-    let cached = await getCachedLocationByName(city_name);
-    if (cached.result === false) {
-      // Then in remote service.
-      cached = await fetchLocationByName(city_name);
+    let cached = await getCachedLocationByName(locality);
+    if (cached !== null) {
+      return cached;
     }
 
-    return cached;
+    // Then in remote service.
+    return await fetchLocationByName(locality);
   } catch (error) {
     // At this time, don't resolve error here, but throw it up.
     throw error;
@@ -58,14 +65,19 @@ const fetchLocationByName = async (localityName) => {
     throw error;
   }
   if (result) {
+    const promises = result.data.map((data) =>
+      addCachedLocation(data.name, data.latitude, data.longitude)
+    );
+    const caches = await Promise.all(promises);
+    return caches[0].added;
     // If exists, add to local cache.
-    const added = await addCachedLocation(
+    /*const added = await addCachedLocation(
       result.name,
       result.latitude,
       result.longitude
     );
     // Then return the cached result.
-    return added.added;
+    return added.added;*/
   }
   throw new Error({ localityName, message: "Location not found" });
 };
@@ -78,15 +90,22 @@ const fetchLocationByName = async (localityName) => {
 const getCachedLocationByName = async (localityName) => {
   try {
     const found = await Location.findOne({ name: localityName }).exec();
-    return {
-      result: found !== null,
-      locationName: localityName,
-      location: found,
-    };
-  } catch (error) {
-    return { result: false, error: err, message: "Location not found" };
+    return found;
+  } catch (internalError) {
+    const error = new CacheError("Cached location not found.");
+    error.internalError = internalError;
+    error.locality = localityName;
+    throw error;
   }
 };
+
+class CacheError extends Error {
+  constructor(locality, message) {
+    super(message);
+    this.locality = locality;
+    this.name = "Cache Error";
+  }
+}
 
 /**
  * Add a Location to the collection of cached locations.
@@ -124,7 +143,7 @@ const getRemoteLocationByName = async (locality) => {
   try {
     const { data } = await axios.get(url);
     // If locality exists, return the first result retrieved. If not, return undefined anywhere.
-    return data.data[0];
+    return data;
   } catch (error) {
     utils.manageAxiosError(error);
     const message = "Axios error";
@@ -135,7 +154,7 @@ const getRemoteLocationByName = async (locality) => {
 /**
  * Check if a Response from Axios is valid or not.
  * @param {axios.AxiosResponse} data Response from a previous call.
- * @returns True if is valid, false anywhere.
+ * @returns {Boolean} True if is valid, false anywhere.
  */
 const checkResponse = (data) =>
   data.error === null &&

@@ -19,12 +19,51 @@
 "use strict";
 
 const express = require("express");
-const router = express.Router();
-const forecastController = require("../controllers/forecast.controller");
 
-router
-  .get("/:locality", forecastController.getThreeDaysForecasts)
-  .get("/:locality/current", forecastController.getCurrentForecasts)
-  .get("/:locality/threedays", forecastController.getThreeDaysForecasts);
+/**
+ * Initialize a new Router for forecasts requests. Give a Socket.io Server to use real time notifications.
+ * @param {express.Application} app Express Application to link router with.
+ * @param {*} io Socket.io server instance.
+ * @returns Forecast router configured with io sockets.
+ */
+const configRouter = (app, io) => {
+  const controller = require("../controllers/forecast.controller");
 
-module.exports = router;
+  io.on("connection", (socket) => {
+    const users = [];
+    for (let [id, socket] of io.of("/").sockets) {
+      users.push({
+        userID: id,
+        locality: socket.locality,
+      });
+    }
+    console.log("User connected:", socket.id);
+    io.fetchSockets().then((sockets) =>
+      console.log(
+        "Current connected:",
+        sockets.map((s) => s.id)
+      )
+    );
+
+    socket.on("current", (arg) => {
+      console.log("Received a current forecast request with arg:", arg);
+      controller.getCurrentForecastsWithIo(socket, arg.locality);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected:", socket.id);
+      socket.disconnect();
+    });
+  });
+
+  const router = express.Router();
+
+  router
+    .get("/:locality", controller.getThreeDaysForecasts)
+    .get("/:locality/current", controller.getCurrentForecasts)
+    .get("/:locality/threedays", controller.getThreeDaysForecasts);
+
+  app.use("/forecast", router);
+};
+
+module.exports = { configRouter };
