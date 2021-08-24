@@ -34,11 +34,78 @@ const provider = new TroposphereProvider(
   troposphere_api_key
 );
 
-const getSevenDaysForecastByLocationRequest = (latitude, longitude) => {
+/**
+ * Make a request to provider for forecasts.
+ * @param {Number} latitude Latitude.
+ * @param {Number} longitude Longitude.
+ * @returns Request made, not awaited.
+ */
+const getRequest = (latitude, longitude) => {
   const resource = `forecast/${latitude},${longitude}`;
   return provider.makeRequest(resource);
 };
 
+/**
+ * Convert a Forecast from Troposphere in a Weather Vortex Forecast.
+ * Obviously, the second one will have less fields for compatibility with other providers.
+ * @param {Forecast} forecast Forecast from Troposphere.
+ * @returns Weather Vortex Forecast.
+ */
+const mapFields = (forecast) => {
+  if (forecast.type === "partly-cloudy") {
+    forecast.weatherIcon = "mdi-weather-partly-cloudy";
+    forecast.weatherDescription = "Partly Cloudy";
+  } else if (forecast.type === "clear") {
+    forecast.weatherIcon = "mdi-weather-sunny";
+    forecast.weatherDescription = "Clear Sky";
+  }
+  /*
+    Missing:
+    airQualityIndex: 2.02
+    time: "2021-08-19T17:00:00+02:00"
+    uvIndex: 2.12
+    windBearing: -99.12
+    windGustsSpeed: 10.61
+    windSpeed: 5.36
+    */
+  return {
+    temp: forecast.temperature,
+    tempMin: forecast.temperatureMin,
+    tempMax: forecast.temperatureMax,
+    pressure: forecast.preasure,
+    humidity: forecast.relHumidity,
+    weatherIcon: forecast.weatherIcon,
+    weatherDescription: forecast.weatherDescription,
+    clouds: forecast.cloudCover,
+    rain: forecast.rain,
+    snow: forecast.snow,
+  };
+};
+
+/**
+ * Make a request to provider for current weather.
+ * @param {Number} latitude Latitude.
+ * @param {Number} longitude Longitude.
+ */
+const getCurrentForecastsByLocation = (latitude, longitude) =>
+  getRequest(latitude, longitude).then((result) => {
+    const current = result.data.data.current;
+    return mapFields(current);
+  });
+
+/**
+ * Make a request to provider for next days weather.
+ * @param {Number} latitude Latitude.
+ * @param {Number} longitude Longitude.
+ */
+const getSevenDaysForecastByLocationRequest = (latitude, longitude) =>
+  getRequest(latitude, longitude).then((result) => {
+    const hourly = result.data.data.hourly;
+    const mapped = hourly.map((value) => mapFields(value));
+    return mapped;
+  });
+
 module.exports = {
+  getCurrentForecastsByLocation,
   getSevenDaysForecastByLocationRequest,
 };
