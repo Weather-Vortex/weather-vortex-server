@@ -32,6 +32,7 @@ const providerSchema = new mongoose.Schema({
     type: String,
     minlength: 3,
     trim: true,
+    unique: true,
   },
   /**
    * Average rating of the provider.
@@ -48,6 +49,14 @@ const providerSchema = new mongoose.Schema({
     type: [Feedback],
     default: [],
   },
+});
+
+providerSchema.post("save", async (doc) => {
+  console.log(
+    "%s(%s) has been saved. Get the average again!",
+    doc._id,
+    doc.name
+  );
 });
 
 const Provider = mongoose.model("Provider", providerSchema);
