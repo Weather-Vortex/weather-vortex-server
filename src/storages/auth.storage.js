@@ -109,11 +109,11 @@ const login = (req, res) => {
                 //res.redirect('./api/login')*/ 
 
                 //If the user isn't verified, cannot login-> da descommentare
-                /*   if (user.isVerified == false) {
-                       return res.status(401).send({
+                   if (user.isVerified == false) {
+                       return res.status(403).send({
                            message: "Pending Account. Please Verify Your Email!",
                        });
-                   }*/
+                   }
 
                 user.comparePassword(req.body.password, (err, isMatch) => {
                     if (!isMatch) return res.status(401).json({ isAuth: false, message: "password doesn't match" });
