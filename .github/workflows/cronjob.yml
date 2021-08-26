@@ -4,7 +4,7 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # Trigger this workflow each day at midnight.
-    - cron:  '0 0 * * *'
+    - cron:  '0 02 * * *' #UTC TIME, Italy is generally -2h
 
 jobs:
   # Trigger a direct telegram notification.
