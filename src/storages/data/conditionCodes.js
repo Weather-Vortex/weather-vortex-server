@@ -90,26 +90,41 @@ module.exports.openWeatherMap = new Map([
     icon: "09d",
     vortex: 25,
   },
-  { ID: "311", Main: "Drizzle", Description: "drizzle rain", Icon: "09d" }, // To convert
   {
-    ID: "312",
-    Main: "Drizzle",
-    Description: "heavy intensity drizzle rain",
-    Icon: "09d",
+    id: 311,
+    main: "Drizzle",
+    mescription: "drizzle rain",
+    mcon: "09d",
+    vortex: 26,
   }, // To convert
   {
-    ID: "313",
-    Main: "Drizzle",
-    Description: "shower rain and drizzle",
-    Icon: "09d",
-  }, // To convert
+    id: 312,
+    main: "Drizzle",
+    description: "heavy intensity drizzle rain",
+    icon: "09d",
+    vortex: 27,
+  },
   {
-    ID: "314",
-    Main: "Drizzle",
-    Description: "heavy shower rain and drizzle",
-    Icon: "09d",
-  }, // To convert
-  { ID: "321", Main: "Drizzle", Description: "shower drizzle", Icon: "09d" }, // To convert
+    id: 313,
+    main: "Drizzle",
+    description: "shower rain and drizzle",
+    icon: "09d",
+    vortex: 28,
+  },
+  {
+    id: 314,
+    main: "Drizzle",
+    description: "heavy shower rain and drizzle",
+    icon: "09d",
+    vortex: 29,
+  },
+  {
+    id: 321,
+    main: "Drizzle",
+    description: "shower drizzle",
+    icon: "09d",
+    vortex: 30,
+  },
   { id: 500, main: "Rain", description: "Light rain", icon: "10d", vortex: 6 },
   {
     id: 501,
@@ -145,21 +160,35 @@ module.exports.openWeatherMap = new Map([
     description: "freezing rain",
     icon: "13d",
     vortex: 11,
-  }, // To convert
+  },
   {
-    ID: "520",
-    Main: "Rain",
-    Description: "light intensity shower rain",
-    Icon: "09d",
-  }, // To convert
-  { ID: "521", Main: "Rain", Description: "shower rain", Icon: "09d" }, // To convert
+    id: 520,
+    main: "Rain",
+    description: "light intensity shower rain",
+    icon: "09d",
+    vortex: 31,
+  },
   {
-    ID: "522",
-    Main: "Rain",
-    Description: "heavy intensity shower rain",
-    Icon: "09d",
-  }, // To convert
-  { ID: "531", Main: "Rain", Description: "ragged shower rain", Icon: "09d" }, // To convert
+    id: 521,
+    main: "Rain",
+    description: "shower rain",
+    icon: "09d",
+    vortex: 32,
+  },
+  {
+    id: 522,
+    main: "Rain",
+    description: "heavy intensity shower rain",
+    icon: "09d",
+    vortex: 33,
+  },
+  {
+    id: 531,
+    main: "Rain",
+    description: "ragged shower rain",
+    icon: "09d",
+    vortex: 34,
+  },
   { ID: "600", Main: "Snow", Description: "light snow", Icon: "13d" }, // To convert
   { ID: "601", Main: "Snow", Description: "Snow", Icon: "13d" }, // To convert
   { ID: "602", Main: "Snow", Description: "Heavy snow", Icon: "13d" }, // To convert
@@ -297,15 +326,31 @@ module.exports.vortex = new Map([
     description: "Light intensity drizzle rain",
     icon: "mdi-weather-rainy",
   },
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
+  { id: 26, description: "Drizzle Rain", icon: "mdi-weather-rain" },
+  {
+    id: 27,
+    description: "Heavy intensity drizzle rain",
+    icon: "mdi-weather-rain",
+  },
+  { id: 28, description: "Shower rain and drizzle", icon: "mdi-weather-rain" },
+  {
+    id: 29,
+    description: "Heavy shower rain and drizzle",
+    icon: "mdi-weather-rain",
+  },
+  { id: 30, description: "Shower drizzle", icon: "mdi-weather-icon" },
+  {
+    id: 31,
+    description: "Light Intensity shower rain",
+    icon: "mdi-weather-rain",
+  },
+  { id: 32, description: "Shower rain", icon: "mdi-weather-rain" },
+  {
+    id: 33,
+    description: "Heavy intensity shower rain",
+    icon: "mdi-weather-rain",
+  },
+  { id: 34, description: "Ragged shower rain", icon: "mdi-weather-rain" },
   { id: 18, description: "", icon: "" }, // Reserved for 230
   { id: 18, description: "", icon: "" }, // Reserved for 230
   { id: 18, description: "", icon: "" }, // Reserved for 230
