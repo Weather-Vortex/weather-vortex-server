@@ -63,31 +63,35 @@ const register = (req, res) => {
 };
 
 const verifyUser = (req, res, next) => {
+    console.log("Email token:",req.params.emailToken);
     User.findOne({
-        confirmationCode: req.params.emailToken,
+        emailToken: req.params.emailToken,
     })
         .then((user) => {
             if (!user) {
-                return res.status(404).send({ message: "User Not found." });
+                console.log("User: ", user);
+                return res.status(404).json({ confirmed: false, message: "User Not found." });
             }
             user.isVerified = true
 
             //user.isVerified=true;
-            console.log(user.isVerified + " User is verified after the click on email")
-            user.save((err) => {
+            user.save((err, doc) => {
                 if (err) {
-                    res.status(500).send({ message: err });
+                    res.status(500).json({ confirmed: false, message: "User not saved.", error: err });
                     return;
                 }
-
-
+                console.log(user.isVerified + " User is verified after the click on email");
+                res.status(200).json({confirmed: true, firstname: doc.firstName, lastname: doc.lastName});
             });
             /*NOTA BENE : At this moment, if the user clicks on the email’s confirmation link, they will find
              a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
              end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
             //res.redirect('./api/login')
         })
-        .catch((e) => console.log("error", e));
+        .catch((e) => {
+            console.log("error", e);
+            return res.status(404).json({ confirmed: false, message: "User Not found.", error: e });
+        });
 }
 
 // login user
@@ -109,11 +113,11 @@ const login = (req, res) => {
                 //res.redirect('./api/login')*/ 
 
                 //If the user isn't verified, cannot login-> da descommentare
-                  /* if (user.isVerified == false) {
+                   if (user.isVerified == false) {
                        return res.status(403).send({
                            message: "Pending Account. Please Verify Your Email!",
                        });
-                   }*/
+                   }
 
                 user.comparePassword(req.body.password, (err, isMatch) => {
                     if (!isMatch) return res.status(401).json({ isAuth: false, message: "password doesn't match" });

@@ -19,7 +19,7 @@ router
 
 
 router
-    .get("/confirm/:confirmationCode", authStorage.verifyUser)
+    .get("/confirm/:emailToken", authStorage.verifyUser)
 
 router
     .put("/:id", authStorage.updateUser)

@@ -25,6 +25,7 @@ module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
           <h2>Hello ${name}</h2>
           <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
           <a href=${secretvar.CONFIRM}${confirmationCode}> Click here</a>
+          <a href='http://localhost:8081/#/user/confirm?name=${confirmationCode}'> Click new
           </div>`,
     }).catch(err => console.log(err));
   };
