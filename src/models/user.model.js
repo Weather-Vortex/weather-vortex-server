@@ -1,11 +1,10 @@
-
 const mongoose = require("mongoose");
 //(JWT) is an open standard that defines a compact and self-contained way of securely
 //transmitting information between parties as a JSON object
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt"); // It is used for hashing and comparing the passwords.
 const salt = 10; //per la password
-const confiq=require("../config/config").get(process.env.NODE_ENV);
+const confiq = require("../config/config").get(process.env.NODE_ENV);
 
 var userSchema = mongoose.Schema({
   firstName: {
@@ -24,7 +23,8 @@ var userSchema = mongoose.Schema({
     minlength: 8,
     maxlength: 128,
   },
-  token: { //for login
+  token: {
+    //for login
     type: String,
   },
   createdDate: {
@@ -38,14 +38,15 @@ var userSchema = mongoose.Schema({
     trim: true,
     unique: 1,
   },
-  emailToken: { //token for verifying authentication emailToken
+  emailToken: {
+    //token for verifying authentication emailToken
     type: String,
     //required: true,
-    unique:true,
+    unique: true,
   },
   isVerified: {
     type: Boolean,
-    default:false,
+    default: false,
   },
   preferred: {
     location: String,
@@ -121,7 +122,6 @@ userSchema.methods.generateToken = function (cb) {
     cb(null, user);
   });
 };
-
 
 // find by token
 userSchema.statics.findByToken = function (token, cb) {
