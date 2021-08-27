@@ -26,10 +26,11 @@ let auth = (req, res, next) => {
   User.findByToken(token, (err, user) => {
     if (err) throw err;
     if (!user)
-      return res.json({
-        error: true,
+      return res.status(401).json({
+        error: "Didn't found any auth token.",
       });
 
+    console.log("User: ", user);
     req.token = token;
     req.user = user;
     next();

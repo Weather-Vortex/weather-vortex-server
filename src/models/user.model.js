@@ -31,7 +31,6 @@ var userSchema = mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  registrationDate: Date,
   email: {
     type: String,
     required: true,
@@ -49,11 +48,20 @@ var userSchema = mongoose.Schema({
     default: false,
   },
   preferred: {
-    location: String,
+    location: {
+      type: String,
+      default: "",
+    },
     position: {
       // TODO: Update those constraints like in location.model.js
-      x: Number,
-      y: Number,
+      x: {
+        type: Number,
+        default: undefined,
+      },
+      y: {
+        type: Number,
+        default: undefined,
+      },
     },
   },
   stations: [

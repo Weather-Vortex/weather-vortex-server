@@ -87,18 +87,13 @@ const verifyUser = (req, res, next) => {
         console.log(
           user.isVerified + " User is verified after the click on email"
         );
-        res
-          .status(200)
-          .json({
-            confirmed: true,
-            firstname: doc.firstName,
-            lastname: doc.lastName,
-          });
+        res.status(200).json({
+          confirmed: true,
+          firstname: doc.firstName,
+          lastname: doc.lastName,
+        });
       });
-      /*NOTA BENE : At this moment, if the user clicks on the email’s confirmation link, they will find
-             a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
-             end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
-      //res.redirect('./api/login')
+
     })
     .catch((e) => {
       console.log("error", e);
@@ -124,12 +119,9 @@ const login = (req, res) => {
           return res
             .status(500)
             .json({ isAuth: false, message: " Auth failed ,email not found" });
-        /*NOTA BENE!At this moment, if the user clicks on the email’s confirmation link, they will find
-             a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
-             end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
-        //res.redirect('./api/login')*/
 
-        //If the user isn't verified, cannot login-> da descommentare
+
+        //If the user isn't verified, cannot login-> 
         if (user.isVerified == false) {
           return res.status(403).send({
             message: "Pending Account. Please Verify Your Email!",
@@ -166,16 +158,18 @@ const logout = (req, res) => {
 
 // get logged in user, the user can view its informations (profile)
 const loggedIn = (req, res) => {
-  try {
-    res.json({
-      isAuth: true,
-      id: req.user._id,
+  if (req.user) {
+    return res.status(200).json({
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
       email: req.user.email,
-      name: req.user.firstName + req.user.lastName,
+      createdDate: req.user.createdDate,
+      preferred: req.user.preferred,
     });
-  } catch {
-    res.status(400).json({ isAuth: false, message: "Any user authenticated" });
   }
+  res.status(404).json({
+    message: "No User found with given id",
+  });
 };
 
 const deleteUser = (req, res) => {
