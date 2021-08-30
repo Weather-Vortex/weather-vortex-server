@@ -93,7 +93,6 @@ const verifyUser = (req, res, next) => {
           lastname: doc.lastName,
         });
       });
-
     })
     .catch((e) => {
       console.log("error", e);
@@ -120,8 +119,7 @@ const login = (req, res) => {
             .status(500)
             .json({ isAuth: false, message: " Auth failed ,email not found" });
 
-
-        //If the user isn't verified, cannot login-> 
+        //If the user isn't verified, cannot login->
         if (user.isVerified == false) {
           return res.status(403).send({
             message: "Pending Account. Please Verify Your Email!",
@@ -160,6 +158,7 @@ const logout = (req, res) => {
 const loggedIn = (req, res) => {
   if (req.user) {
     return res.status(200).json({
+      id: req.user._id,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
       email: req.user.email,
@@ -173,7 +172,7 @@ const loggedIn = (req, res) => {
 };
 
 const deleteUser = (req, res) => {
-  User.findOneAndDelete(req.params.id)
+  User.findOneAndDelete(req.params._id)
     .then(() => {
       res.status(200).json({
         message: "Deleted!",
