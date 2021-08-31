@@ -138,10 +138,12 @@ const login = (req, res) => {
             if (err) return res.status(500).send(err);
             res.cookie("auth", user.token).json({
               isAuth: true,
-              id: user._id,
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName
+              user: {
+                id: user._id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName
+              }
             });
           });
         });
