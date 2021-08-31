@@ -36,5 +36,6 @@ jobs:
         env:
           NODE_ENV: "test"
           MONGODB_URI: mongodb://localhost:27017/test # Access mongoDB Docker container
-          OPEN_WEATHER_MAP_API_KEY: ${{ secrets.OPEN_WEATHER_MAP_API_KEY }}SECRET: ${{ secrets.SECRET }}
+          OPEN_WEATHER_MAP_API_KEY: ${{ secrets.OPEN_WEATHER_MAP_API_KEY }}
+          SECRET: ${{ secrets.SECRET }}
           TROPOSPHERE_API_KEY: ${{ secrets.TROPOSPHERE_API_KEY }}
