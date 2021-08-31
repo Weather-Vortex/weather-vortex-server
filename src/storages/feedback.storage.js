@@ -73,9 +73,8 @@ const deleteFeedback = async (feedbackId) => {
   }
 
   const deleted = await Feedback.findByIdAndDelete(feedbackId);
-  console.log("Deleted:", deleted);
   return deleted;
-
+  /*
   if (typeof feedbackId === "string") {
     feedbackId = new mongoose.ObjectId(feedbackId);
   }
@@ -95,6 +94,7 @@ const deleteFeedback = async (feedbackId) => {
   }
 
   return null;
+  */
 };
 
 /**
@@ -154,11 +154,15 @@ const createProvider = async (name) => {
  */
 const getFeedbacksByProvider = async (name) => {
   try {
-    const provider = await Provider.findOne({ name });
-    return provider.feedbacks;
+    const { feedbacks } = await Provider.findOne({ name });
+    const mapped = await Promise.all(
+      feedbacks.map((m) => Feedback.findById(m))
+    );
+    return mapped;
   } catch (error) {
+    console.error(error);
     const message = "Mongoose get feedbacks by provider error";
-    const err = new Error();
+    const err = new Error(message);
     err.message = message;
     err.internalError = error;
     throw err;

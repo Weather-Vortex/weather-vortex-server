@@ -30,7 +30,6 @@ let auth = (req, res, next) => {
         error: "Didn't found any auth token.",
       });
 
-    console.log("User: ", user);
     req.token = token;
     req.user = user;
     next();

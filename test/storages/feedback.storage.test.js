@@ -109,6 +109,14 @@ describe("Feedbacks Storage", () => {
       expect(result.providerId.toString()).to.be.equals(
         provider._id.toString()
       );
+
+      const hisProvider = await Provider.findById(result.providerId);
+      expect(hisProvider).to.be.an("object");
+      expect(hisProvider).to.have.a.property("name", providerName);
+      expect(hisProvider).to.have.a.property("feedbacks").to.have.lengthOf(1);
+      expect(hisProvider.feedbacks[0]._id.toString()).to.be.equals(
+        result._id.toString()
+      );
     });
   });
 
@@ -160,12 +168,13 @@ describe("Feedbacks Storage", () => {
 
     it.skip("Delete a Feedback with user id", async () => {
       expect(provider.feedbacks).to.have.lengthOf(1);
+
       // First create the Feedback.
       const then = await storage.deleteFeedback(
         { user: testUser._id },
         provider.feedbacks[0]._id
       );
-      console.log("Then:", then);
+
       expect(then).to.not.be.null;
       expect(then).to.be.an("object");
     });
@@ -179,7 +188,7 @@ describe("Feedbacks Storage", () => {
       expect(then).to.have.a.property("providerId");
 
       const fb = await Feedback.findById(then._id);
-      console.log("FB:", fb);
+
       expect(fb).to.be.null;
     });
   });
@@ -200,15 +209,18 @@ describe("Feedbacks Storage", () => {
     it("By provider", async () => {
       const firstRes = await storage.getFeedbacksByProvider(firstName);
       expect(firstRes).to.be.an("array").to.have.lengthOf(1);
+
       const firstFeedback = firstRes[0];
       expect(firstFeedback).to.have.a.property("rating", firstRating);
       expect(firstFeedback).to.have.a.property("userId");
       expect(firstFeedback.userId.toString()).to.be.equals(
         testUser._id.toString()
       );
+
       const secondRes = await storage.getFeedbacksByProvider(secondName);
-      const secondFeedback = secondRes[0];
       expect(secondRes).to.be.an("array").to.have.lengthOf(1);
+
+      const secondFeedback = secondRes[0];
       expect(secondFeedback).to.have.a.property("rating", secondRating);
       expect(secondFeedback).to.have.a.property("userId");
       expect(secondFeedback.userId.toString()).to.be.equals(
