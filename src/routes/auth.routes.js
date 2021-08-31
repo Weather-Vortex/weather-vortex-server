@@ -16,8 +16,8 @@ router
 
 router.get("/confirm/:emailToken", authStorage.verifyUser);
 
-router.put("/:id", authStorage.updateUser);
+router.put("/", auth, authStorage.updateUser);
 
-router.delete("/:id", authStorage.deleteUser);
+router.delete("/", auth, authStorage.deleteUser);
 
 module.exports = router;
