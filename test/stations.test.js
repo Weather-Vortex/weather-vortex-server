@@ -25,7 +25,7 @@ const { createUser } = require("./utils/user.utils");
 
 const request = require("supertest");
 const chai = require("chai");
-const { app, mongoConnection } = require("../src/index");
+const { app } = require("../src/index");
 const chaiHttp = require("chai-http");
 
 const expect = chai.expect;
@@ -37,24 +37,25 @@ describe("Test CRUD Operations for Stations", () => {
 
   before((done) => {
     // Create a test user as a first thing before any test.
-    mongoConnection
-      .then(() => {
-        createUser().then((res) => {
+    User.deleteMany({}).then(() =>
+      createUser()
+        .then((res) => {
           testUser = res;
           done();
-        });
-      })
-      .catch((error) => {
-        console.error(error);
-        done(error);
-      });
+        })
+        .catch((error) => {
+          console.error(error);
+          done(error);
+        })
+    );
   });
 
   after((done) => {
     // Delete the test user after all tests.
-    User.deleteMany(testUser)
-      .then(() => done())
-      .catch((err) => done(err));
+    //User.deleteMany(testUser)
+    //.then(() => done())
+    //.catch((err) => done(err));
+    done();
   });
 
   const base_url = "/stations";

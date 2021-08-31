@@ -19,7 +19,6 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const { feedbackSchema } = require("./feedback.model");
 
 /**
  * Weather Forecast Provider.
@@ -46,7 +45,8 @@ const providerSchema = new mongoose.Schema({
    * List of feedbacks given by users.
    */
   feedbacks: {
-    type: [feedbackSchema],
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Feedback",
     default: () => [],
   },
   /*{

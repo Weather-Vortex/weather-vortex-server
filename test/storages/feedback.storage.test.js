@@ -20,7 +20,7 @@
 
 const storage = require("../../src/storages/feedback.storage");
 const { Provider } = require("../../src/models/provider.model");
-// const { Feedback } = require("../../src/models/feedback.model");
+const { Feedback } = require("../../src/models/feedback.model");
 
 const User = require("../../src/models/user.model");
 const { createUser } = require("../utils/user.utils");
@@ -34,7 +34,7 @@ chai.use(chaiAsPromised);
 const { connection } = require("../../src/config/database.connector");
 
 describe("Feedbacks Storage", () => {
-  const name = "TestProvider";
+  const providerName = "TestProvider";
   let testUser;
 
   before((done) => {
@@ -42,7 +42,7 @@ describe("Feedbacks Storage", () => {
       .then(async () => {
         try {
           // Delete the test user after all tests.
-          await User.deleteMany(testUser);
+          await User.deleteMany({});
           const cre = await createUser();
           testUser = cre;
           done();
@@ -55,26 +55,27 @@ describe("Feedbacks Storage", () => {
 
   after((done) => {
     // Delete the test user after all tests.
-    User.deleteMany(testUser)
-      .then(() => done())
-      .catch((err) => done(err));
+    //User.deleteMany(testUser)
+    //.then(() => done())
+    //.catch((err) => done(err));
+    done();
   });
 
   describe("Create a Provider", () => {
     beforeEach(async () => await Provider.deleteMany({}));
 
     it("Create a Provider", async () => {
-      const result = await storage.createProvider(name);
+      const result = await storage.createProvider(providerName);
 
       expect(result).to.be.an("object");
-      expect(result).to.have.a.property("name", name);
+      expect(result).to.have.a.property("name", providerName);
     });
   });
 
   describe("Create a Feedback", () => {
     let provider;
     before((done) => {
-      Provider.findOne({ name })
+      Provider.findOne({ name: providerName })
         .then((res) => {
           provider = res;
           done();
@@ -85,7 +86,7 @@ describe("Feedbacks Storage", () => {
     beforeEach(
       async () =>
         await Provider.findOneAndUpdate(
-          { name },
+          { name: providerName },
           {
             $set: { feedbacks: [] },
           }
@@ -94,18 +95,19 @@ describe("Feedbacks Storage", () => {
 
     it("Create a Feedback for a provider", async () => {
       const rating = 5;
-      const result = await storage.createFeedback(provider._id, {
+      const result = await storage.createFeedback(
         rating,
-        userId: testUser._id,
-      });
+        provider._id,
+        testUser._id
+      );
 
       expect(result).to.be.an("object");
-      expect(result).to.have.a.property("feedbacks");
-      expect(result.feedbacks.length).to.be.equals(1);
-      expect(result.feedbacks[0]).to.have.a.property("rating", rating);
-      expect(result.feedbacks[0]).to.have.a.property("userId");
-      expect(result.feedbacks[0].userId.toString()).to.be.equals(
-        testUser._id.toString()
+      expect(result).to.have.a.property("rating", rating);
+      expect(result).to.have.a.property("userId");
+      expect(result).to.have.a.property("providerId");
+      expect(result.userId.toString()).to.be.equals(testUser._id.toString());
+      expect(result.providerId.toString()).to.be.equals(
+        provider._id.toString()
       );
     });
   });
@@ -113,21 +115,30 @@ describe("Feedbacks Storage", () => {
   describe("Delete a Feedback", () => {
     const rating = 4;
     let provider;
+    let feedbackCreated;
 
     beforeEach(async () => {
-      const tmp = await Provider.findOne({ name });
-      tmp.set({
-        feedbacks: [
-          {
-            rating,
-            userId: testUser._id,
-          },
-        ],
-      });
-      provider = await tmp.save();
+      // Clean User feedbacks. This can be unnecessary.
+      const preTester = await User.findById(testUser._id);
+      preTester.feedbacks = [];
+      const postTester = await preTester.save();
+
+      // Clean Provider.
+      const tmp = await Provider.findOne({ name: providerName });
+      tmp.feedbacks = [];
+      const temp = await tmp.save();
+
+      await Feedback.deleteMany({});
+
+      feedbackCreated = await storage.createFeedback(
+        rating,
+        temp._id,
+        postTester._id
+      );
+      provider = await Provider.findOne({ name: providerName });
     });
 
-    it("Fail deleting a feedback with a string instead of a provider/user objectid object", async () => {
+    it.skip("Fail deleting a feedback with a string instead of a provider/user objectId object", async () => {
       const then = await storage.deleteFeedback(
         testUser._id.toString(),
         provider.feedbacks[0]._id
@@ -135,7 +146,7 @@ describe("Feedbacks Storage", () => {
       expect(then).to.be.null;
     });
 
-    it("Delete a Feedback with provider id", async () => {
+    it.skip("Delete a Feedback with provider id", async () => {
       expect(provider.feedbacks).to.have.lengthOf(1);
       const then = await storage.deleteFeedback(
         { provider: provider._id },
@@ -147,16 +158,73 @@ describe("Feedbacks Storage", () => {
       expect(then.feedbacks).to.have.lengthOf(0);
     });
 
-    it("Delete a Feedback with user id", async () => {
+    it.skip("Delete a Feedback with user id", async () => {
       expect(provider.feedbacks).to.have.lengthOf(1);
       // First create the Feedback.
       const then = await storage.deleteFeedback(
         { user: testUser._id },
         provider.feedbacks[0]._id
       );
-      console.log(then);
+      console.log("Then:", then);
       expect(then).to.not.be.null;
       expect(then).to.be.an("object");
+    });
+
+    it("Delete a feedback with his id", async () => {
+      const then = await storage.deleteFeedback(feedbackCreated._id);
+
+      expect(then).to.be.an("object");
+      expect(then).to.have.a.property("rating", rating);
+      expect(then).to.have.a.property("userId");
+      expect(then).to.have.a.property("providerId");
+
+      const fb = await Feedback.findById(then._id);
+      console.log("FB:", fb);
+      expect(fb).to.be.null;
+    });
+  });
+
+  describe("Get Feedbacks", () => {
+    const firstRating = 4;
+    const firstName = "First";
+    const secondRating = 5;
+    const secondName = "Second";
+
+    before(async () => {
+      const first = await storage.createProvider(firstName);
+      const second = await storage.createProvider(secondName);
+      await storage.createFeedback(firstRating, first._id, testUser._id);
+      await storage.createFeedback(secondRating, second._id, testUser._id);
+    });
+
+    it("By provider", async () => {
+      const firstRes = await storage.getFeedbacksByProvider(firstName);
+      expect(firstRes).to.be.an("array").to.have.lengthOf(1);
+      const firstFeedback = firstRes[0];
+      expect(firstFeedback).to.have.a.property("rating", firstRating);
+      expect(firstFeedback).to.have.a.property("userId");
+      expect(firstFeedback.userId.toString()).to.be.equals(
+        testUser._id.toString()
+      );
+      const secondRes = await storage.getFeedbacksByProvider(secondName);
+      const secondFeedback = secondRes[0];
+      expect(secondRes).to.be.an("array").to.have.lengthOf(1);
+      expect(secondFeedback).to.have.a.property("rating", secondRating);
+      expect(secondFeedback).to.have.a.property("userId");
+      expect(secondFeedback.userId.toString()).to.be.equals(
+        testUser._id.toString()
+      );
+    });
+
+    it("All", async () => {
+      const res = await storage.getAllFeedbacksFromAllProviders();
+      expect(res).to.be.an("array").to.have.lengthOf(3);
+      const test = res.find((f) => f.name === providerName);
+      expect(test).to.not.be.null;
+      const firstTest = res.find((f) => f.name === firstName);
+      expect(firstTest).to.not.be.null;
+      const secondTest = res.find((f) => f.name === secondName);
+      expect(secondTest).to.not.be.null;
     });
   });
 });

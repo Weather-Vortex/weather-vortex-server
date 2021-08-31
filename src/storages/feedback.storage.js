@@ -19,14 +19,40 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const { Feedback } = require("../models//feedback.model");
 const { Provider } = require("../models/provider.model");
 const User = require("../models/user.model");
 
-const createFeedback = async (providerId, feedback) => {
+/**
+ * Create a Feedback given his provider.
+ * @param {mongoose.ObjectId} providerId Provider Id with given feedback.
+ * @param {Feedback} feedback Given Feedback.
+ * @returns Mongoose save result promise.
+ */
+const createFeedback = async (
+  rating,
+  provider,
+  user,
+  forecastDate,
+  fields,
+  description
+) => {
   try {
-    const provider = await Provider.findById(providerId);
-    provider.feedbacks.push(feedback);
-    return await provider.save();
+    const providerId =
+      typeof provider === "object"
+        ? provider
+        : new mongoose.Types.ObjectId(provider);
+    const userId =
+      typeof user === "object" ? user : new mongoose.Types.ObjectId(user);
+    const feedback = new Feedback({
+      rating,
+      providerId,
+      userId,
+      forecastDate,
+      fields,
+      description,
+    });
+    return await feedback.save();
   } catch (error) {
     const message = `Mongoose save error: ${error}`;
     const err = new Error(message);
@@ -38,11 +64,22 @@ const createFeedback = async (providerId, feedback) => {
 
 /**
  * Delete a feedback given his id.
- * @param {mongoose.ObjectId} id Can be the ProviderId or the UserId.
  * @param {mongoose.ObjectId} feedbackId ObjectId of the feedback to delete.
  * @returns Operation result.
  */
-const deleteFeedback = async (id, feedbackId) => {
+const deleteFeedback = async (feedbackId) => {
+  if (typeof feedbackId === "string") {
+    feedbackId = new mongoose.Types.ObjectId(feedbackId);
+  }
+
+  const deleted = await Feedback.findByIdAndDelete(feedbackId);
+  console.log("Deleted:", deleted);
+  return deleted;
+
+  if (typeof feedbackId === "string") {
+    feedbackId = new mongoose.ObjectId(feedbackId);
+  }
+
   if (typeof id === "object") {
     if (typeof id.provider === "string") {
       const objectId = new mongoose.ObjectId(id.provider);
@@ -60,19 +97,33 @@ const deleteFeedback = async (id, feedbackId) => {
   return null;
 };
 
-const deleteFeedbackByProvider = async (id, feedbackId) => {
-  const provider = await Provider.findById(id);
+/**
+ * @deprecated Use only deleteFeedback function.
+ * @param {*} providerId
+ * @param {*} feedbackId
+ * @returns
+ */
+const deleteFeedbackByProvider = async (providerId, feedbackId) => {
+  const provider = await Provider.findById(providerId);
+  const feedback = provider.feedbacks.find((f) => f._id.equals(feedbackId));
   provider.feedbacks.pull(feedbackId);
-  console.log("Midlle", provider);
-  return await provider.save();
+  const saved = await provider.save();
+  const user = await User.findById(feedback.userId);
+  user.feedbacks.pull(feedbackId);
+  await user.save();
+  return saved;
 };
 
+/**
+ * @deprecated Use only deleteFeedback function.
+ * @param {*} id
+ * @param {*} feedbackId
+ * @returns
+ */
 const deleteFeedbackByUser = async (id, feedbackId) => {
   const user = await User.findById(id).populate("feedbacks");
   console.log("User fetched", user);
-  const feedback = user.feedbacks.find(
-    (f) => f.toString() === feedbackId.toString()
-  );
+  const feedback = user.feedbacks.find((f) => f.equals(feedbackId));
   const res = await feedback.remove();
   console.log("Removed:", res);
   return res;
