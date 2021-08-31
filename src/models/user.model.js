@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt"); // It is used for hashing and comparing the passwords.
 const salt = 10; //per la password
-const confiq = require("../config/config").get(process.env.NODE_ENV);
 
 var userSchema = mongoose.Schema({
   firstName: {
