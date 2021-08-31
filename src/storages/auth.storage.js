@@ -18,7 +18,7 @@ const register = (req, res) => {
     isVerified: false,
   });
 
-  console.log(newuser);
+  // console.log(newuser);
 
   const { firstName, lastName, email, password } = req.body;
 
@@ -93,7 +93,6 @@ const verifyUser = (req, res, next) => {
           lastname: doc.lastName,
         });
       });
-
     })
     .catch((e) => {
       console.log("error", e);
@@ -120,8 +119,7 @@ const login = (req, res) => {
             .status(500)
             .json({ isAuth: false, message: " Auth failed ,email not found" });
 
-
-        //If the user isn't verified, cannot login-> 
+        //If the user isn't verified, cannot login->
         if (user.isVerified == false) {
           return res.status(403).send({
             message: "Pending Account. Please Verify Your Email!",
@@ -142,8 +140,8 @@ const login = (req, res) => {
                 id: user._id,
                 email: user.email,
                 firstName: user.firstName,
-                lastName: user.lastName
-              }
+                lastName: user.lastName,
+              },
             });
           });
         });
@@ -193,10 +191,10 @@ const deleteUser = (req, res) => {
 const updateUser = (req, res, next) => {
   // The auth middleware had found user before save.
   // Update only non null fields.
-  if(req.body.password) {
+  if (req.body.password) {
     req.user.password = req.body.password;
   }
-  if(req.body.preferred) {
+  if (req.body.preferred) {
     req.user.preferred.location = req.body.preferred;
   }
   // Try to update the user.
