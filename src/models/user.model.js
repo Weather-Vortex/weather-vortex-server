@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt"); // It is used for hashing and comparing the passwords.
 const salt = 10; //per la password
-const confiq = require("../config/config").get(process.env.NODE_ENV);
 
 var userSchema = mongoose.Schema({
   firstName: {
@@ -122,7 +121,7 @@ userSchema.methods.comparePassword = function (password, cb) {
 //the particular user has been logged-in or not and we will save this in database
 userSchema.methods.generateToken = function (cb) {
   var user = this;
-  var token = jwt.sign(user._id.toHexString(), confiq.SECRET);
+  var token = jwt.sign(user._id.toHexString(), process.env.SECRET);
 
   user.token = token;
   user.save(function (err, user) {
@@ -135,7 +134,7 @@ userSchema.methods.generateToken = function (cb) {
 userSchema.statics.findByToken = function (token, cb) {
   var user = this;
 
-  jwt.verify(token, confiq.SECRET, function (err, decode) {
+  jwt.verify(token, process.env.SECRET, function (err, decode) {
     user.findOne({ _id: decode, token: token }, function (err, user) {
       if (err) return cb(err);
       cb(null, user);

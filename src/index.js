@@ -30,12 +30,10 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, { cors: { origin: "*" } }); // TODO: Change this.
 
-const db = require("./config/config").get(process.env.NODE_ENV);
-
 // Database connection-> ps: l'ho modificato per tenere nascosto il link al database
 const mongoose = require("mongoose");
 mongoose.Promise = global.Promise;
-const mongoConnection = mongoose.connect(db.DATABASE, {
+const mongoConnection = mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true,
