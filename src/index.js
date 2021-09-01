@@ -31,14 +31,8 @@ const { Server } = require("socket.io");
 const io = new Server(server, { cors: { origin: "*" } }); // TODO: Change this.
 
 // Database connection-> ps: l'ho modificato per tenere nascosto il link al database
-const mongoose = require("mongoose");
-mongoose.Promise = global.Promise;
-const mongoConnection = mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-});
-mongoConnection
+const { connection } = require("./config/database.connector");
+connection
   .then(() => console.log("Database connected"))
   .catch((err) => console.error(err));
 
@@ -83,7 +77,4 @@ server.listen(port, () => {
 });
 
 // Export app to use it in unit testing.
-module.exports = {
-  app,
-  mongoConnection,
-};
+module.exports = { app };

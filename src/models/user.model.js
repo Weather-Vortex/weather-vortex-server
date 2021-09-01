@@ -1,3 +1,21 @@
+/*
+    Web server for Weather Vortex project.
+    Copyright (C) 2021  Tentoni Daniele, Zandoli Silvia.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 const mongoose = require("mongoose");
 //(JWT) is an open standard that defines a compact and self-contained way of securely
 //transmitting information between parties as a JSON object
@@ -67,6 +85,12 @@ var userSchema = mongoose.Schema({
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Station",
+    },
+  ],
+  feedbacks: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Feedback",
     },
   ],
   // TODO: Add Telegram Id when ready.
