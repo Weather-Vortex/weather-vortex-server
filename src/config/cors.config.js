@@ -36,6 +36,7 @@ const origin = process.env.CLIENT_URL || "*";
  * Cors options configured for this project.
  */
 const options = {
+  credentials: true,
   origin,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };

@@ -1,12 +1,13 @@
 {
   "name": "weather-vortex-server",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Server for Weather Vortex Project.",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "start:local": "node --trace-warnings -r dotenv/config src/index.js",
     "test": "mocha --recursive -r dotenv/config --timeout 3000 --exit",
+    "test:trace": "mocha --trace-deprecation --trace-warnings --recursive -r dotenv/config --timeout 3000 --exit",
     "test-cov": "nyc --reporter=text npm run test",
     "test-cov:html": "nyc --reporter=html npm run test"
   },

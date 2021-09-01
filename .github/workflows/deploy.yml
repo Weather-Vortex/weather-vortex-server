@@ -1,4 +1,4 @@
-name: Deploy to Heroku
+name: Deploy
 
 on:
   push:
@@ -8,6 +8,11 @@ on:
     paths-ignore:
       - "**/*.md"
       - "**/*.data"
+      - "**/test/*.test.js"
+      - "**/*.*ignore"
+
+env:
+  IMAGE_NAME: weather-vortex-server
 
 jobs:
   Deploy:
@@ -76,17 +81,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        uses: docker/metadata-action@v3
         with:
-          images: antonioparolisi/weather-vortex-server
+          images: antonioparolisi/${{ env.IMAGE_NAME }}
           tags: |
             type=schedule
             type=ref,event=branch
@@ -95,18 +94,26 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
             type=sha
-            
+
       - name: get-npm-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@master
-        
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Build and push Docker image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags:
+            antonioparolisi/${{ env.IMAGE_NAME }}:${{ steps.package-version.outputs.current-version }},
+            antonioparolisi/${{ env.IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
