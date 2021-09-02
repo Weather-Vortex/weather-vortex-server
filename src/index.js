@@ -54,7 +54,7 @@ const userRoutes = require("./routes/user.routes");
 app.use("/users", userRoutes);
 
 const authRoutes = require("./routes/auth.routes");
-app.use("/api", authRoutes);
+app.use("/auth", authRoutes);
 
 const { configRouter } = require("./routes/forecasts.routes");
 configRouter(app, io);
