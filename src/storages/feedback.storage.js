@@ -64,15 +64,21 @@ const createFeedback = async (
 
 /**
  * Delete a feedback given his id.
- * @param {mongoose.ObjectId} feedbackId ObjectId of the feedback to delete.
+ * @param {mongoose.ObjectId} id ObjectId of the feedback to delete.
+ * @param {mongoose.ObjectId} user Owner of the feedback.
  * @returns Operation result.
  */
-const deleteFeedback = async (feedbackId) => {
-  if (typeof feedbackId === "string") {
-    feedbackId = new mongoose.Types.ObjectId(feedbackId);
+const deleteFeedback = async (id, user) => {
+  if (typeof id === "string") {
+    id = new mongoose.Types.ObjectId(id);
   }
 
-  const deleted = await Feedback.findByIdAndDelete(feedbackId);
+  if (typeof user === "string") {
+    user = new mongoose.Types.ObjectId(user);
+  }
+
+  const deleted = await Feedback.findOneAndDelete({ _id: id, userId: user });
+  // const deleted = await Feedback.findByIdAndDelete(id);
   return deleted;
   /*
   if (typeof feedbackId === "string") {
@@ -181,10 +187,29 @@ const getAllFeedbacksFromAllProviders = async () => {
   }
 };
 
+const fillFeedback = async (feedback) => {
+  if (typeof feedback !== "object") {
+    throw new TypeError("Feedback must be an object");
+  }
+
+  if (typeof feedback.userId === "string") {
+    feedback.userId = new mongoose.Types.ObjectId(feedback.userId);
+  }
+
+  const user = await User.findById(feedback.userId);
+  feedback.user = {
+    _id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+  };
+  return feedback;
+};
+
 module.exports = {
   createFeedback,
   createProvider,
   deleteFeedback,
+  fillFeedback,
   getFeedbacksByProvider,
   getAllFeedbacksFromAllProviders,
 };

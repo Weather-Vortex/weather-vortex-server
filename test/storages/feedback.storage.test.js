@@ -172,7 +172,10 @@ describe("Feedbacks Storage", () => {
     });
 
     it("Delete a feedback with his id", async () => {
-      const then = await storage.deleteFeedback(feedbackCreated._id);
+      const then = await storage.deleteFeedback(
+        feedbackCreated._id,
+        feedbackCreated.userId
+      );
 
       expect(then).to.be.an("object");
       expect(then).to.have.a.property("rating", rating);
