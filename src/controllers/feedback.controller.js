@@ -40,16 +40,17 @@ const createFeedback = async (req, res) => {
       req.body.description
     );
     if (result) {
+      const cloned = await storage.fillFeedback(result);
       return res.status(201).json({
-        result,
         message: "Feedback created.",
-        feedback: storage.fillFeedback(result),
+        feedback: cloned,
       });
     }
     return res
       .status(500)
       .json({ result, message: "Feedback not created, unknown error" });
   } catch (error) {
+    console.error("FEEDBACK ERROR: ", error);
     return res
       .status(500)
       .json({ error, message: "Error thrown during feedback creation." });

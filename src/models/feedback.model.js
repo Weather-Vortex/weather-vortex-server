@@ -81,16 +81,17 @@ const feedbackSchema = new mongoose.Schema({
 
 feedbackSchema.post("save", async (doc) => {
   console.log(
-    "Feedback %s(%s) has been saved. Get the average again!",
+    "Feedback %s(%s)(%s) has been saved. Get the average again!",
     doc._id,
-    doc.userId
+    doc.userId,
+    doc.providerId
   );
   const _user = await User.findById(doc.userId);
   _user.feedbacks.push(doc._id);
   await _user.save();
-  const _provider = await Provider.findById(doc.providerId);
-  _provider.feedbacks.push(doc._id);
-  await _provider.save();
+  const provider = await Provider.findById(doc.providerId);
+  provider.feedbacks.push(doc._id);
+  await provider.save();
 });
 
 feedbackSchema.post("remove", { query: true, document: true }, async (doc) => {

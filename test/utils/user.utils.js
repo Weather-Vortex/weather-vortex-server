@@ -35,4 +35,19 @@ const createUser = async () => {
   return res;
 };
 
-module.exports = { createUser };
+const createToken = (user) =>
+  new Promise((resolve, reject) => {
+    user.generateToken((err, withToken) => {
+      if (err) {
+        reject(err);
+      }
+
+      if (withToken.token) {
+        resolve(withToken);
+      }
+
+      reject(new Error("Missing token"));
+    });
+  });
+
+module.exports = { createUser, createToken };

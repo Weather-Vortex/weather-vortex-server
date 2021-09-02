@@ -54,6 +54,7 @@ const createFeedback = async (
     });
     return await feedback.save();
   } catch (error) {
+    console.log("Create error:", error);
     const message = `Mongoose save error: ${error}`;
     const err = new Error(message);
     err.message = message;
@@ -196,13 +197,34 @@ const fillFeedback = async (feedback) => {
     feedback.userId = new mongoose.Types.ObjectId(feedback.userId);
   }
 
-  const user = await User.findById(feedback.userId);
-  feedback.user = {
-    _id: user._id,
-    firstName: user.firstName,
-    lastName: user.lastName,
+  const {
+    rating,
+    fields,
+    _id,
+    providerId,
+    userId,
+    forecastDate,
+    description,
+    creationDate,
+  } = feedback;
+  const res = await User.findById(userId);
+
+  const user = {
+    _id: res._id,
+    firstName: res.firstName,
+    lastName: res.lastName,
   };
-  return feedback;
+
+  return {
+    rating,
+    fields,
+    _id,
+    providerId,
+    user,
+    forecastDate,
+    description,
+    creationDate,
+  };
 };
 
 module.exports = {
