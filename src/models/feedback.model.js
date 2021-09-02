@@ -36,7 +36,7 @@ const feedbackSchema = new mongoose.Schema({
     required: true,
     default: 3,
   },
-  providerId: {
+  provider: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Provider",
     required: true,
@@ -44,7 +44,7 @@ const feedbackSchema = new mongoose.Schema({
   /**
    * UserId of the feedback Giver.
    */
-  userId: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
@@ -80,34 +80,13 @@ const feedbackSchema = new mongoose.Schema({
 });
 
 feedbackSchema.post("save", async (doc) => {
-  console.log(
-    "Feedback %s(%s)(%s) has been saved. Get the average again!",
-    doc._id,
-    doc.userId,
-    doc.providerId
-  );
-  const _user = await User.findById(doc.userId);
+  const _user = await User.findById(doc.user);
   _user.feedbacks.push(doc._id);
-  await _user.save();
-  const provider = await Provider.findById(doc.providerId);
-  provider.feedbacks.push(doc._id);
-  await provider.save();
-});
-
-feedbackSchema.post("remove", { query: true, document: true }, async (doc) => {
-  console.log(
-    "Feedback %s(%s) has been deleted. Get the average again!",
-    doc._id,
-    doc.rating
-  );
-
-  const first = await User.findById(doc.userId);
-  first.feedbacks.pull(doc._id);
-  await first.save();
-  const provider = await Provider.findById(providerId);
-  provider.feedbacks.pull(feedbackId);
-  const saved = await provider.save();
-  console.log("User updated after delete:", second);
+  const userSave = _user.save();
+  const _provider = await Provider.findById(doc.provider);
+  _provider.feedbacks.push(doc._id);
+  const providerSave = _provider.save();
+  await Promise.all([userSave, providerSave]);
 });
 
 const Feedback = mongoose.model("Feedback", feedbackSchema);

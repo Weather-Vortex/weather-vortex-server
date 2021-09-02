@@ -28,7 +28,7 @@ router
   .post("/", auth, controller.createFeedback)
   .delete("/:id", auth, controller.deleteFeedback)
   .get("/:name", controller.getFeedbacksByProvider)
-  .get("/", controller.getAllFeedbacksFromAllProviders);
+  .get("", controller.getAllFeedbacksFromAllProviders);
 
 controller.generateBaseProviders();
 

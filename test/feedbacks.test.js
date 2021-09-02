@@ -34,9 +34,11 @@ const { connection } = require("../src/config/database.connector");
 
 describe("Test Feedbacks routes", () => {
   let testUser;
+  const providerName = "TestProvider";
   let testProvider;
 
   before((done) => {
+    // Clean database before start and add basic documents.
     connection
       .then(async () => {
         // Create user.
@@ -47,15 +49,23 @@ describe("Test Feedbacks routes", () => {
 
         // Create provider.
         await Provider.deleteMany({});
-        const provider = new Provider({ name: "TestProvider" });
+        const provider = new Provider({ name: providerName });
         testProvider = await provider.save();
         done();
       })
       .catch((error) => done(error));
   });
 
-  beforeEach(async () => {
+  afterEach(async () => {
+    // Clean database for next tests.
     await Feedback.deleteMany({});
+    const provider = await Provider.findById(testProvider._id);
+    provider.feedbacks = [];
+    const res = await provider.save();
+    testProvider = res;
+    const user = await User.findById(testUser._id);
+    user.feedbacks = [];
+    testUser = await user.save();
   });
 
   const base_url = "/feedbacks";
@@ -67,7 +77,7 @@ describe("Test Feedbacks routes", () => {
         .set("Accept", "application/json")
         .send({
           rating: 4,
-          providerId: testProvider._id,
+          provider: testProvider._id,
         });
 
       expect(result).to.have.status(201);
@@ -79,7 +89,15 @@ describe("Test Feedbacks routes", () => {
         .to.be.an("object");
       expect(result.body.feedback.user)
         .to.have.a.property("firstName")
-        .to.be.a("string");
+        .to.be.a("string")
+        .to.be.equals("test");
+      expect(result.body.feedback)
+        .to.have.a.property("provider")
+        .to.be.an("object");
+      expect(result.body.feedback.provider)
+        .to.have.a.property("name")
+        .to.be.a("string")
+        .to.be.equals(providerName);
     });
   });
 
@@ -99,8 +117,8 @@ describe("Test Feedbacks routes", () => {
         .set("Accept", "application/json")
         .send({
           rating: 4,
-          providerId: testProvider._id,
-          userId: testUser._id,
+          provider: testProvider._id,
+          user: testUser._id,
         });
 
       const result = await request(app)
@@ -110,6 +128,58 @@ describe("Test Feedbacks routes", () => {
       expect(result).to.have.status(200);
       expect(result.body).to.have.a.property("result");
       expect(result.body).to.have.a.property("message", "Feedback deleted.");
+    });
+  });
+
+  describe("Get Feedbacks", () => {
+    const feedbackRating = 4;
+    beforeEach(async () => {
+      // Add a feedback before enter a test.
+      await request(app)
+        .post(`${base_url}`)
+        .set("Cookie", `auth=${testUser.token}`)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json")
+        .send({
+          rating: feedbackRating,
+          provider: testProvider._id,
+        });
+    });
+
+    afterEach(async () => {
+      // Clean database for next tests.
+      await Feedback.deleteMany({});
+      const provider = await Provider.findById(testProvider._id);
+      provider.feedbacks = [];
+      testUser.feedbacks = [];
+      const res = await provider.save();
+      testProvider = res;
+      testUser = await testUser.save();
+    });
+
+    it("By provider", async () => {
+      const provider = await Provider.findById(testProvider._id);
+      expect(provider.feedbacks).to.have.lengthOf(1);
+      const res = await request(app).get(`${base_url}/${testProvider.name}`);
+      expect(res.body.results.feedbacks).to.have.lengthOf(1);
+      expect(res).to.have.status(200);
+    });
+
+    it("All", async () => {
+      const res = await request(app).get(`${base_url}`);
+      expect(res).to.have.status(200);
+      expect(res.body)
+        .to.have.property("results")
+        .to.be.an("array")
+        .to.have.lengthOf(1);
+      expect(res.body.results[0])
+        .to.have.property("feedbacks")
+        .to.be.an("array")
+        .to.have.lengthOf(1);
+      expect(res.body.results[0].feedbacks[0]).to.have.property(
+        "rating",
+        feedbackRating
+      );
     });
   });
 });

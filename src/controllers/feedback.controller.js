@@ -33,7 +33,7 @@ const createFeedback = async (req, res) => {
   try {
     const result = await storage.createFeedback(
       req.body.rating,
-      req.body.providerId,
+      req.body.provider,
       req.user._id,
       req.body.forecastDate,
       req.body.fields,
@@ -94,11 +94,12 @@ const getFeedbacksByProvider = async (req, res) => {
 const getAllFeedbacksFromAllProviders = async (_, res) => {
   try {
     const results = await storage.getAllFeedbacksFromAllProviders();
-    if (result) {
+    if (results) {
       return res.status(200).json({ results, message: "Feedbacks fetched" });
     }
     return res.status(404).json({ results, message: "No feedbacks fetched." });
   } catch (error) {
+    console.error("ERROR ONTROOLER:", error);
     return res
       .status(500)
       .json({ error, message: "Error thrown during all feedbacks fetching" });

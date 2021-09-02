@@ -102,14 +102,15 @@ describe("Feedbacks Storage", () => {
 
       expect(result).to.be.an("object");
       expect(result).to.have.a.property("rating", rating);
-      expect(result).to.have.a.property("userId");
-      expect(result).to.have.a.property("providerId");
-      expect(result.userId.toString()).to.be.equals(testUser._id.toString());
-      expect(result.providerId.toString()).to.be.equals(
-        provider._id.toString()
-      );
+      expect(result)
+        .to.have.a.property("user")
+        .to.be.an("object")
+        .to.be.equals(testUser._id);
+      expect(result).to.have.a.property("provider").to.be.an("object");
+      expect(result.user.toString()).to.be.equals(testUser._id.toString());
+      expect(result.provider.toString()).to.be.equals(provider._id.toString());
 
-      const hisProvider = await Provider.findById(result.providerId);
+      const hisProvider = await Provider.findById(result.provider);
       expect(hisProvider).to.be.an("object");
       expect(hisProvider).to.have.a.property("name", providerName);
       expect(hisProvider).to.have.a.property("feedbacks").to.have.lengthOf(1);
@@ -181,13 +182,13 @@ describe("Feedbacks Storage", () => {
     it("Delete a feedback with his id", async () => {
       const then = await storage.deleteFeedback(
         feedbackCreated._id,
-        feedbackCreated.userId
+        feedbackCreated.user
       );
 
       expect(then).to.be.an("object");
       expect(then).to.have.a.property("rating", rating);
-      expect(then).to.have.a.property("userId");
-      expect(then).to.have.a.property("providerId");
+      expect(then).to.have.a.property("user");
+      expect(then).to.have.a.property("provider");
 
       const fb = await Feedback.findById(then._id);
 
@@ -210,24 +211,30 @@ describe("Feedbacks Storage", () => {
 
     it("By provider", async () => {
       const firstRes = await storage.getFeedbacksByProvider(firstName);
-      expect(firstRes).to.be.an("array").to.have.lengthOf(1);
+      expect(firstRes).to.be.an("object");
+      expect(firstRes)
+        .to.have.a.property("feedbacks")
+        .to.be.an("array")
+        .to.have.lengthOf(1);
 
-      const firstFeedback = firstRes[0];
+      const firstFeedback = firstRes.feedbacks[0];
       expect(firstFeedback).to.have.a.property("rating", firstRating);
-      expect(firstFeedback).to.have.a.property("userId");
-      expect(firstFeedback.userId.toString()).to.be.equals(
-        testUser._id.toString()
-      );
+      expect(firstFeedback).to.have.a.property("user").to.be.an("object");
+      expect(firstFeedback.user).to.have.a.property("_id");
+      expect(firstFeedback.user._id.equals(testUser._id)).to.be.true;
 
       const secondRes = await storage.getFeedbacksByProvider(secondName);
-      expect(secondRes).to.be.an("array").to.have.lengthOf(1);
+      expect(secondRes).to.be.an("object");
+      expect(secondRes)
+        .to.have.a.property("feedbacks")
+        .to.be.an("array")
+        .to.have.lengthOf(1);
 
-      const secondFeedback = secondRes[0];
+      const secondFeedback = secondRes.feedbacks[0];
       expect(secondFeedback).to.have.a.property("rating", secondRating);
-      expect(secondFeedback).to.have.a.property("userId");
-      expect(secondFeedback.userId.toString()).to.be.equals(
-        testUser._id.toString()
-      );
+      expect(secondFeedback).to.have.a.property("user").to.be.an("object");
+      expect(firstFeedback.user).to.have.a.property("_id");
+      expect(secondFeedback.user._id.equals(testUser._id)).to.be.true;
     });
 
     it("All", async () => {
