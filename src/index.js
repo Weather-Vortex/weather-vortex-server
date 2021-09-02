@@ -56,11 +56,15 @@ app.use("/users", userRoutes);
 const authRoutes = require("./routes/auth.routes");
 app.use("/api", authRoutes);
 
+// This route require a reference to Socker.io to send forecast data.
 const { configRouter } = require("./routes/forecasts.routes");
 configRouter(app, io);
 
 const stationRoutes = require("./routes/station.routes");
 app.use("/stations", stationRoutes);
+
+const feedbacksRoutes = require("./routes/feedbacks.routes");
+app.use("/feedbacks", feedbacksRoutes);
 
 const port = process.env.PORT || 12000;
 
@@ -71,7 +75,9 @@ server.listen(port, () => {
   );
   console.log("This program comes with ABSOLUTELY NO WARRANTY\n");
 
-  console.log("Application running on http://localhost:12000\n");
+  if (typeof process.env.NODE_ENV === "undefined") {
+    console.log("Application running on http://localhost:12000\n");
+  }
 
   console.log("Weather Vortex is running those CORS options:", cors.options);
 });
