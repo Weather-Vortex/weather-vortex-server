@@ -30,4 +30,6 @@ router
   .get("/:name", controller.getFeedbacksByProvider)
   .get("/", controller.getAllFeedbacksFromAllProviders);
 
+controller.generateBaseProviders();
+
 module.exports = router;

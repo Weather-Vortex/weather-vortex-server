@@ -146,7 +146,7 @@ const createProvider = async (name) => {
     return await provider.save();
   } catch (error) {
     const message = `Mongoose save error: ${error}`;
-    const err = new Error();
+    const err = new Error(message);
     err.message = message;
     err.internalError = error;
     throw err;

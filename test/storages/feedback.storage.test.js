@@ -62,6 +62,13 @@ describe("Feedbacks Storage", () => {
       expect(result).to.be.an("object");
       expect(result).to.have.a.property("name", providerName).to.be.a("string");
     });
+
+    it("Create two providers", async () => {
+      await storage.createProvider(providerName);
+
+      const result = storage.createProvider(providerName);
+      await expect(result).to.be.rejectedWith(Error);
+    });
   });
 
   describe("Create a Feedback", () => {
