@@ -41,24 +41,16 @@ describe("Feedbacks Storage", () => {
     connection
       .then(async () => {
         try {
-          // Delete the test user after all tests.
+          // Delete previous test users.
           await User.deleteMany({});
-          const cre = await createUser();
-          testUser = cre;
+          const created = await createUser();
+          testUser = created;
           done();
         } catch (err) {
           done(err);
         }
       })
       .catch((error) => done(error));
-  });
-
-  after((done) => {
-    // Delete the test user after all tests.
-    //User.deleteMany(testUser)
-    //.then(() => done())
-    //.catch((err) => done(err));
-    done();
   });
 
   describe("Create a Provider", () => {
@@ -68,7 +60,7 @@ describe("Feedbacks Storage", () => {
       const result = await storage.createProvider(providerName);
 
       expect(result).to.be.an("object");
-      expect(result).to.have.a.property("name", providerName);
+      expect(result).to.have.a.property("name", providerName).to.be.a("string");
     });
   });
 
