@@ -47,7 +47,7 @@ const providerSchema = new mongoose.Schema({
   feedbacks: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Feedback",
-    default: () => [],
+    default: [],
   },
   /*{
     type: Array,
