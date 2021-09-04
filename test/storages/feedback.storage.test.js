@@ -198,11 +198,12 @@ describe("Feedbacks Storage", () => {
 
   describe("Get Feedbacks", () => {
     const firstRating = 4;
-    const firstName = "First";
+    const firstName = storage.providerNames[0];
     const secondRating = 5;
-    const secondName = "Second";
+    const secondName = storage.providerNames[1];
 
     before(async () => {
+      await Provider.deleteMany({});
       const first = await storage.createProvider(firstName);
       const second = await storage.createProvider(secondName);
       await storage.createFeedback(firstRating, first._id, testUser._id);
@@ -239,7 +240,9 @@ describe("Feedbacks Storage", () => {
 
     it("All", async () => {
       const res = await storage.getAllFeedbacksFromAllProviders();
-      expect(res).to.be.an("array").to.have.lengthOf(3);
+      expect(res)
+        .to.be.an("array")
+        .to.have.lengthOf(storage.providerNames.length);
       const test = res.find((f) => f.name === providerName);
       expect(test).to.not.be.null;
       const firstTest = res.find((f) => f.name === firstName);

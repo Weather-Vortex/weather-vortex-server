@@ -198,11 +198,12 @@ describe("Test Feedbacks routes", () => {
         .to.have.property("results")
         .to.be.an("array")
         .to.have.lengthOf(providerNames.length);
-      expect(res.body.results[0])
+      const testResult = res.body.results.find((f) => f.name === providerName);
+      expect(testResult)
         .to.have.property("feedbacks")
         .to.be.an("array")
         .to.have.lengthOf(1);
-      expect(res.body.results[0].feedbacks[0]).to.have.property(
+      expect(testResult.feedbacks[0]).to.have.property(
         "rating",
         feedbackRating
       );
