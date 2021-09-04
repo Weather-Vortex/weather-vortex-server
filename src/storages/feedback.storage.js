@@ -20,7 +20,7 @@
 
 const mongoose = require("mongoose");
 const { Feedback } = require("../models//feedback.model");
-const { Provider } = require("../models/provider.model");
+const { Provider, providerNames } = require("../models/provider.model");
 const User = require("../models/user.model");
 
 /**
@@ -105,7 +105,14 @@ const createProvider = async (name) => {
     const provider = new Provider({ name });
     return await provider.save();
   } catch (error) {
-    const message = `Mongoose save error: ${error}`;
+    // TODO: When project growth, change this with a map.
+    let message;
+    if (error.code === 11000) {
+      const value = JSON.stringify(error.keyValue);
+      message = `Mongoose duplicated key ${value}`;
+    } else {
+      message = `Mongoose unknown save error: ${error}`;
+    }
     const err = new Error(message);
     err.message = message;
     err.internalError = error;
@@ -173,4 +180,5 @@ module.exports = {
   fillFeedback,
   getFeedbacksByProvider,
   getAllFeedbacksFromAllProviders,
+  providerNames,
 };

@@ -34,7 +34,7 @@ chai.use(chaiAsPromised);
 const { connection } = require("../../src/config/database.connector");
 
 describe("Feedbacks Storage", () => {
-  const providerName = "TestProvider";
+  const providerName = storage.providerNames[0];
   let testUser;
 
   before((done) => {

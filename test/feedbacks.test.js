@@ -27,17 +27,17 @@ const expect = chai.expect;
 
 const { app } = require("../src/index");
 const { Feedback } = require("../src/models/feedback.model");
-const { Provider } = require("../src/models/provider.model");
+const { Provider, providerNames } = require("../src/models/provider.model");
 const User = require("../src/models/user.model");
 const { createUser, createToken } = require("./utils/user.utils");
 const { connection } = require("../src/config/database.connector");
 
 describe("Test Feedbacks routes", () => {
   let testUser;
-  const providerName = "TestProvider";
+  const providerName = providerNames[0];
   let testProvider;
 
-  before((done) => {
+  beforeEach((done) => {
     // Clean database before start and add basic documents.
     connection
       .then(async () => {
@@ -47,28 +47,62 @@ describe("Test Feedbacks routes", () => {
         const withToken = await createToken(created);
         testUser = withToken;
 
-        // Create provider.
-        await Provider.deleteMany({});
-        const provider = new Provider({ name: providerName });
-        testProvider = await provider.save();
+        // Get a provider provider.
+        // await Provider.deleteMany({});
+        // const provider = new Provider({ name: providerName });
+        // testProvider = await provider.save();
         done();
       })
       .catch((error) => done(error));
   });
 
-  afterEach(async () => {
-    // Clean database for next tests.
+  const cleanFeedbackDatabase = async () => {
     await Feedback.deleteMany({});
-    const provider = await Provider.findById(testProvider._id);
+    const provider = await Provider.findOne({ name: providerName });
     provider.feedbacks = [];
     const res = await provider.save();
     testProvider = res;
     const user = await User.findById(testUser._id);
     user.feedbacks = [];
     testUser = await user.save();
-  });
+  };
+
+  // Clean database for next tests.
+  afterEach(async () => await cleanFeedbackDatabase());
 
   const base_url = "/feedbacks";
+
+  describe("Create default providers", () => {
+    const providers = [];
+
+    it("Create default providers", async () => {
+      const res = await request(app).get(`${base_url}`);
+      expect(res).to.have.status(200);
+      const results = await Promise.all(
+        providerNames.map((name) => Provider.findOne({ name }))
+      );
+      results.forEach((found, i) => {
+        expect(found).to.be.an("object");
+        expect(found)
+          .to.have.a.property("name")
+          .to.be.a("string")
+          .to.be.equals(providerNames[i]);
+        providers.push(found);
+      });
+    });
+
+    it("Doesn't create other providers", async () => {
+      const res = await request(app).get(`${base_url}`);
+      expect(res).to.have.status(200);
+      const results = await Promise.all(
+        providers.map((elem) => Provider.find({ name: elem.name }))
+      );
+      results.forEach((founds) =>
+        expect(founds).to.be.an("array").to.have.lengthOf(1)
+      );
+    });
+  });
+
   describe("Create a feedback", async () => {
     it("Will be created if inputs are right", async () => {
       const result = await request(app)
@@ -146,16 +180,8 @@ describe("Test Feedbacks routes", () => {
         });
     });
 
-    afterEach(async () => {
-      // Clean database for next tests.
-      await Feedback.deleteMany({});
-      const provider = await Provider.findById(testProvider._id);
-      provider.feedbacks = [];
-      testUser.feedbacks = [];
-      const res = await provider.save();
-      testProvider = res;
-      testUser = await testUser.save();
-    });
+    // Clean database for next tests.
+    afterEach(async () => await cleanFeedbackDatabase());
 
     it("By provider", async () => {
       const provider = await Provider.findById(testProvider._id);
@@ -171,7 +197,7 @@ describe("Test Feedbacks routes", () => {
       expect(res.body)
         .to.have.property("results")
         .to.be.an("array")
-        .to.have.lengthOf(1);
+        .to.have.lengthOf(providerNames.length);
       expect(res.body.results[0])
         .to.have.property("feedbacks")
         .to.be.an("array")
