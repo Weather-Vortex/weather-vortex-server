@@ -30,12 +30,6 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, { cors: { origin: "*" } }); // TODO: Change this.
 
-// Database connection-> ps: l'ho modificato per tenere nascosto il link al database
-const { connection } = require("./config/database.connector");
-connection
-  .then(() => console.log("Database connected"))
-  .catch((err) => console.error(err));
-
 // Cors policies initialization.
 const cors = require("./config/cors.config");
 cors.configure(app);
@@ -64,7 +58,21 @@ const stationRoutes = require("./routes/station.routes");
 app.use("/stations", stationRoutes);
 
 const feedbacksRoutes = require("./routes/feedbacks.routes");
-app.use("/feedbacks", feedbacksRoutes);
+app.use("/feedbacks", feedbacksRoutes.router);
+
+// Database connection-> ps: l'ho modificato per tenere nascosto il link al database
+const { connection } = require("./config/database.connector");
+connection
+  .then(() => {
+    console.log("Database connected");
+    feedbacksRoutes
+      .generateProviders()
+      .then(() => console.log("Generated providers"))
+      .catch((error) =>
+        console.log("* Warning *: Generate providers error: ", error.message)
+      );
+  })
+  .catch((err) => console.error(err));
 
 const port = process.env.PORT || 12000;
 

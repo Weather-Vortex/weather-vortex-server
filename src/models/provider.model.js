@@ -62,4 +62,6 @@ const providerSchema = new mongoose.Schema({
 
 const Provider = mongoose.model("Provider", providerSchema);
 
-module.exports = { Provider };
+const providerNames = ["Troposphere", "Open Weather Map"];
+
+module.exports = { Provider, providerNames };

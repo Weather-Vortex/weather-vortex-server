@@ -21,12 +21,20 @@
 const storage = require("../storages/feedback.storage");
 
 const generateBaseProviders = async () => {
-  const providers = ["Troposphere", "Open Weather Map"];
-  const results = await Promise.all(
-    providers.map((p) => storage.createProvider(p))
-  );
-  const success = results.filter((f) => typeof f.name === "string");
-  return success;
+  try {
+    const results = await Promise.all(
+      storage.providerNames.map((p) => storage.createProvider(p))
+    );
+
+    const success = results.filter((f) => typeof f.name !== "string");
+    return success;
+  } catch (error) {
+    const message = `Feedback Storage generate provider: ${error}`;
+    const err = new Error(message);
+    err.message = message;
+    err.internalError = error;
+    throw err;
+  }
 };
 
 const createFeedback = async (req, res) => {
