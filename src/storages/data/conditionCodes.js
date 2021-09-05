@@ -93,10 +93,10 @@ module.exports.openWeatherMap = new Map([
   {
     id: 311,
     main: "Drizzle",
-    mescription: "drizzle rain",
-    mcon: "09d",
+    description: "drizzle rain",
+    icon: "09d",
     vortex: 26,
-  }, // To convert
+  },
   {
     id: 312,
     main: "Drizzle",
@@ -189,27 +189,75 @@ module.exports.openWeatherMap = new Map([
     icon: "09d",
     vortex: 34,
   },
-  { ID: "600", Main: "Snow", Description: "light snow", Icon: "13d" }, // To convert
-  { ID: "601", Main: "Snow", Description: "Snow", Icon: "13d" }, // To convert
-  { ID: "602", Main: "Snow", Description: "Heavy snow", Icon: "13d" }, // To convert
-  { ID: "611", Main: "Snow", Description: "Sleet", Icon: "13d" }, // To convert
-  { ID: "612", Main: "Snow", Description: "Light shower sleet", Icon: "13d" }, // To convert
-  { ID: "613", Main: "Snow", Description: "Shower sleet", Icon: "13d" }, // To convert
-  { ID: "615", Main: "Snow", Description: "Light rain and snow", Icon: "13d" }, // To convert
-  { ID: "616", Main: "Snow", Description: "Rain and snow", Icon: "13d" }, // To convert
-  { ID: "620", Main: "Snow", Description: "Light shower snow", Icon: "13d" }, // To convert
-  { ID: "621", Main: "Snow", Description: "Shower snow", Icon: "13d" }, // To convert
-  { ID: "622", Main: "Snow", Description: "Heavy shower snow", Icon: "13d" }, // To convert
-  { ID: "701", Main: "Mist", Description: "mist", Icon: "50d" }, // To convert
-  { ID: "711", Main: "Smoke", Description: "Smoke", Icon: "50d" }, // To convert
-  { ID: "721", Main: "Haze", Description: "Haze", Icon: "50d" }, // To convert
-  { ID: "731", Main: "Dust", Description: "sand/ dust whirls", Icon: "50d" }, // To convert
-  { id: 741, main: "Fog", description: "fog", icon: "50d", vortex: 50 }, // To convert
+  { id: 600, main: "Snow", description: "light snow", icon: "13d", vortex: 35 },
+  { id: 601, main: "Snow", description: "Snow", icon: "13d", vortex: 36 },
+  { id: 602, main: "Snow", description: "Heavy snow", icon: "13d", vortex: 37 },
+  { id: 611, main: "Snow", description: "Sleet", icon: "13d", vortex: 38 },
+  {
+    id: 612,
+    main: "Snow",
+    description: "Light shower sleet",
+    icon: "13d",
+    vortex: 39,
+  },
+  {
+    id: 613,
+    main: "Snow",
+    description: "Shower sleet",
+    Icon: "13d",
+    vortex: 40,
+  },
+  {
+    id: 615,
+    main: "Snow",
+    description: "Light rain and snow",
+    icon: "13d",
+    vortex: 41,
+  },
+  {
+    id: 616,
+    main: "Snow",
+    description: "Rain and snow",
+    icon: "13d",
+    vortex: 42,
+  },
+  {
+    id: 620,
+    main: "Snow",
+    description: "Light shower snow",
+    Icon: "13d",
+    vortex: 43,
+  },
+  {
+    id: 621,
+    main: "Snow",
+    description: "Shower snow",
+    icon: "13d",
+    vortex: 44,
+  },
+  {
+    id: 622,
+    main: "Snow",
+    description: "Heavy shower snow",
+    icon: "13d",
+    vortex: 45,
+  },
+  { id: 701, main: "Mist", description: "mist", icon: "50d", vortex: 46 },
+  { id: 711, main: "Smoke", description: "Smoke", Icon: "50d", vortex: 47 },
+  { id: 721, main: "Haze", description: "Haze", Icon: "50d", vortex: 48 },
+  {
+    id: 731,
+    main: "Dust",
+    description: "sand/ dust whirls",
+    icon: "50d",
+    vortex: 49,
+  },
+  { id: 741, main: "Fog", description: "fog", icon: "50d", vortex: 50 },
   { ID: "751", Main: "Sand", Description: "sand", Icon: "50d" }, // To convert
   { ID: "761", Main: "Dust", Description: "dust", Icon: "50d" }, // To convert
   { ID: "762", Main: "Ash", Description: "volcanic ash", Icon: "50d" }, // To convert
   { ID: "771", Main: "Squall", Description: "squalls", Icon: "50d" }, // To convert
-  { ID: "781", Main: "Tornado", Description: "tornado", Icon: "50d" }, // To convert
+  { id: 781, main: "Tornado", description: "tornado", icon: "50d", vortex: 53 },
   {
     id: 800,
     main: "Clear",
@@ -254,25 +302,25 @@ module.exports.troposphere = new Map([
   { type: "clear", description: "Clear sky", vortex: 1 },
   { type: "partly-cloudy", description: "Partly cloudy", vortex: 3 },
   { type: "cloudy", description: "Cloudy", vortex: 5 },
-  { "": "", "Weather type": "dust", Description: "Dust" }, // To convert
-  { "": "", "Weather type": "mist", Description: "Mist" }, // To convert
+  { type: "dust", Description: "Dust", vortex: 49 },
+  { type: "mist", Description: "Mist", vortex: 46 },
   { type: "fog", Description: "Fog", vortex: 50 },
   { type: "rain", description: "Rain", vortex: 8 },
-  { "": "", "Weather type": "snow", Description: "Snow" }, // To convert
-  { "": "", "Weather type": "sandstorm", Description: "Sandstorm" }, // To convert
-  { "": "", "Weather type": "snowdrifting", Description: "Snowdrifting" }, // To convert
-  { "": "", "Weather type": "drizzle", Description: "Drizzle" }, // To convert
-  { "": "", "Weather type": "rain-freezing", Description: "Rain (freezing)" }, // To convert
-  { "": "", "Weather type": "sleet", Description: "Sleet" }, // To convert
+  { type: "snow", Description: "Snow", vortex: 36 },
+  { type: "sandstorm", Description: "Sandstorm", vortex: 54 },
+  { type: "snowdrifting", Description: "Snowdrifting" },
+  { type: "drizzle", Description: "Drizzle", vortex: 23 },
+  { type: "rain-freezing", Description: "Rain (freezing)", vortex: 11 },
+  { type: "sleet", Description: "Sleet", vortex: 38 },
   { type: "rain-showers", description: "Rain showers", vortex: 7 },
   {
-    "": "",
-    "Weather type": "rain-snow-shower",
+    type: "rain-snow-shower",
     Description: "Rain/snow shower",
-  }, // To convert
-  { "": "", "Weather type": "snow-shower", Description: "Snow shower" }, // To convert
-  { "": "", "Weather type": "snow-hail", Description: "Snow / Hail" }, // To convert
-  { "": "", "Weather type": "hail", Description: "Hail" }, // To convert
+    vortex: 32,
+  },
+  { type: "snow-shower", Description: "Snow shower", vortex: 44 },
+  { type: "snow-hail", Description: "Snow / Hail", vortex: 52 },
+  { type: "hail", Description: "Hail", vortex: 51 },
   { type: "thunderstorm", description: "Thunderstorm", vortex: 16 },
 ]);
 
@@ -351,20 +399,36 @@ module.exports.vortex = new Map([
     icon: "mdi-weather-rain",
   },
   { id: 34, description: "Ragged shower rain", icon: "mdi-weather-rain" },
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 18, description: "", icon: "" }, // Reserved for 230
-  { id: 50, description: "Fog", icon: "mdi-weather-fog" }, // Reserved for 230
+  { id: 35, description: "Light snow", icon: "mdi-weather-partly-snowy" },
+  { id: 36, description: "Snow", icon: "mdi-weather-snowy" },
+  { id: 37, description: "Heavy snow", icon: "mdi-weather-snowy-heavy" },
+  { id: 38, description: "Sleet", icon: "mdi-weather-sleet" },
+  {
+    id: 39,
+    description: "Light shower sleet",
+    icon: "mdi-weather-partly-snowy-rainy",
+  },
+  { id: 40, description: "Shower sleet", icon: "mdi-weather-sleet" },
+  {
+    id: 41,
+    description: "Light rain and snow",
+    icon: "mdi-weather-partly-snowy-rainy",
+  },
+  { id: 42, description: "Rain and snow", icon: "mdi-weather-sleet" },
+  {
+    id: 43,
+    description: "Light shower snow",
+    icon: "mdi-weather-partly-snowy",
+  },
+  { id: 44, description: "Shower snow", icon: "mdi-weather-sleet" },
+  { id: 45, description: "Heavy shower snow", icon: "mdi-weather-snowy-heavy" },
+  { id: 46, description: "Mist", icon: "mdi-weather-mist" },
+  { id: 47, description: "Smoke", icon: "mdi-weather-mist" },
+  { id: 48, description: "Haze", icon: "mdi-weather-mist" },
+  { id: 49, description: "Sand/ dust whirls", icon: "mdi-weather-hurricane" },
+  { id: 50, description: "Fog", icon: "mdi-weather-mist" },
+  { id: 51, description: "Hail", icon: "mdi-weather-hail" },
+  { id: 52, description: "Snow / Hail", icon: "mdi-weather-hail" },
+  { id: 53, description: "Hurricane", icon: "mdi-weather-hurricane" },
+  { id: 54, description: "Sandstorm", icon: "mdi-weather-hurricane" },
 ]);
