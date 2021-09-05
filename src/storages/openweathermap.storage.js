@@ -37,11 +37,11 @@ const { openWeatherMap, vortex } = require("./data/conditionCodes");
 const mapFields = (forecast) => {
   if (typeof forecast.weather === "object" && forecast.weather.length > 0) {
     const weather = forecast.weather[0];
-    const owm = openWeatherMap.find((f) => f.id === weather.id);
+    const owm = openWeatherMap.get(weather.id);
     if (owm == null) {
-      throw new Error(`Didn't found ${weather.id} in owm codes.`);
+      throw new Error(`Didn't found ${weather.id} in Open Weather Map codes.`);
     }
-    const elem = vortex.find((f) => f.id === owm.vortex);
+    const elem = vortex.get(owm.vortex);
     if (vortex == null) {
       throw new Error(`Didn't found ${owm.vortex} in Vortex codes.`);
     }

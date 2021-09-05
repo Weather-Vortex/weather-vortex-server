@@ -6,8 +6,6 @@ const nodemailer = require("../config/nodemailer.config");
 // adding new user (sign-up route)
 const register = (req, res) => {
   // taking a user
-  //const newuser = new User(req.body);
-
   const newuser = new User({
     //insert other parameters of the model if you want
     firstName: req.body.firstName,
@@ -61,31 +59,43 @@ const register = (req, res) => {
 };
 
 const verifyUser = (req, res, next) => {
+  console.log("Email token:", req.params.emailToken);
   User.findOne({
-    confirmationCode: req.params.emailToken,
+    emailToken: req.params.emailToken,
   })
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: "User Not found." });
+        console.log("User: ", user);
+        return res
+          .status(404)
+          .json({ confirmed: false, message: "User Not found." });
       }
       user.isVerified = true;
 
       //user.isVerified=true;
-      console.log(
-        user.isVerified + " User is verified after the click on email"
-      );
-      user.save((err) => {
+      user.save((err, doc) => {
         if (err) {
-          res.status(500).send({ message: err });
+          res
+            .status(500)
+            .json({ confirmed: false, message: "User not saved.", error: err });
           return;
         }
+        console.log(
+          user.isVerified + " User is verified after the click on email"
+        );
+        res.status(200).json({
+          confirmed: true,
+          firstname: doc.firstName,
+          lastname: doc.lastName,
+        });
       });
-      /*NOTA BENE : At this moment, if the user clicks on the email’s confirmation link, they will find
-             a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
-             end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
-      //res.redirect('./api/login')
     })
-    .catch((e) => console.log("error", e));
+    .catch((e) => {
+      console.log("error", e);
+      return res
+        .status(404)
+        .json({ confirmed: false, message: "User Not found.", error: e });
+    });
 };
 
 // login user
@@ -104,17 +114,13 @@ const login = (req, res) => {
           return res
             .status(500)
             .json({ isAuth: false, message: " Auth failed ,email not found" });
-        /*NOTA BENE!At this moment, if the user clicks on the email’s confirmation link, they will find
-             a blank page and still be unable to log in. Therefore, we need to make some changes on the front 
-             end to complete the registration procedure. See https://betterprogramming.pub/how-to-create-a-signup-confirmation-email-with-node-js-c2fea602872a*/
-        //res.redirect('./api/login')*/
 
-        //If the user isn't verified, cannot login-> da descommentare
-        /*   if (user.isVerified == false) {
-                       return res.status(401).send({
-                           message: "Pending Account. Please Verify Your Email!",
-                       });
-                   }*/
+        //If the user isn't verified, cannot login->
+        if (user.isVerified == false) {
+          return res.status(403).send({
+            message: "Pending Account. Please Verify Your Email!",
+          });
+        }
 
         user.comparePassword(req.body.password, (err, isMatch) => {
           if (!isMatch)
@@ -126,8 +132,12 @@ const login = (req, res) => {
             if (err) return res.status(500).send(err);
             res.cookie("auth", user.token).json({
               isAuth: true,
-              id: user._id,
-              email: user.email,
+              user: {
+                id: user._id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+              },
             });
           });
         });
@@ -146,20 +156,22 @@ const logout = (req, res) => {
 
 // get logged in user, the user can view its informations (profile)
 const loggedIn = (req, res) => {
-  try {
-    res.json({
-      isAuth: true,
-      id: req.user._id,
+  if (req.user) {
+    return res.status(200).json({
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
       email: req.user.email,
-      name: req.user.firstName + req.user.lastName,
+      createdDate: req.user.createdDate,
+      preferred: req.user.preferred,
     });
-  } catch {
-    res.status(400).json({ isAuth: false, message: "Any user authenticated" });
   }
+  res.status(404).json({
+    message: "No User found with given id",
+  });
 };
 
 const deleteUser = (req, res) => {
-  User.findOneAndDelete(req.params.id)
+  User.findByIdAndDelete(req.user._id)
     .then(() => {
       res.status(200).json({
         message: "Deleted!",
@@ -173,23 +185,37 @@ const deleteUser = (req, res) => {
 };
 
 const updateUser = (req, res, next) => {
-  var user = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    password: req.body.password,
-  };
-  User.updateOne(req.params._id, user)
-    .then(() => {
-      res.status(201).json({
-        message: "User updated successfully!",
-      });
-    })
-    .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
+  // The auth middleware had found user before save.
+  // Update only non null fields.
+  if (req.body.password) {
+    req.user.password = req.body.password;
+  }
+  if (req.body.preferred) {
+    req.user.preferred.location = req.body.preferred;
+  }
+  // Try to update the user.
+  req.user.save((err, updatedUser) => {
+    if (err) {
+      // Error happens, send report to final user.
+      console.error(err);
+      return res
+        .status(500)
+        .json({ success: false, message: "Update user error", error: err });
+    }
+
+    // No error happens, send right user data to final user.
+    res.status(201).json({
+      succes: true,
+      user: {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        createdDate: updatedUser.createdDate,
+        preferred: updatedUser.preferred,
+      },
+      message: "User was updated successfully!",
     });
+  });
 };
 
 module.exports = {

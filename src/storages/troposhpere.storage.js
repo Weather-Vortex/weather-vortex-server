@@ -54,12 +54,12 @@ const { troposphere, vortex } = require("./data/conditionCodes");
  * @returns Weather Vortex Forecast.
  */
 const mapFields = (forecast) => {
-  const tropo = troposphere.find((f) => f.type === forecast.type);
+  const tropo = troposphere.get(forecast.type);
   if (tropo == null) {
     throw new Error(`Didn't found ${forecast.type} in tropo codes.`);
   }
 
-  const elem = vortex.find((f) => f.id === tropo.vortex);
+  const elem = vortex.get(tropo.vortex);
   if (vortex == null) {
     throw new Error(`Didn't found ${tropo.vortex} in Vortex codes.`);
   }

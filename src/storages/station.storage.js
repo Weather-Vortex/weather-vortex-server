@@ -64,7 +64,7 @@ const saveStation = async (name, locality, owner, authKey, url) => {
     const message = "Mongoose save error";
     const err = new Error();
     err.message = message;
-    err.internalError = err;
+    err.internalError = error;
     throw err;
   }
 };

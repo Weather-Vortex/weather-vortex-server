@@ -1,6 +1,6 @@
 /*
     Web server for Weather Vortex project.
-    Copyright (C) 2021  Zandoli Silvia
+    Copyright (C) 2021  Tentoni Daniele
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,24 +16,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/*we will going to use to check whether the user has been logged in or not.
- first we will extract the available toke from cookies then we will directly call the findByToken function
-  from user.js and check for the login status of the user.*/
-const User = require("../models/user.model");
+"use strict";
 
-let auth = (req, res, next) => {
-  let token = req.cookies.auth;
-  User.findByToken(token, (err, user) => {
-    if (err) throw err;
-    if (!user)
-      return res.status(401).json({
-        error: "Didn't found any auth token.",
-      });
+const { auth } = require("../middlewares/auth");
+const controller = require("../controllers/feedback.controller");
+const express = require("express");
 
-    req.token = token;
-    req.user = user;
-    next();
-  });
+const router = express.Router();
+
+router
+  .post("/", auth, controller.createFeedback)
+  .delete("/:id", auth, controller.deleteFeedback)
+  .get("/:name", controller.getFeedbacksByProvider)
+  .get("", controller.getAllFeedbacksFromAllProviders);
+
+module.exports = {
+  router,
+  generateProviders: controller.generateBaseProviders,
 };
-
-module.exports = { auth };
