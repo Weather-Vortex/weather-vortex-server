@@ -151,8 +151,6 @@ const getThreeDaysForecasts = async (req, res) => {
       troposphereForecast,
     ]);
 
-    console.log(results[0]);
-
     return res.status(200).json({ owm: results[0], tro: results[1] });
   } catch (error) {
     storageUtils.manageAxiosError(error);

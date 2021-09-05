@@ -103,6 +103,8 @@ GET forecasts for Cesena
 
 It's very likely you don't have configured mongodb as needed. Read some rows before this paragraph how to configure Mongodb in your local environment or use it in a container.
 
+As an additional check, look for a `Database connected` string in the server console output. If there isn't, check your database connection.
+
 ## Structure
 
 The structure of the project is something like this:
