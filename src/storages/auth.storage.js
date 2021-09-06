@@ -6,8 +6,6 @@ const nodemailer = require("../config/nodemailer.config");
 // adding new user (sign-up route)
 const register = (req, res) => {
   // taking a user
-  //const newuser = new User(req.body);
-
   const newuser = new User({
     //insert other parameters of the model if you want
     firstName: req.body.firstName,
@@ -17,8 +15,6 @@ const register = (req, res) => {
     emailToken: crypto.randomBytes(64).toString("hex"),
     isVerified: false,
   });
-
-  // console.log(newuser);
 
   const { firstName, lastName, email, password } = req.body;
 

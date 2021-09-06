@@ -16,8 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const { WeatherProvider } = require("../../src/storages/weatherProvider");
-const expect = require("chai").expect;
+const { expect } = require("chai");
 const nock = require("nock"); // Used to mocking http calls.
 
 const base_url = "https://weather.provider.com";

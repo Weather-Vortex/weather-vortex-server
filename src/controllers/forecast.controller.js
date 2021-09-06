@@ -41,7 +41,7 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
   try {
     // First pending request.
     openWeatherStorage
-      .currentWeatherForecastByLocationRequest(
+      .currentByLocation(
         location.position.latitude,
         location.position.longitude
       )
@@ -133,11 +133,10 @@ const getThreeDaysForecasts = async (req, res) => {
     const location = getLocation(locations);
 
     // First pending request.
-    const openWeatherForecast =
-      openWeatherStorage.fourDayForecastByLocationRequest(
-        location.position.latitude,
-        location.position.longitude
-      );
+    const openWeatherForecast = openWeatherStorage.moreDayByLocation(
+      location.position.latitude,
+      location.position.longitude
+    );
 
     // Second pending request.
     const troposphereForecast =
@@ -152,7 +151,7 @@ const getThreeDaysForecasts = async (req, res) => {
       troposphereForecast,
     ]);
 
-    return res.status(200).json({ owm: results[0].data, tro: results[1] });
+    return res.status(200).json({ owm: results[0], tro: results[1] });
   } catch (error) {
     storageUtils.manageAxiosError(error);
     return res.status(500).json({ result: false, error, locality });
