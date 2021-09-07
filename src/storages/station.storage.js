@@ -39,11 +39,26 @@ const getStations = async (filters) => {
   }
 };
 
+const getStation = async (id, options) => {
+  try {
+    const station = options.populate
+      ? await Station.findById(id)
+          .select("-authKey")
+          .populate("owner", "firstName lastName")
+      : await Station.findById(id).select("-authKey");
+    return station;
+  } catch (error) {
+    const message = `Get Station mongoose error: ${error}`;
+    const err = new Error(message);
+    err.internalError = error;
+    throw err;
+  }
+};
+
 /**
  * Saves a station on the db. Don't use this to update a value.
  * @param {String} name Name of the station.
  * @param {String} locality Locality of the station.
- * @param {ObjectId} owner Owner of the station. // TODO: How can we get this in real world?
  * @param {String} authKey AuthKey to authenticate requests to the station.
  * @returns Saved station.
  */
@@ -71,13 +86,18 @@ const saveStation = async (name, locality, owner, authKey, url) => {
 
 /**
  * Updates a station given its name and field to update, then return it.
- * @param {String} name Name of the station. Used to filtering stations on db.
+ * @param {mongoose.Types.ObjectId} id ObjectId of the selected station.
+ * @param {mongoose.Types.ObjectId} user ObjectId of the owner of the station.
  * @param {Object} update Updated fields to write on database.
  * @returns Updated station.
  */
-const updateStations = async (name, update) => {
+const updateById = async (id, user, update) => {
   try {
-    const res = await Station.findOneAndUpdate({ name }, update, { new: true });
+    const res = await Station.findOneAndUpdate(
+      { _id: id, owner: user },
+      update,
+      { new: true }
+    );
     return res;
   } catch (error) {
     const message = "Mongoose update station error";
@@ -92,12 +112,13 @@ const updateStations = async (name, update) => {
 
 /**
  * Deletes a station given its name, then return it.
- * @param {String} name Name of the station. Used to filtering stations on db.
+ * @param {mongoose.Types.ObjectId} id ObjectId of the selected station.
+ * @param {mongoose.Types.ObjectId} user ObjectId of the owner of the station.
  * @returns Deleted station.
  */
-const deleteStations = async (name) => {
+const deleteById = async (id, user) => {
   try {
-    const res = await Station.deleteOne({ name });
+    const res = await Station.deleteOne({ _id: id, owner: user });
     return res;
   } catch (error) {
     const message = "Mongoose delete station error";
@@ -110,8 +131,9 @@ const deleteStations = async (name) => {
 };
 
 module.exports = {
-  deleteStations,
+  deleteById,
   getStations,
+  getStation,
   saveStation,
-  updateStations,
+  updateById,
 };
