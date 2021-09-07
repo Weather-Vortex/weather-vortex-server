@@ -34,31 +34,23 @@ chai.use(chaiAsPromised);
 const { connection } = require("../../src/config/database.connector");
 
 describe("Feedbacks Storage", () => {
-  const providerName = "TestProvider";
+  const providerName = storage.providerNames[0];
   let testUser;
 
   before((done) => {
     connection
       .then(async () => {
         try {
-          // Delete the test user after all tests.
+          // Delete previous test users.
           await User.deleteMany({});
-          const cre = await createUser();
-          testUser = cre;
+          const created = await createUser();
+          testUser = created;
           done();
         } catch (err) {
           done(err);
         }
       })
       .catch((error) => done(error));
-  });
-
-  after((done) => {
-    // Delete the test user after all tests.
-    //User.deleteMany(testUser)
-    //.then(() => done())
-    //.catch((err) => done(err));
-    done();
   });
 
   describe("Create a Provider", () => {
@@ -68,7 +60,14 @@ describe("Feedbacks Storage", () => {
       const result = await storage.createProvider(providerName);
 
       expect(result).to.be.an("object");
-      expect(result).to.have.a.property("name", providerName);
+      expect(result).to.have.a.property("name", providerName).to.be.a("string");
+    });
+
+    it("Create two providers", async () => {
+      await storage.createProvider(providerName);
+
+      const result = storage.createProvider(providerName);
+      await expect(result).to.be.rejectedWith(Error);
     });
   });
 
@@ -103,14 +102,15 @@ describe("Feedbacks Storage", () => {
 
       expect(result).to.be.an("object");
       expect(result).to.have.a.property("rating", rating);
-      expect(result).to.have.a.property("userId");
-      expect(result).to.have.a.property("providerId");
-      expect(result.userId.toString()).to.be.equals(testUser._id.toString());
-      expect(result.providerId.toString()).to.be.equals(
-        provider._id.toString()
-      );
+      expect(result)
+        .to.have.a.property("user")
+        .to.be.an("object")
+        .to.be.equals(testUser._id);
+      expect(result).to.have.a.property("provider").to.be.an("object");
+      expect(result.user.toString()).to.be.equals(testUser._id.toString());
+      expect(result.provider.toString()).to.be.equals(provider._id.toString());
 
-      const hisProvider = await Provider.findById(result.providerId);
+      const hisProvider = await Provider.findById(result.provider);
       expect(hisProvider).to.be.an("object");
       expect(hisProvider).to.have.a.property("name", providerName);
       expect(hisProvider).to.have.a.property("feedbacks").to.have.lengthOf(1);
@@ -180,12 +180,15 @@ describe("Feedbacks Storage", () => {
     });
 
     it("Delete a feedback with his id", async () => {
-      const then = await storage.deleteFeedback(feedbackCreated._id);
+      const then = await storage.deleteFeedback(
+        feedbackCreated._id,
+        feedbackCreated.user
+      );
 
       expect(then).to.be.an("object");
       expect(then).to.have.a.property("rating", rating);
-      expect(then).to.have.a.property("userId");
-      expect(then).to.have.a.property("providerId");
+      expect(then).to.have.a.property("user");
+      expect(then).to.have.a.property("provider");
 
       const fb = await Feedback.findById(then._id);
 
@@ -195,11 +198,12 @@ describe("Feedbacks Storage", () => {
 
   describe("Get Feedbacks", () => {
     const firstRating = 4;
-    const firstName = "First";
+    const firstName = storage.providerNames[0];
     const secondRating = 5;
-    const secondName = "Second";
+    const secondName = storage.providerNames[1];
 
     before(async () => {
+      await Provider.deleteMany({});
       const first = await storage.createProvider(firstName);
       const second = await storage.createProvider(secondName);
       await storage.createFeedback(firstRating, first._id, testUser._id);
@@ -208,29 +212,37 @@ describe("Feedbacks Storage", () => {
 
     it("By provider", async () => {
       const firstRes = await storage.getFeedbacksByProvider(firstName);
-      expect(firstRes).to.be.an("array").to.have.lengthOf(1);
+      expect(firstRes).to.be.an("object");
+      expect(firstRes)
+        .to.have.a.property("feedbacks")
+        .to.be.an("array")
+        .to.have.lengthOf(1);
 
-      const firstFeedback = firstRes[0];
+      const firstFeedback = firstRes.feedbacks[0];
       expect(firstFeedback).to.have.a.property("rating", firstRating);
-      expect(firstFeedback).to.have.a.property("userId");
-      expect(firstFeedback.userId.toString()).to.be.equals(
-        testUser._id.toString()
-      );
+      expect(firstFeedback).to.have.a.property("user").to.be.an("object");
+      expect(firstFeedback.user).to.have.a.property("_id");
+      expect(firstFeedback.user._id.equals(testUser._id)).to.be.true;
 
       const secondRes = await storage.getFeedbacksByProvider(secondName);
-      expect(secondRes).to.be.an("array").to.have.lengthOf(1);
+      expect(secondRes).to.be.an("object");
+      expect(secondRes)
+        .to.have.a.property("feedbacks")
+        .to.be.an("array")
+        .to.have.lengthOf(1);
 
-      const secondFeedback = secondRes[0];
+      const secondFeedback = secondRes.feedbacks[0];
       expect(secondFeedback).to.have.a.property("rating", secondRating);
-      expect(secondFeedback).to.have.a.property("userId");
-      expect(secondFeedback.userId.toString()).to.be.equals(
-        testUser._id.toString()
-      );
+      expect(secondFeedback).to.have.a.property("user").to.be.an("object");
+      expect(firstFeedback.user).to.have.a.property("_id");
+      expect(secondFeedback.user._id.equals(testUser._id)).to.be.true;
     });
 
     it("All", async () => {
       const res = await storage.getAllFeedbacksFromAllProviders();
-      expect(res).to.be.an("array").to.have.lengthOf(3);
+      expect(res)
+        .to.be.an("array")
+        .to.have.lengthOf(storage.providerNames.length);
       const test = res.find((f) => f.name === providerName);
       expect(test).to.not.be.null;
       const firstTest = res.find((f) => f.name === firstName);

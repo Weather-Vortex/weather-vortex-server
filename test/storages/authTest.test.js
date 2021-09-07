@@ -44,7 +44,7 @@ describe("Users", () => {
       };
       chai
         .request(app)
-        .post("/api/register")
+        .post("/auth/register")
         .send(user)
         .end((err, res) => {
           if (err) {
@@ -71,7 +71,7 @@ describe("Users", () => {
 
       chai
         .request(app)
-        .post("/api/register")
+        .post("/auth/register")
         .send(user)
         .end((err, res) => {
           if (err) {
@@ -111,7 +111,7 @@ describe("Users", () => {
 
           chai
             .request(app)
-            .put("/api/")
+            .put("/auth/")
             .set("Cookie", `auth=${userWithToken.token}`)
             .send({
               password: "ffffffff",
@@ -154,7 +154,7 @@ describe("Users", () => {
 
           chai
             .request(app)
-            .delete("/api/")
+            .delete("/auth/")
             .set("Cookie", `auth=${userWithToken.token}`)
             .end((err, res) => {
               if (err) {

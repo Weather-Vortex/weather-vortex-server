@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+"use strict";
+
 const request = require("supertest");
 const chai = require("chai");
 const chaiHttp = require("chai-http");

@@ -45,6 +45,8 @@ const getRequest = (latitude, longitude) => {
   return provider.makeRequest(resource);
 };
 
+const { troposphere, vortex } = require("./data/conditionCodes");
+
 /**
  * Convert a Forecast from Troposphere in a Weather Vortex Forecast.
  * Obviously, the second one will have less fields for compatibility with other providers.
@@ -52,13 +54,19 @@ const getRequest = (latitude, longitude) => {
  * @returns Weather Vortex Forecast.
  */
 const mapFields = (forecast) => {
-  if (forecast.type === "partly-cloudy") {
-    forecast.weatherIcon = "mdi-weather-partly-cloudy";
-    forecast.weatherDescription = "Partly Cloudy";
-  } else if (forecast.type === "clear") {
-    forecast.weatherIcon = "mdi-weather-sunny";
-    forecast.weatherDescription = "Clear Sky";
+  const tropo = troposphere.get(forecast.type);
+  if (tropo == null) {
+    throw new Error(`Didn't found ${forecast.type} in tropo codes.`);
   }
+
+  const elem = vortex.get(tropo.vortex);
+  if (vortex == null) {
+    throw new Error(`Didn't found ${tropo.vortex} in Vortex codes.`);
+  }
+
+  forecast.weatherIcon = elem.icon;
+  forecast.weatherDescription = elem.description;
+
   /*
     Missing:
     airQualityIndex: 2.02
@@ -101,7 +109,8 @@ const getCurrentForecastsByLocation = (latitude, longitude) =>
 const getSevenDaysForecastByLocationRequest = (latitude, longitude) =>
   getRequest(latitude, longitude).then((result) => {
     const hourly = result.data.data.hourly;
-    const mapped = hourly.map((value) => mapFields(value));
+    const filtered = hourly.filter((_, i) => i % 3 == 0);
+    const mapped = filtered.map((value) => mapFields(value));
     return mapped;
   });
 

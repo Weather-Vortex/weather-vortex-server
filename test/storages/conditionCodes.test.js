@@ -18,36 +18,21 @@
 
 "use strict";
 
-const User = require("../../src/models/user.model");
+const chai = require("chai");
+const { expect } = chai;
 
-/**
- * Facility method to create a user in the database to use for tests.
- * @returns The Test User created.
- */
-const createUser = async () => {
-  const user = new User({
-    firstName: "test",
-    lastName: "user",
-    password: "12345678",
-    email: "test.user@email.it",
+const codes = require("../../src/storages/data/conditionCodes");
+
+describe("Condition codes", () => {
+  it("Print codes", () => {
+    const code = 300;
+    const owm = codes.openWeatherMap.get(code);
+    expect(owm).to.be.an("object");
+    expect(owm).to.have.a.property("main").to.be.equals("Drizzle");
+    const v = codes.vortex.get(owm.vortex);
+    expect(v).to.be.an("object");
+    expect(v)
+      .to.have.a.property("description")
+      .to.be.equals("Light intensity drizzle");
   });
-  const res = await user.save();
-  return res;
-};
-
-const createToken = (user) =>
-  new Promise((resolve, reject) => {
-    user.generateToken((err, withToken) => {
-      if (err) {
-        reject(err);
-      }
-
-      if (withToken.token) {
-        resolve(withToken);
-      }
-
-      reject(new Error("Missing token"));
-    });
-  });
-
-module.exports = { createUser, createToken };
+});

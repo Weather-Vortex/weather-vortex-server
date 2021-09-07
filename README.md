@@ -53,7 +53,7 @@ docker logs <container id>
 
 ### Test
 
-In your local environment, you can test with `npm run test` command. You can run a code coverage check wih `npm run test-cov` command. Produce an html report with `npm run test-cov:html`.
+In your local environment, you can test with `npm test` command. You can run a code coverage check wih `npm run test-cov` command. Produce an html report with `npm run test-cov:html`. You can run a single test suite with the command `npx mocha -r dotenv/config --trace-warnings <path-to>/*.test.js --exit`.
 
 Navigate in your browser to `localhost:12000` to see the server ok page, or in your shell using those commands:
 
@@ -102,6 +102,8 @@ GET forecasts for Cesena
 ```
 
 It's very likely you don't have configured mongodb as needed. Read some rows before this paragraph how to configure Mongodb in your local environment or use it in a container.
+
+As an additional check, look for a `Database connected` string in the server console output. If there isn't, check your database connection.
 
 ## Structure
 

@@ -18,36 +18,19 @@
 
 "use strict";
 
-const User = require("../../src/models/user.model");
+const { auth } = require("../middlewares/auth");
+const controller = require("../controllers/feedback.controller");
+const express = require("express");
 
-/**
- * Facility method to create a user in the database to use for tests.
- * @returns The Test User created.
- */
-const createUser = async () => {
-  const user = new User({
-    firstName: "test",
-    lastName: "user",
-    password: "12345678",
-    email: "test.user@email.it",
-  });
-  const res = await user.save();
-  return res;
+const router = express.Router();
+
+router
+  .post("/", auth, controller.createFeedback)
+  .delete("/:id", auth, controller.deleteFeedback)
+  .get("/:name", controller.getFeedbacksByProvider)
+  .get("", controller.getAllFeedbacksFromAllProviders);
+
+module.exports = {
+  router,
+  generateProviders: controller.generateBaseProviders,
 };
-
-const createToken = (user) =>
-  new Promise((resolve, reject) => {
-    user.generateToken((err, withToken) => {
-      if (err) {
-        reject(err);
-      }
-
-      if (withToken.token) {
-        resolve(withToken);
-      }
-
-      reject(new Error("Missing token"));
-    });
-  });
-
-module.exports = { createUser, createToken };
