@@ -9,10 +9,8 @@ router.use(function timeLog(req, res, next) {
   next();
 });
 
-router
-  .get("/:id", userStorage.getUser)
+router.get("/:id", userStorage.getUser);
 
-
-router.get("/", userStorage.getAllUsers)
+router.get("/", userStorage.getAllUsers);
 
 module.exports = router;
