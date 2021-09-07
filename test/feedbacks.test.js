@@ -42,7 +42,6 @@ describe("Test Feedbacks routes", () => {
     connection
       .then(async () => {
         // Create user.
-        await User.deleteMany({});
         const created = await createUser();
         const withToken = await createToken(created);
         testUser = withToken;
@@ -54,10 +53,12 @@ describe("Test Feedbacks routes", () => {
       .catch((error) => done(error));
   });
 
-  // Clean database for next tests.
-  afterEach(
-    async () => await feedbackUtils.cleanFeedbackDatabase(testUser._id)
-  );
+  afterEach(async () => {
+    // Clean database for next tests.
+    await feedbackUtils.cleanFeedbackDatabase(testUser._id);
+    // Clean users as last thing.
+    await User.deleteMany({});
+  });
 
   const base_url = "/feedbacks";
 
@@ -175,7 +176,7 @@ describe("Test Feedbacks routes", () => {
     );
 
     it("By provider", async () => {
-      const provider = await Provider.findById(testProvider._id);
+      const provider = await feedbackUtils.getProvider();
       expect(provider.feedbacks).to.have.lengthOf(1);
       const res = await request(app).get(`${base_url}/${testProvider.name}`);
       expect(res.body.results.feedbacks).to.have.lengthOf(1);

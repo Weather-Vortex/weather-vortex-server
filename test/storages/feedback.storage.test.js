@@ -41,8 +41,6 @@ describe("Feedbacks Storage", () => {
     connection
       .then(async () => {
         try {
-          // Delete previous test users.
-          await User.deleteMany({});
           const created = await createUser();
           testUser = created;
           done();
@@ -52,6 +50,9 @@ describe("Feedbacks Storage", () => {
       })
       .catch((error) => done(error));
   });
+
+  // Delete previous test users.
+  after(async () => await User.deleteMany({}));
 
   describe("Create a Provider", () => {
     beforeEach(async () => await Provider.deleteMany({}));

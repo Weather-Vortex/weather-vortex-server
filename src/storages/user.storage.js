@@ -1,11 +1,46 @@
+/*
+    Web server for Weather Vortex project.
+    Copyright (C) 2021  Tentoni Daniele
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+"use strict";
+
+const mongoose = require("mongoose");
 const User = require("../models/user.model");
 
 /**
- * Create a new user and send back data.
- * @param {express.Request} req Express request from route.
- * @param {express.Response} res Express response from route.
+ * Get all selected user feedbacks populated with provider data.
+ * @param {mongoose.Types.ObjectId} id ObjectId of the User to select.
+ * @returns Selected user feedbacks.
  */
-//ADMINISTRATOR operations
+const getUserFeedbacks = async (id) => {
+  if (typeof id === "string") {
+    id = new mongoose.Types.ObjectId(id);
+  }
+
+  const user = await User.findById(id)
+    .select("-isVerified -password -token")
+    .populate({
+      path: "feedbacks",
+      select: "-user",
+      populate: { path: "provider", select: "_id name" },
+    });
+
+  return user;
+};
 
 //an ADMINISTRATOR can obtain a user from its id
 const getUser = (req, res) => {
@@ -40,6 +75,7 @@ const getAllUsers = (req, res) => {
 };
 
 module.exports = {
+  getUserFeedbacks,
   getAllUsers,
   getUser,
 };
