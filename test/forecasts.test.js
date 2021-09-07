@@ -51,8 +51,30 @@ describe("GET forecasts for Cesena", () => {
 
     expect(result).to.have.status(200);
     expect(result).to.be.an("object", "We expect that result is an object");
-    expect(result.body).to.have.a.property("owm");
+    const body = result.body;
     expect(result.body).to.have.a.property("tro");
+    expect(body).to.have.a.property("owm");
+    const tro = body.tro;
+    tro.forEach((each) => {
+      expect(each).to.have.a.property("time").to.be.a("string");
+      expect(each)
+        .to.be.an("object")
+        .to.have.a.property("weatherDescription")
+        .to.be.a("string").to.be.not.null;
+    });
+    const owm = body.owm;
+    owm.forEach((each, index) => {
+      expect(each)
+        .to.have.a.property("time")
+        .to.be.equals(
+          tro[index].time,
+          "Times between providers are not equals"
+        );
+      expect(each)
+        .to.be.an("object")
+        .to.have.a.property("weatherDescription")
+        .to.be.a("string").to.be.not.null;
+    });
   }, 2) // Retry at least one more time after fail
     .timeout(10000); // This test need more time.
 });
