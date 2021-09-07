@@ -30,11 +30,11 @@ const { Feedback } = require("../src/models/feedback.model");
 const { Provider, providerNames } = require("../src/models/provider.model");
 const User = require("../src/models/user.model");
 const { createUser, createToken } = require("./utils/user.utils");
+const feedbackUtils = require("./utils/feedback.utils");
 const { connection } = require("../src/config/database.connector");
 
 describe("Test Feedbacks routes", () => {
   let testUser;
-  const providerName = providerNames[0];
   let testProvider;
 
   beforeEach((done) => {
@@ -47,28 +47,17 @@ describe("Test Feedbacks routes", () => {
         const withToken = await createToken(created);
         testUser = withToken;
 
-        // Get a provider provider.
-        // await Provider.deleteMany({});
-        // const provider = new Provider({ name: providerName });
-        // testProvider = await provider.save();
+        // Get a test provider.
+        testProvider = await feedbackUtils.getProvider();
         done();
       })
       .catch((error) => done(error));
   });
 
-  const cleanFeedbackDatabase = async () => {
-    await Feedback.deleteMany({});
-    const provider = await Provider.findOne({ name: providerName });
-    provider.feedbacks = [];
-    const res = await provider.save();
-    testProvider = res;
-    const user = await User.findById(testUser._id);
-    user.feedbacks = [];
-    testUser = await user.save();
-  };
-
   // Clean database for next tests.
-  afterEach(async () => await cleanFeedbackDatabase());
+  afterEach(
+    async () => await feedbackUtils.cleanFeedbackDatabase(testUser._id)
+  );
 
   const base_url = "/feedbacks";
 
@@ -131,7 +120,7 @@ describe("Test Feedbacks routes", () => {
       expect(result.body.feedback.provider)
         .to.have.a.property("name")
         .to.be.a("string")
-        .to.be.equals(providerName);
+        .to.be.equals(feedbackUtils.providerName);
     });
   });
 
@@ -181,7 +170,9 @@ describe("Test Feedbacks routes", () => {
     });
 
     // Clean database for next tests.
-    afterEach(async () => await cleanFeedbackDatabase());
+    afterEach(
+      async () => await feedbackUtils.cleanFeedbackDatabase(testUser._id)
+    );
 
     it("By provider", async () => {
       const provider = await Provider.findById(testProvider._id);
@@ -198,7 +189,9 @@ describe("Test Feedbacks routes", () => {
         .to.have.property("results")
         .to.be.an("array")
         .to.have.lengthOf(providerNames.length);
-      const testResult = res.body.results.find((f) => f.name === providerName);
+      const testResult = res.body.results.find(
+        (f) => f.name === feedbackUtils.providerName
+      );
       expect(testResult)
         .to.have.property("feedbacks")
         .to.be.an("array")
