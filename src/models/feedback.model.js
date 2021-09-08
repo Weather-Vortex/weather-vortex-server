@@ -40,6 +40,10 @@ const feedbackSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Provider",
     required: true,
+    validate: {
+      validator: (v) => v.toString() !== "",
+      message: (p) => `${p} must be a non-null string`,
+    },
   },
   /**
    * UserId of the feedback Giver.
