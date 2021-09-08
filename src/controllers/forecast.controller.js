@@ -139,11 +139,10 @@ const getThreeDaysForecasts = async (req, res) => {
     );
 
     // Second pending request.
-    const troposphereForecast =
-      troposphereStorage.getSevenDaysForecastByLocationRequest(
-        location.position.latitude,
-        location.position.longitude
-      );
+    const troposphereForecast = troposphereStorage.moreDayByLocation(
+      location.position.latitude,
+      location.position.longitude
+    );
 
     // Wait for all requests.
     const results = await Promise.all([
