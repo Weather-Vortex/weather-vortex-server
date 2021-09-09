@@ -176,4 +176,8 @@ userSchema.methods.deleteToken = function (token, cb) {
   });
 };
 
+userSchema.query.publicView = function () {
+  return this.select("-isVerified -password -token");
+};
+
 module.exports = mongoose.model("User", userSchema);

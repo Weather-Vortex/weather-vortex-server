@@ -32,7 +32,7 @@ const getUserFeedbacks = async (id) => {
   }
 
   const user = await User.findById(id)
-    .select("-isVerified -password -token")
+    .publicView()
     .populate({
       path: "feedbacks",
       select: "-user",
@@ -42,7 +42,25 @@ const getUserFeedbacks = async (id) => {
   return user;
 };
 
+const getUserStations = async (id) => {
+  if (typeof id === "string") {
+    id = new mongoose.Types.ObjectId(id);
+  }
+
+  const user = await User.findById(id).publicView().populate({
+    path: "stations",
+    select: "-owner",
+  });
+
+  return user;
+};
+
 //an ADMINISTRATOR can obtain a user from its id
+/**
+ * @deprecated This is unused, will be removed in a future release.
+ * @param {*} req
+ * @param {*} res
+ */
 const getUser = (req, res) => {
   var id = req.params.id;
   User.findById(id, function (err, docs) {
@@ -57,6 +75,11 @@ const getUser = (req, res) => {
 };
 
 //THE ADMINISTRATOR can view the list of users
+/**
+ * @deprecated This is unused, will be removed in a future release.
+ * @param {*} req
+ * @param {*} res
+ */
 const getAllUsers = (req, res) => {
   console.log("Get all users");
   User.find({}, function (err, users) {
@@ -76,6 +99,7 @@ const getAllUsers = (req, res) => {
 
 module.exports = {
   getUserFeedbacks,
+  getUserStations,
   getAllUsers,
   getUser,
 };
