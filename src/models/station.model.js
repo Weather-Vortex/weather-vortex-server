@@ -19,6 +19,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const User = require("../models/user.model");
 
 const stationSchema = new mongoose.Schema({
   /**
@@ -69,8 +70,14 @@ const stationSchema = new mongoose.Schema({
  * @param {String} name Name of the station.
  * @returns {Station} Station retrieved.
  */
-stationSchema.statics.findByName = async (name) => {
-  return this.find({ name });
-};
+// stationSchema.statics.findByName = async (name) => {
+// return this.find({ name });
+// };
+
+stationSchema.post("save", async (doc) => {
+  const _user = await User.findById(doc.owner);
+  _user.stations.push(doc._id);
+  await _user.save();
+});
 
 module.exports = mongoose.model("Station", stationSchema);

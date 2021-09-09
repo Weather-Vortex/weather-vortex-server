@@ -19,9 +19,11 @@
 "use strict";
 
 const express = require("express");
-const userStorage = require("../controllers/user.controller");
+const controller = require("../controllers/user.controller");
 const router = express.Router();
 
-router.get("/:id/feedbacks", userStorage.getUserFeedbacks);
+router.get("/:id/feedbacks", controller.getUserFeedbacks);
+
+router.get("/:id/stations", controller.getUserStations);
 
 module.exports = router;
