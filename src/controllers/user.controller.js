@@ -29,11 +29,27 @@ const getUserFeedbacks = async (req, res) => {
     return res.status(200).json(user);
   } catch (error) {
     return res.status(500).json({
-      error,
-      message: "Error thrown during user feedbacks query.",
+      error: error,
+      message: `Error thrown during user feedbacks query: ${error}.`,
       id,
     });
   }
 };
 
-module.exports = { getUserFeedbacks };
+const getUserStations = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await storage.getUserStations(id);
+    const verbose = req.query.verbose;
+    const user = verbose ? result : { stations: result.stations };
+    return res.status(200).json(user);
+  } catch (error) {
+    return res.status(500).json({
+      error: error,
+      message: `Error thrown during user feedbacks query: ${error}.`,
+      id,
+    });
+  }
+};
+
+module.exports = { getUserFeedbacks, getUserStations };
