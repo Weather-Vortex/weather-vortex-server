@@ -158,6 +158,7 @@ const logout = (req, res) => {
 const loggedIn = (req, res) => {
   if (req.user) {
     return res.status(200).json({
+      id: req.user._id,
       firstName: req.user.firstName,
       lastName: req.user.lastName,
       email: req.user.email,
