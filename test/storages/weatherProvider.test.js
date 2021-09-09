@@ -24,7 +24,7 @@ const nock = require("nock"); // Used to mocking http calls.
 
 const base_url = "https://weather.provider.com";
 const res_url = "/forecast/Cesena";
-const api_key = "&11";
+const api_key = "11";
 const sample_data = {
   forecast: {
     rain: false,
@@ -32,7 +32,7 @@ const sample_data = {
   },
 };
 // From now on, Nock will intercept each get request to this url.
-nock(base_url).get(`${res_url}${api_key}`).times(4).reply(200, sample_data);
+nock(base_url).get(`${res_url}?${api_key}`).times(4).reply(200, sample_data);
 
 const providerProvider = (url) => new WeatherProvider(url, api_key);
 

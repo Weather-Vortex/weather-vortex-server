@@ -19,13 +19,24 @@
 "use strict";
 
 const storage = require("../storages/feedback.storage");
+const stations = require("../storages/station.storage");
+const users = require("../models/user.model");
 
 const generateBaseProviders = async () => {
   try {
+    const user = await users.findOne({
+      email: "daniele.tentoni.1996@gmail.com",
+    });
+    await stations.saveStation(
+      "Tento st",
+      "Cesena",
+      user._id,
+      "1234asdf1234asdf1234asdf1234asdf",
+      "https://iot-weather-simulator.herokuapp.com/"
+    );
     const results = await Promise.all(
       storage.providerNames.map((p) => storage.createProvider(p))
     );
-
     const success = results.filter((f) => typeof f.name !== "string");
     return success;
   } catch (error) {

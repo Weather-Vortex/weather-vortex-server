@@ -62,9 +62,15 @@ const mapFields = (forecast) => {
     forecast.snow = 0;
   }
 
+  if (forecast.timezone) {
+    forecast.time = new Date(forecast.dt - forecast.timezone * 1000);
+  } else if (forecast.dt_txt) {
+    forecast.time = new Date(forecast.dt_txt);
+  }
+
   return {
     dt: forecast.dt, // Time of data forecasted, Unix, UTC
-    time: new Date(forecast.dt_txt).toISOString(), // Temperature. Unit Default: Kelvin
+    time: forecast.time.toISOString(), // Temperature. Unit Default: Kelvin
     temp: forecast.main.temp,
     tempMin: forecast.main.temp_min,
     tempMax: forecast.main.temp_max,
@@ -114,7 +120,7 @@ const fourDayForecastByLocationRequest = (latitude, longitude) => {
 const currentByLocation = (latitude, longitude) =>
   provider
     .makeRequest(`weather?lat=${latitude}&lon=${longitude}&units=metric`)
-    .then((result) => mapFields(result.data.current));
+    .then((result) => mapFields(result.data));
 
 const moreDayByLocation = (latitude, longitude) =>
   provider

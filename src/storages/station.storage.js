@@ -27,6 +27,7 @@ const Station = require("../models/station.model");
  */
 const getStations = async (filters) => {
   try {
+    const all = await Station.find({});
     const founds = await Station.find(filters).exec();
     return founds;
   } catch (err) {
@@ -76,8 +77,8 @@ const saveStation = async (name, locality, owner, authKey, url) => {
     const result = await station.save();
     return result;
   } catch (error) {
-    const message = "Mongoose save error";
-    const err = new Error();
+    const message = `Mongoose save error: ${error}`;
+    const err = new Error(message);
     err.message = message;
     err.internalError = error;
     throw err;

@@ -22,7 +22,7 @@ const { WeatherProvider } = require("./weatherProvider");
 
 class TroposphereProvider extends WeatherProvider {
   constructor(base_url, api_key) {
-    super(base_url, `?token=${api_key}`);
+    super(base_url, `token=${api_key}`);
     this.name = "Troposphere Provider";
   }
 }
