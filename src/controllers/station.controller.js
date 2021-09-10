@@ -18,6 +18,7 @@
 
 "use strict";
 
+const mongoose = require("mongoose");
 const storage = require("../storages/station.storage");
 
 /**
@@ -30,7 +31,6 @@ const createStation = async (req, res) => {
   if (
     typeof req.body.authKey !== "string" ||
     typeof req.body.name !== "string" ||
-    typeof req.body.owner !== "string" ||
     typeof req.body.position.locality !== "string"
   ) {
     const message = "Wrong type of fields";
@@ -41,7 +41,7 @@ const createStation = async (req, res) => {
     const saved = await storage.saveStation(
       req.body.name,
       req.body.position.locality,
-      req.body.owner,
+      req.user._id,
       req.body.authKey,
       req.body.url
     );
@@ -60,8 +60,8 @@ const createStation = async (req, res) => {
 const getStations = async (req, res) => {
   const filter = {};
 
-  if (req.params.name) {
-    filter.name = req.params.name;
+  if (req.query.name) {
+    filter.name = req.query.name;
   }
 
   if (req.query.locality) {
@@ -91,51 +91,54 @@ const getStations = async (req, res) => {
   }
 };
 
-const updateStation = async (req, res) => {
-  const filter = {};
-
-  if (!validString(req.params.name)) {
-    const message = "PUT request: you have to identify the resource to modify.";
-    res.status(404).json({ result: false, message, name: req.params.name });
-  } else {
-    filter.name = req.params.name;
+const getStation = async (req, res) => {
+  const id = req.params.id;
+  const options = { populate: req.query.populate };
+  try {
+    const result = await storage.getStation(req.params.id, options);
+    if (result) {
+      return res.status(200).json({ result, message: "Station found." });
+    }
+    return res.status(404).json({ id, message: "Station not found" });
+  } catch (error) {
+    return res.status(500).json({ result: false, error, id });
   }
+};
 
+const updateStation = async (req, res) => {
   if (typeof req.body !== "object") {
     const message = "PUT request: you have to send a body with some data.";
-    res.status(500).json({ result: false, message, update: req.body });
+    return res.status(500).json({ result: false, message, update: req.body });
   }
 
+  const id = req.params.id;
+  const user = req.user._id;
   const update = req.body;
-
   try {
-    const station = await storage.updateStations(req.params.name, update);
+    const station = await storage.updateById(id, user, update);
     if (station) {
       return res.status(200).json({ result: true, station, update });
     }
 
     const message = "PUT request: resource not found.";
-    return res.status(404).json({ result: false, message, station, update });
+    return res
+      .status(404)
+      .json({ result: false, id, message, station, update });
   } catch (error) {
-    return res.status(500).json({ result: false, error, update });
+    return res.status(500).json({ result: false, error, id, update });
   }
 };
 
 const deleteStation = async (req, res) => {
-  const filter = {};
-
-  if (!validString(req.params.name)) {
-    const message =
-      "DELETE request: you have to identify the resource to delete.";
-    res.status(404).json({ result: false, message, name: req.params.name });
-  } else {
-    filter.name = req.params.name;
-  }
+  const id = req.params.id;
+  const user = req.user._id;
 
   try {
-    const station = await storage.deleteStations(filter.name);
-    if (station && typeof station === "object" && station.deletedCount > 0) {
-      return res.status(200).json({ result: true, station });
+    const station = await storage.deleteById(id, user);
+    if (station) {
+      return res
+        .status(200)
+        .json({ result: true, message: "Station deleted", station });
     }
 
     const message = "DELETE request: resource not found";
@@ -145,11 +148,10 @@ const deleteStation = async (req, res) => {
   }
 };
 
-const validString = (str) => typeof str === "string" && str !== "";
-
 module.exports = {
   createStation,
   deleteStation,
+  getStation,
   getStations,
   updateStation,
 };

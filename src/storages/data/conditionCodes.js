@@ -469,15 +469,16 @@ module.exports.troposphere = new Map([
   ["thunderstorm", { description: "Thunderstorm", vortex: 16 }],
 ]);
 
-module.exports.test = new Map([
-  [1, { description: "Clear sky", icon: "mdi-weather-sunny" }],
-  [2, { description: "Few clouds", icon: "mdi-partly-cloudy" }],
-]);
-
 module.exports.vortex = new Map([
   [1, { description: "Clear sky", icon: "mdi-weather-sunny" }],
-  [2, { description: "Few clouds", icon: "mdi-partly-cloudy" }],
-  [3, { description: "Scattered clouds", icon: "mdi-partly-cloudy" }],
+  [
+    2,
+    {
+      description: "Few clouds",
+      icon: "mdi-weather-partly-cloudy",
+    },
+  ],
+  [3, { description: "Scattered clouds", icon: "mdi-weather-partly-cloudy" }],
   [4, { description: "Broken clouds", icon: "mdi-weather-cloudy" }],
   [5, { description: "Overcast clouds", icon: "mdi-weather-cloudy" }],
   [6, { description: "Light rain", icon: "mdi-weather-partly-rainy" }],

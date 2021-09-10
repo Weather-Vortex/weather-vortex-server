@@ -41,7 +41,6 @@ const stationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
-    // TODO: Check if object id is present.
   },
   position: {
     locality: {

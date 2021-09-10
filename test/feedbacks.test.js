@@ -25,13 +25,12 @@ const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-const { app } = require("../src/index");
+const { app, generation } = require("../src/index");
 const { Feedback } = require("../src/models/feedback.model");
 const { Provider, providerNames } = require("../src/models/provider.model");
 const User = require("../src/models/user.model");
 const { createUser, createToken } = require("./utils/user.utils");
 const feedbackUtils = require("./utils/feedback.utils");
-const { connection } = require("../src/config/database.connector");
 
 describe("Test Feedbacks routes", () => {
   let testUser;
@@ -39,7 +38,7 @@ describe("Test Feedbacks routes", () => {
 
   beforeEach((done) => {
     // Clean database before start and add basic documents.
-    connection
+    generation
       .then(async () => {
         // Create user.
         const created = await createUser();

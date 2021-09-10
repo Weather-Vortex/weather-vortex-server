@@ -24,9 +24,8 @@ const chai = require("chai");
 const chaiHttp = require("chai-http");
 chai.use(chaiHttp);
 const expect = chai.expect;
-const { connection } = require("../src/config/database.connector");
 
-const { app } = require("../src/index");
+const { app, generation } = require("../src/index");
 const userUtils = require("./utils/user.utils");
 const feedbackUtils = require("./utils/feedback.utils");
 const Station = require("../src/models/station.model");
@@ -37,7 +36,7 @@ describe("Test user details routes", () => {
   let testProvider;
 
   beforeEach(async () => {
-    await connection;
+    await generation;
     const created = await userUtils.createUser();
     const tokenized = await userUtils.createToken(created);
     testUser = tokenized;

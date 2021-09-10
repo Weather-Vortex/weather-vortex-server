@@ -19,14 +19,15 @@
 "use strict";
 
 const express = require("express");
+const { auth } = require("../middlewares/auth");
 const controller = require("../controllers/station.controller");
 const router = express.Router();
 
 router
   .get("", controller.getStations)
-  .get("/:name", controller.getStations)
-  .post("", controller.createStation)
-  .put("/:name", controller.updateStation)
-  .delete("/:name", controller.deleteStation);
+  .get("/:id", controller.getStation)
+  .post("", auth, controller.createStation)
+  .put("/:id", auth, controller.updateStation)
+  .delete("/:id", auth, controller.deleteStation);
 
 module.exports = router;
