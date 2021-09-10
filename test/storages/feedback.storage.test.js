@@ -55,19 +55,24 @@ describe("Feedbacks Storage", () => {
   after(async () => await User.deleteMany({}));
 
   describe("Create a Provider", () => {
-    beforeEach(async () => await Provider.deleteMany({}));
+    const testProviderName = "Test Provider Name";
+    beforeEach(
+      async () => await Provider.deleteMany({ name: testProviderName })
+    );
 
     it("Create a Provider", async () => {
-      const result = await storage.createProvider(providerName);
+      const result = await storage.createProvider(testProviderName);
 
       expect(result).to.be.an("object");
-      expect(result).to.have.a.property("name", providerName).to.be.a("string");
+      expect(result)
+        .to.have.a.property("name", testProviderName)
+        .to.be.a("string");
     });
 
     it("Create two providers", async () => {
-      await storage.createProvider(providerName);
+      await storage.createProvider(testProviderName);
 
-      const result = storage.createProvider(providerName);
+      const result = storage.createProvider(testProviderName);
       await expect(result).to.be.rejectedWith(Error);
     });
   });
