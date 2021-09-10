@@ -22,11 +22,18 @@ const storage = require("../storages/feedback.storage");
 const stations = require("../storages/station.storage");
 const users = require("../models/user.model");
 
-const generateBaseProviders = async () => {
-  try {
-    const user = await users.findOne({
-      email: "daniele.tentoni.1996@gmail.com",
-    });
+const generateStartupEntities = async () => {
+  if (typeof process.env.NODE_ENV === "undefined") {
+    await generateStations();
+  }
+  return await generateBaseProviders();
+};
+
+const generateStations = async () => {
+  const user = await users.findOne({
+    email: "daniele.tentoni.1996@gmail.com",
+  });
+  if (user) {
     await stations.saveStation(
       "Tento st",
       "Cesena",
@@ -34,6 +41,11 @@ const generateBaseProviders = async () => {
       "1234asdf1234asdf1234asdf1234asdf",
       "https://iot-weather-simulator.herokuapp.com/"
     );
+  }
+};
+
+const generateBaseProviders = async () => {
+  try {
     const results = await Promise.all(
       storage.providerNames.map((p) => storage.createProvider(p))
     );
@@ -128,7 +140,7 @@ const getAllFeedbacksFromAllProviders = async (_, res) => {
 module.exports = {
   createFeedback,
   deleteFeedback,
-  generateBaseProviders,
+  generateStartupEntities,
   getFeedbacksByProvider,
   getAllFeedbacksFromAllProviders,
 };

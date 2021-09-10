@@ -79,13 +79,13 @@ describe("Feedbacks Storage", () => {
 
   describe("Create a Feedback", () => {
     let provider;
-    before((done) => {
-      Provider.findOne({ name: providerName })
-        .then((res) => {
-          provider = res;
-          done();
-        })
-        .catch((error) => done(error));
+    before(async () => {
+      try {
+        provider = await Provider.findOne({ name: providerName });
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
     });
 
     beforeEach(

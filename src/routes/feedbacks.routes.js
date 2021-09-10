@@ -32,5 +32,5 @@ router
 
 module.exports = {
   router,
-  generateProviders: controller.generateBaseProviders,
+  generateStartupEntities: controller.generateStartupEntities,
 };

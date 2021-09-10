@@ -109,7 +109,7 @@ const createProvider = async (name) => {
     let message;
     if (error.code === 11000) {
       const value = JSON.stringify(error.keyValue);
-      message = `Mongoose duplicated key ${value}`;
+      message = `Mongoose duplicated key ${value} in provider generation`;
     } else {
       message = `Mongoose unknown save error: ${error}`;
     }
