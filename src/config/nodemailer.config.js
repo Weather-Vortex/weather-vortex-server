@@ -31,6 +31,7 @@ var transport = nodemailer.createTransport({
     rejectUnauthorized: false,
   },
 });
+
 //confirmationCode-> emailToken
 module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
   console.log("Check");
@@ -47,3 +48,54 @@ module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
     })
     .catch((err) => console.log(err));
 };
+
+module.exports.sendWeatherEmail = (user, forecasts) =>
+  new Promise((resolve, reject) => {
+    const tbody = forecasts.reduce((old, current) => {
+      const str = `
+      <tr>
+        <td>${current.provider}</td>
+        <td>${current.forecast.weatherDescription}</td>
+        <td>${current.forecast.temp}</td>
+        <td>${current.forecast.tempMin}</td>
+        <td>${current.forecast.tempMax}</td>
+      </tr>`;
+      if (!old) {
+        return str;
+      }
+      return old.concat(str);
+    }, "");
+
+    transport
+      .sendMail({
+        from: `"Forecast notifications" <${process.env.USERMAIL}>`,
+        to: user.email,
+        subject: "Forecast notification from Weather Vortex",
+        html: `
+    <h1>Weather Notification</h1>
+    <p>You are receiving this email because you are registered to Weather Vortex, based on your preferred position: ${user.preferred}</p>
+    <div>
+    <table border="1">
+      <caption>All Forecasts</caption>
+      <thead>
+        <th>Provider</th>
+        <th>Weather</th>
+        <th>Temp</th>
+        <th>Temp Min</th>
+        <th>Temp Max</th>
+      </thead>
+      <tbody>${tbody}</tbody>
+    </table>
+    </div>
+    `,
+      })
+      .then((_) => resolve(null))
+      .catch((err) => {
+        console.error(
+          "Email sending to %s finished with errors:",
+          user.email,
+          err
+        );
+        reject("Error");
+      });
+  });
