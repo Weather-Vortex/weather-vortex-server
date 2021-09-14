@@ -106,5 +106,5 @@ describe("Notify users with emails", () => {
 
     expect(result).to.have.status(200);
     expect(result.body).to.be.an("object").to.have.a.property("result", "ok");
-  }).timeout(10000);
+  }).timeout(20000);
 });
