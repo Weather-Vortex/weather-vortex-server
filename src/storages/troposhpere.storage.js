@@ -22,7 +22,7 @@ const { WeatherProvider } = require("./weatherProvider");
 
 class TroposphereProvider extends WeatherProvider {
   constructor(base_url, api_key) {
-    super(base_url, `?token=${api_key}`);
+    super(base_url, `token=${api_key}`);
     this.name = "Troposphere Provider";
   }
 }
@@ -77,6 +77,7 @@ const mapFields = (forecast) => {
     windSpeed: 5.36
     */
   return {
+    time: new Date(forecast.time).toISOString(),
     temp: forecast.temperature,
     tempMin: forecast.temperatureMin,
     tempMax: forecast.temperatureMax,
@@ -92,6 +93,7 @@ const mapFields = (forecast) => {
 
 /**
  * Make a request to provider for current weather.
+ * @deprecated Since 0.4.0, this method will be deprecated for currentByLocation and will be removed in a next release.
  * @param {Number} latitude Latitude.
  * @param {Number} longitude Longitude.
  */
@@ -102,19 +104,61 @@ const getCurrentForecastsByLocation = (latitude, longitude) =>
   });
 
 /**
+ * Make a request to provider for current weather.
+ * @param {Number} latitude Latitude.
+ * @param {Number} longitude Longitude.
+ */
+const currentByLocation = (latitude, longitude) =>
+  getRequest(latitude, longitude).then((result) => {
+    const current = result.data.data.current;
+    return mapFields(current);
+  });
+
+/**
  * Make a request to provider for next days weather.
+ * @deprecated Since 0.4.0, this method will be deprecated for moreDayByLocation and will be removed in a next release.
  * @param {Number} latitude Latitude.
  * @param {Number} longitude Longitude.
  */
 const getSevenDaysForecastByLocationRequest = (latitude, longitude) =>
   getRequest(latitude, longitude).then((result) => {
-    const hourly = result.data.data.hourly;
-    const filtered = hourly.filter((_, i) => i % 3 == 0);
-    const mapped = filtered.map((value) => mapFields(value));
+    const hourly = result.data.data.hourly; // Take hourly forecasts.
+    console.log("Now: ", new Date(), new Date(hourly[0].time) > new Date());
+    const pre = hourly.filter((f) => new Date(f.time) > new Date());
+    const filtered = pre.filter((_, i) => i % 3 == 0); // Take one forecast per 3 hours
+    const sliced = filtered.slice(0, 24); // Take up to 3 days
+    const mapped = sliced.map((value) => mapFields(value)); // Map to vortex fields.
+    return mapped;
+  });
+
+// Add hours difference from current locale. Has to change in future.
+const addHours = function (d, h) {
+  d.setTime(d.getTime() + h * 60 * 60 * 1000);
+  return d;
+};
+
+/**
+ * Make a request to provider for next days weather.
+ * @param {Number} latitude Latitude.
+ * @param {Number} longitude Longitude.
+ */
+const moreDayByLocation = (latitude, longitude) =>
+  getRequest(latitude, longitude).then((result) => {
+    const hourly = result.data.data.hourly; // Take hourly forecasts.
+    const now = new Date();
+    const three = hourly.filter((f) => {
+      const d = new Date(f.time).getHours();
+      return d % 3 === 0;
+    }); // Take 3 hours forecasts.
+    const startOfNewForecasts = three.findIndex((f) => new Date(f.time) > now);
+    const sliced = three.slice(startOfNewForecasts, startOfNewForecasts + 24); // Take only 3 days forecasts.
+    const mapped = sliced.map((value) => mapFields(value)); // Map to vortex fields.
     return mapped;
   });
 
 module.exports = {
+  currentByLocation,
+  moreDayByLocation,
   getCurrentForecastsByLocation,
   getSevenDaysForecastByLocationRequest,
 };

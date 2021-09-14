@@ -62,17 +62,22 @@ app.use("/feedbacks", feedbacksRoutes.router);
 
 // Database connection-> ps: l'ho modificato per tenere nascosto il link al database
 const { connection } = require("./config/database.connector");
-connection
-  .then(() => {
-    console.log("Database connected");
-    feedbacksRoutes
-      .generateProviders()
-      .then(() => console.log("Generated providers"))
-      .catch((error) =>
-        console.log("* Warning *: Generate providers error: ", error.message)
-      );
-  })
-  .catch((err) => console.error(err));
+const generation = new Promise((resolve, reject) => {
+  connection
+    .then(() => {
+      console.log("Database connected");
+      feedbacksRoutes
+        .generateStartupEntities()
+        .then(() => resolve("Generated providers without errors"))
+        .catch((error) => {
+          console.warn(
+            `* Warning *: Generate providers error: ${error.message}`
+          );
+          resolve("Generated providers with warning");
+        });
+    })
+    .catch((err) => reject(err));
+});
 
 const port = process.env.PORT || 12000;
 
@@ -91,4 +96,4 @@ server.listen(port, () => {
 });
 
 // Export app to use it in unit testing.
-module.exports = { app };
+module.exports = { app, generation };

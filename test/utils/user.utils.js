@@ -50,4 +50,9 @@ const createToken = (user) =>
     });
   });
 
-module.exports = { createUser, createToken };
+const cleanUserStation = async (user) => {
+  user.stations = [];
+  return await user.save();
+};
+
+module.exports = { cleanUserStation, createUser, createToken };

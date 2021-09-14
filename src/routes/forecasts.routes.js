@@ -50,6 +50,11 @@ const configRouter = (app, io) => {
       controller.getCurrentForecastsWithIo(socket, arg.locality);
     });
 
+    socket.on("threedays", (arg) => {
+      console.log("Received a three days forecast request with arg: ", arg);
+      controller.getThreeDaysForecastsWithIo(socket, arg.locality);
+    });
+
     socket.on("disconnect", () => {
       console.log("Disconnected:", socket.id);
       socket.disconnect();

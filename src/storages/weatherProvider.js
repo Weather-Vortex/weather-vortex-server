@@ -58,6 +58,10 @@ class WeatherProvider {
       tmp = `${this.base_url}/${resource}`;
     }
 
+    if (!tmp.includes("?")) {
+      tmp = tmp.concat("?");
+    }
+
     return tmp.concat(this.api_key_part);
   };
 

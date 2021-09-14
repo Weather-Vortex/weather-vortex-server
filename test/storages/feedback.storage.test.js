@@ -41,8 +41,6 @@ describe("Feedbacks Storage", () => {
     connection
       .then(async () => {
         try {
-          // Delete previous test users.
-          await User.deleteMany({});
           const created = await createUser();
           testUser = created;
           done();
@@ -53,33 +51,41 @@ describe("Feedbacks Storage", () => {
       .catch((error) => done(error));
   });
 
+  // Delete previous test users.
+  after(async () => await User.deleteMany({}));
+
   describe("Create a Provider", () => {
-    beforeEach(async () => await Provider.deleteMany({}));
+    const testProviderName = "Test Provider Name";
+    beforeEach(
+      async () => await Provider.deleteMany({ name: testProviderName })
+    );
 
     it("Create a Provider", async () => {
-      const result = await storage.createProvider(providerName);
+      const result = await storage.createProvider(testProviderName);
 
       expect(result).to.be.an("object");
-      expect(result).to.have.a.property("name", providerName).to.be.a("string");
+      expect(result)
+        .to.have.a.property("name", testProviderName)
+        .to.be.a("string");
     });
 
     it("Create two providers", async () => {
-      await storage.createProvider(providerName);
+      await storage.createProvider(testProviderName);
 
-      const result = storage.createProvider(providerName);
+      const result = storage.createProvider(testProviderName);
       await expect(result).to.be.rejectedWith(Error);
     });
   });
 
   describe("Create a Feedback", () => {
     let provider;
-    before((done) => {
-      Provider.findOne({ name: providerName })
-        .then((res) => {
-          provider = res;
-          done();
-        })
-        .catch((error) => done(error));
+    before(async () => {
+      try {
+        provider = await Provider.findOne({ name: providerName });
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
     });
 
     beforeEach(

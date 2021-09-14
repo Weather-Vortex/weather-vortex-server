@@ -21,7 +21,8 @@
 const Station = require("../src/models/station.model");
 const User = require("../src/models/user.model");
 
-const { createUser } = require("./utils/user.utils");
+const { createUser, createToken } = require("./utils/user.utils");
+const mongoose = require("mongoose");
 
 const request = require("supertest");
 const chai = require("chai");
@@ -35,27 +36,16 @@ chai.use(chaiHttp);
 describe("Test CRUD Operations for Stations", () => {
   let testUser;
 
-  before((done) => {
+  before(async () => {
     // Create a test user as a first thing before any test.
-    User.deleteMany({}).then(() =>
-      createUser()
-        .then((res) => {
-          testUser = res;
-          done();
-        })
-        .catch((error) => {
-          console.error(error);
-          done(error);
-        })
-    );
+    await User.deleteMany({});
+    const created = await createUser();
+    const tokenized = await createToken(created);
+    testUser = tokenized;
   });
 
-  after((done) => {
-    // Delete the test user after all tests.
-    //User.deleteMany(testUser)
-    //.then(() => done())
-    //.catch((err) => done(err));
-    done();
+  after(async () => {
+    await User.deleteMany({});
   });
 
   const base_url = "/stations";
@@ -89,6 +79,7 @@ describe("Test CRUD Operations for Stations", () => {
   const fakeStation = async () => {
     const station = await saveStation();
     station.name = "impossibile";
+    station._id = new mongoose.Types.ObjectId();
     return station;
   };
 
@@ -116,14 +107,14 @@ describe("Test CRUD Operations for Stations", () => {
       const result = await request(app)
         .post(`${base_url}`)
         .set("Content-Type", "application/json")
+        .set("Cookie", `auth=${testUser.token}`)
         .set("Accept", "application/json")
         .send(station);
 
       expect(result).to.have.status(200);
       expect(result).to.be.an("object");
       expect(result.body).to.have.a.property("result", true);
-      expect(result.body).to.have.a.property("saved");
-      expect(result.body.saved).to.be.an("object");
+      expect(result.body).to.have.a.property("saved").to.be.an("object");
       expect(result.body.saved).to.have.a.property("authKey", station.authKey);
       expect(result.body.saved).to.have.a.property("name", station.name);
       expect(result.body.saved).to.have.a.property(
@@ -138,6 +129,8 @@ describe("Test CRUD Operations for Stations", () => {
   });
 
   describe("GET one or more stations", () => {
+    beforeEach(async () => await Station.deleteMany({}));
+
     it("Without stations", async () => {
       const res = await request(app)
         .get(`${base_url}`)
@@ -158,40 +151,67 @@ describe("Test CRUD Operations for Stations", () => {
       const station = await saveStation();
 
       const result = await request(app)
-        .get(`${base_url}/${station.name}`)
+        .get(`${base_url}/${station._id}`)
         .set("Content-Type", "application/json")
         .set("Accept", "application/json");
 
       expect(result).to.have.status(200);
       expect(result).to.have.a.property("body");
-      expect(result.body).to.be.an("object");
-      expect(result.body).to.have.a.nested.property(
-        "station.authKey",
+      expect(result.body)
+        .to.be.an("object")
+        .to.have.a.property("result")
+        .to.be.an("object");
+      expect(result.body).to.not.have.a.nested.property(
+        "result.authKey",
         station.authKey
       );
       expect(result.body).to.have.a.nested.property(
-        "station.name",
+        "result.name",
         station.name
       );
       expect(result.body).to.have.a.nested.property(
-        "station.owner",
+        "result.owner",
         station.owner.toString()
       );
       expect(result.body).to.have.a.nested.property(
-        "station.position.locality",
+        "result.position.locality",
         station.position.locality
       );
+    });
+
+    it("GET a saved station populated", async () => {
+      const station = await saveStation();
+      const result = await request(app)
+        .get(`${base_url}/${station._id}?populate=true`)
+        .set("Cookie", `auth=${testUser.token}`)
+        .set("Content-Type", "application/json")
+        .set("Accept", "application/json");
+
+      expect(result).to.have.status(200);
+      expect(result).to.have.a.property("body");
+      expect(result.body)
+        .to.be.an("object")
+        .to.have.a.property("result")
+        .to.be.an("object");
+      expect(result.body)
+        .to.have.a.nested.property("result.owner")
+        .to.be.an("object");
+      expect(result.body.result.owner).to.have.a.property("firstName", "test");
+      expect(result.body.result.owner).to.have.a.property("lastName", "user");
     });
   });
 
   describe("PUT: update a station", () => {
+    beforeEach(async () => await Station.deleteMany({}));
+
     it("Try to update a station that not exists", async () => {
       // First assure that a station exists and change its name.
       const station = await fakeStation();
 
       const result = await request(app)
-        .put(`${base_url}/${station.name}`)
+        .put(`${base_url}/${station._id}`)
         .set("Content-Type", "application/json")
+        .set("Cookie", `auth=${testUser.token}`)
         .set("Accept", "application/json");
 
       expect(result).to.have.status(404);
@@ -207,24 +227,43 @@ describe("Test CRUD Operations for Stations", () => {
       const station = await saveStation();
 
       const result = await request(app)
-        .put(`${base_url}/${station.name}`)
+        .put(`${base_url}/${station._id}`)
         .set("Content-Type", "application/json")
-        .set("Accept", "application/json");
+        .set("Cookie", `auth=${testUser.token}`)
+        .set("Accept", "application/json")
+        .send({
+          name: "Put station",
+        });
 
       expect(result).to.have.status(200);
+      expect(result.body).to.have.a.property("result", true);
+      expect(result.body).to.have.a.nested.property(
+        "update.name",
+        "Put station"
+      );
+      expect(result.body).to.have.a.nested.property(
+        "station.name",
+        "Put station"
+      );
     });
   });
 
   describe("DELETE: delete a station", () => {
+    beforeEach(async () => await Station.deleteMany({}));
+
     it("Try to delete a station that not exists", async () => {
       // First assure that a station exists and change its name.
       const station = await fakeStation();
 
       const result = await request(app)
-        .delete(`${base_url}/${station.name}`)
+        .delete(`${base_url}/${station._id}`)
         .set("Content-Type", "application/json")
+        .set("Cookie", `auth=${testUser.token}`)
         .set("Accept", "application/json");
-      expect(result).to.have.status(404);
+      expect(result).to.have.status(200);
+      expect(result.body)
+        .to.be.an("object")
+        .to.have.a.nested.property("station.deletedCount", 0);
     });
 
     it("Try to delete a station that exists", async () => {
@@ -232,10 +271,14 @@ describe("Test CRUD Operations for Stations", () => {
       const station = await saveStation();
 
       const result = await request(app)
-        .delete(`${base_url}/${station.name}`)
+        .delete(`${base_url}/${station._id}`)
         .set("Content-Type", "application/json")
+        .set("Cookie", `auth=${testUser.token}`)
         .set("Accept", "application/json");
       expect(result).to.have.status(200);
+      expect(result.body)
+        .to.be.an("object")
+        .to.have.a.nested.property("station.deletedCount", 1);
     });
   });
 });
