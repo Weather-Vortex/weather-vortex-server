@@ -55,6 +55,15 @@ const getUserStations = async (id) => {
   return user;
 };
 
+/**
+ * Get all users with some preferred.
+ * @returns Users with some preferred.
+ */
+const getUsersWithPreferred = async () => {
+  const res = await User.withPreferred();
+  return res;
+};
+
 //an ADMINISTRATOR can obtain a user from its id
 /**
  * @deprecated This is unused, will be removed in a future release.
@@ -100,6 +109,5 @@ const getAllUsers = (req, res) => {
 module.exports = {
   getUserFeedbacks,
   getUserStations,
-  getAllUsers,
-  getUser,
+  getUsersWithPreferred,
 };

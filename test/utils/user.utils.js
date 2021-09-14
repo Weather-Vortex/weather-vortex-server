@@ -20,16 +20,19 @@
 
 const User = require("../../src/models/user.model");
 
+const testEmail = "test.user@email.it"; // Change this to receive real mails in unit tests.
+
 /**
  * Facility method to create a user in the database to use for tests.
- * @returns The Test User created.
+ * @returns {User} The Test User created.
  */
 const createUser = async () => {
   const user = new User({
     firstName: "test",
     lastName: "user",
     password: "12345678",
-    email: "test.user@email.it",
+    email: testEmail,
+    preferred: { location: "Cesena" },
   });
   const res = await user.save();
   return res;
@@ -55,4 +58,10 @@ const cleanUserStation = async (user) => {
   return await user.save();
 };
 
-module.exports = { cleanUserStation, createUser, createToken };
+/**
+ * Clean all testers.
+ * @returns Clean result.
+ */
+const cleanTesters = async () => await User.deleteMany({ email: testEmail });
+
+module.exports = { cleanTesters, cleanUserStation, createUser, createToken };
