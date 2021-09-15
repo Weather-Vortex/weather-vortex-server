@@ -47,3 +47,15 @@ module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
     })
     .catch((err) => console.log(err));
 };
+
+module.exports.sendForgotEmail = (name, email, subject, message) => {
+  console.log("Check");
+  transport
+    .sendMail({
+      from: ` "Change your password ${name}" <${process.env.USEREMAIL}>`,
+      to: email,
+      subject: subject,
+      text: message,
+    })
+    .catch((err) => console.log(err));
+};
