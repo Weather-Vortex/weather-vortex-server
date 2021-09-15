@@ -20,6 +20,7 @@ const mongoose = require("mongoose");
 //(JWT) is an open standard that defines a compact and self-contained way of securely
 //transmitting information between parties as a JSON object
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto"); //for email token
 const bcrypt = require("bcrypt"); // It is used for hashing and comparing the passwords.
 const salt = 10; //per la password
 
@@ -178,6 +179,20 @@ userSchema.methods.deleteToken = function (token, cb) {
 
 userSchema.query.publicView = function () {
   return this.select("-isVerified -password -token");
+};
+
+userSchema.methods.getResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+
+  //hash token and set to resetPasswordToken field
+  this.getResetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  //set expire
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 };
 
 module.exports = mongoose.model("User", userSchema);
