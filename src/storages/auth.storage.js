@@ -1,6 +1,7 @@
 const User = require("../models/user.model");
 //libreria bcrypt per le password, per generare token random invece serve crypto
 const crypto = require("crypto");
+const _ = require("lodash");
 const nodemailer = require("../config/nodemailer.config");
 const jwt = require("jsonwebtoken");
 
@@ -224,7 +225,7 @@ const forgotPassword = async (req, res) => {
     console.log("email is " + req.user.email);
     if (err || !user) {
       return res
-        .status(400)
+        .status(500)
         .json({ error: "User with this email doesn't not exist!" });
     }
     const forgotToken = jwt.sign(
@@ -252,7 +253,42 @@ const forgotPassword = async (req, res) => {
 };
 
 //update password
-const resetPassword = async (req, res, next) => {
+const resetPassword = async (req, res) => {
+  const { resetLink, newPass } = req.body;
+  if (resetLink) {
+    jwt.verify(resetLink, process.env.RESET_PASSWORD_KEY, function (error) {
+      if (error) {
+        return res.status(500).json({
+          error: "Incorrect token or it is expired!",
+        });
+      }
+      User.findOne({ resetLink }, (err, user) => {
+        if (err || !user) {
+          return res
+            .status(500)
+            .json({ err: "User with this token does not exist" });
+        }
+        const obj = {
+          password: newPass,
+          resetLink="",
+        };
+        user = _.extend(user, obj);
+        user.save((err, result) => {
+          if (err) {
+            return res.status(500).json({ err: "reset password error" });
+          } else {
+            return res
+              .status(200)
+              .json({ message: "Your password has be changed" });
+          }
+        });
+      });
+    });
+  } else {
+    return res.status(500).json({ error: "Authentication error" });
+  }
+};
+
 /*  const resetPasswordToken = crypto
     .createHash("sha256")
     .update(req.params.resetToken)
@@ -267,7 +303,6 @@ const resetPassword = async (req, res, next) => {
   await user.save();
   const id = user.getId();
   sendTokenResponse(user, 200, res, id);*/
-};
 
 module.exports = {
   register,
