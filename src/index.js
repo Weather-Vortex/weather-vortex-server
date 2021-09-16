@@ -110,5 +110,13 @@ server.listen(port, () => {
   console.log("Weather Vortex is running those CORS options:", cors.options);
 });
 
+// Graceful Shutdown: when receive SIGTERM, release all resources and open connections.
+process.on("SIGTERM", () => {
+  debug("SIGTERM signal received: closing HTTP server");
+  server.close(() => {
+    debug("HTTP server closed. See you next time!");
+  });
+});
+
 // Export app to use it in unit testing.
 module.exports = { app, generation };
