@@ -270,7 +270,7 @@ const resetPassword = async (req, res) => {
         }
         const obj = {
           password: newPass,
-          resetLink="",
+          resetLink: "",
         };
         user = _.extend(user, obj);
         user.save((err, result) => {
