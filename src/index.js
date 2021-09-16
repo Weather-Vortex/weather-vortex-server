@@ -40,6 +40,21 @@ app.use(express.json());
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
+// Configure session for Secure Cookies and Same Site None options.
+const session = require("express-session");
+var sess = {
+  cookie: { secure: true }, // For Secure: True cookies. Other values are defaults.
+  resave: false,
+  saveUninitialized: false,
+  secret: process.env.SECRET,
+};
+// Allow secure cookies in production environment.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1); // trust first proxy
+  sess.cookie.secure = true; // serve secure cookies
+}
+app.use(session(sess));
+
 app.get("/", (req, res) => {
   res.status(200).json({ result: "ok" });
 });
