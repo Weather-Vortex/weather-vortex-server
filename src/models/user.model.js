@@ -61,6 +61,10 @@ var userSchema = mongoose.Schema({
     //required: true,
     unique: true,
   },
+  resetLink: {
+    data: String,
+    default: "",
+  },
   isVerified: {
     type: Boolean,
     default: false,
@@ -179,20 +183,6 @@ userSchema.methods.deleteToken = function (token, cb) {
 
 userSchema.query.publicView = function () {
   return this.select("-isVerified -password -token");
-};
-
-userSchema.methods.getResetPasswordToken = function () {
-  const resetToken = crypto.randomBytes(20).toString("hex");
-
-  //hash token and set to resetPasswordToken field
-  this.getResetPasswordToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
-
-  //set expire
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
-  return resetToken;
 };
 
 module.exports = mongoose.model("User", userSchema);

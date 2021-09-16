@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 //libreria bcrypt per le password, per generare token random invece serve crypto
 const crypto = require("crypto");
 const nodemailer = require("../config/nodemailer.config");
+const jwt = require("jsonwebtoken");
 
 // adding new user (sign-up route)
 const register = (req, res) => {
@@ -218,34 +219,41 @@ const updateUser = (req, res, next) => {
     });
   });
 };
-const forgotPassword = async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
-  const resetToken = user.getResetPasswordToken();
-  await user.save({ validateBeforeSave: false });
-
-  //sarebbe l'updatepassword
-  const resetUrl = `${process.env.CLIENT_URL}/resetPassword/${resetToken}`;
-  const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
-
-  try {
-    await sendEmail({
-      email: user.email,
-      subject: "Password reset token",
-      message,
+const forgotPassword = async (req, res) => {
+  User.findOne({ email: req.user.email }, function (err, user) {
+    console.log("email is " + req.user.email);
+    if (err || !user) {
+      return res
+        .status(400)
+        .json({ error: "User with this email doesn't not exist!" });
+    }
+    const forgotToken = jwt.sign(
+      { _id: user._id },
+      process.env.RESET_PASSWORD_KEY,
+      { expiresIn: "20m" }
+    );
+    //invio email
+    nodemailer.sendForgotEmail(user.firstName, user.email, forgotToken);
+    return User.updateOne({ resetLink: forgotToken }, function (err, success) {
+      if (err) {
+        return res.status(500).json({ err: "reset password link error!" });
+      } else {
+        // res.send(data, function (err, body) {
+        if (err) {
+          return res.status(500).json({ message: "error" });
+        }
+        return res.status(200).json({
+          message: "Email has been sent, kindly follow the instructions!",
+        });
+        // });
+      }
     });
-    res.status(200).json({ success: true, data: "Email sent" });
-  } catch (error) {
-    console.log(err);
-    user.getResetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save({ validateBeforeSave: false });
-    return next(new ErrorResponse("Email could not be sent", 500));
-  }
+  });
 };
 
 //update password
 const resetPassword = async (req, res, next) => {
-  const resetPasswordToken = crypto
+/*  const resetPasswordToken = crypto
     .createHash("sha256")
     .update(req.params.resetToken)
     .digest("hex");
@@ -258,7 +266,7 @@ const resetPassword = async (req, res, next) => {
   user.resetPasswordExpire = undefined;
   await user.save();
   const id = user.getId();
-  sendTokenResponse(user, 200, res, id);
+  sendTokenResponse(user, 200, res, id);*/
 };
 
 module.exports = {
