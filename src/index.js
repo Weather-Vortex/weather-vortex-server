@@ -55,6 +55,9 @@ if (process.env.NODE_ENV === "production") {
 }
 app.use(session(sess));
 
+const actuator = require("express-actuator");
+app.use(actuator());
+
 app.get("/", (req, res) => {
   res.status(200).json({ result: "ok" });
 });
