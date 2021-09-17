@@ -56,7 +56,7 @@ module.exports.sendForgotEmail = (name, email, forgotToken) => {
       to: email,
       subject: "Account reset password link - Weather Vortex",
       html: `<h2>Please click on the given link to reset your password</h2>
-      <!--<p>${process.env.CLIENT_URL}/resetPassword/${forgotToken}</p>-->
+          <p>Your token is: ${forgotToken}</p>
           <a href='${process.env.CLIENT_URL}/resetPassword/${forgotToken}'> Click here`,
     })
     .catch((err) => console.log(err));
