@@ -289,21 +289,6 @@ const resetPassword = async (req, res) => {
   }
 };
 
-/*  const resetPasswordToken = crypto
-    .createHash("sha256")
-    .update(req.params.resetToken)
-    .digest("hex");
-  const user = await User.findOne({
-    resetPasswordToken,
-    resetPasswordExpire: { $gt: Date.now() },
-  });
-  user.password = req.body.password;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpire = undefined;
-  await user.save();
-  const id = user.getId();
-  sendTokenResponse(user, 200, res, id);*/
-
 module.exports = {
   register,
   login,
