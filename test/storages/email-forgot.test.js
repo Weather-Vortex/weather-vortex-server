@@ -58,6 +58,7 @@ describe("mock-transport", function () {
       subject: "hello",
       text: "hello world!",
     });
+    //nel text metto il token, poi lo andrò a prendere da lì per fare la reset password
 
     transport.sentMail.length.should.equal(1);
     transport.sentMail[0].data.to.should.equal("silviadolomiti@gmail.com");
