@@ -1,7 +1,6 @@
 const User = require("../models/user.model");
 //libreria bcrypt per le password, per generare token random invece serve crypto
 const crypto = require("crypto");
-const _ = require("lodash");
 const nodemailer = require("../config/nodemailer.config");
 const jwt = require("jsonwebtoken");
 
@@ -268,11 +267,8 @@ const resetPassword = async (req, res) => {
             .status(500)
             .json({ err: "User with this token does not exist" });
         }
-        const obj = {
-          password: newPass,
-          resetLink: "",
-        };
-        user = _.extend(user, obj);
+        user.password = req.body.password;
+        user.resetLink = "";
         user.save((err, result) => {
           if (err) {
             return res.status(500).json({ err: "reset password error" });
