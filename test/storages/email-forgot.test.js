@@ -52,7 +52,7 @@ const sinon = require("sinon");
 
 describe("Forgot password and Reset Password testing email", () => {
   let { app } = require("../../src/index");
-  const baseUrl = "/auth/forgotPassword";
+  const baseUrl = "/auth";
   let nm = "";
   let transport = "";
   beforeEach((cb) => {
@@ -81,7 +81,7 @@ describe("Forgot password and Reset Password testing email", () => {
         }
       );
       request(app)
-        .post(`${baseUrl}/resetPassword`)
+        .put(`${baseUrl}/resetPassword`)
         .send({
           password: "Leonella9",
         })
