@@ -1,82 +1,96 @@
-/*const mockery = require("mockery");
-const should = require("should");
-const nodemailerMock = require("../utils/nodemailer-mock");
-const { mock } = nodemailerMock;
-
-describe("Mocha + Mockery Test", function () {
-  // we need to mock nodemailer *before* we require() any modules that load it
-  before(async () => {
-    // Enable mockery to mock objects
-    mockery.enable({
-      warnOnUnregistered: false,
-      useCleanCache: true,
-    });
-
-    // mock here
-    mockery.registerMock("nodemailer", nodemailerMock);
-  });
-
-  // run a test
-  it("Send an email using the mocked nodemailer", async () => {
-    // load the module to test, it will use the mocked nodemailer internally
-    const mailer = require("../mailer-test");
-    // send the email
-    await mailer.send();
-    // check the mock for our sent emails
-    const sentEmails = mock.getSentMail();
-    // there should be one
-    should(sentEmails.length).equal(1);
-    // and it should match the to address
-    should(sentEmails[0].to).equal("justin@to.com");
-  });
-
-  //https://github.com/doublesharp/nodemailer-mock/blob/master/test/nodemailer-mock-tests.js
-});*/
-//https://www.npmjs.com/package/nodemailer-mock-transport
 var nodemailer = require("nodemailer");
-const mockery = require("mockery");
-var mockTransport = require("../index-mock.js");
+const User = require("../../src/models/user.model");
+let chai = require("chai");
+let chaiHttp = require("chai-http");
+let { app } = require("../../src/index");
+chai.use(chaiHttp);
 
-describe("mock-transport", function () {
-  it("should store configuration options so that they can be asserted against", function () {
-    var transport = mockTransport({
-      foo: "bar",
+describe("forgotPassword", () => {
+  it("it should send an email and create a token", (done) => {
+    let user = new User({
+      firstName: "John",
+      lastName: "Doe",
+      email: "doe@email.com",
+      password: "ffffffff",
+      emailToken: "544354323",
     });
-    transport.options.foo.should.equal("bar");
+    user.save((err, user) => {
+      if (err) {
+        done(err);
+      }
+
+      user.generateToken((err, userWithToken) => {
+        if (err) {
+          done(err);
+        }
+        chai
+          .request(app)
+          .put("/auth/forgotPassword")
+          .set("Cookie", `auth=${userWithToken.token}`)
+
+          .end((err, res) => {
+            if (err) {
+              done(err);
+            }
+            res.should.have.status(200);
+            res.body.should.be.a("object");
+            res.body.should.have
+              .property("message")
+              .eql("Email has been sent, kindly follow the instructions!");
+
+            done();
+          });
+      });
+    });
   });
+});
 
-  it("should store emails sent with nodemailer, so that they can be asserted against", function () {
-    var transport = mockTransport({
-      foo: "bar",
-    });
+/*Stub transport is useful for testing the email before actually sending email. It does not actually send an email, it convert mail object to a single buffer and return it with a send mail callback.
 
-    var transporter = nodemailer.createTransport(transport);
+In the below code, I have stubbed send method of nodemailer, using sinon module.*/
+const sinon = require("sinon");
 
-    transporter.sendMail({
-      from: "silviadolomiti@gmail.com",
-      to: "silviadolomiti@gmail.com",
-      subject: "hello",
-      text: "hello world!",
-    });
-
-    transport.sentMail.length.should.equal(1);
-    transport.sentMail[0].data.to.should.equal("silviadolomiti@gmail.com");
-    transport.sentMail[0].message.content.should.equal("hello world!");
+describe("Forgot password and Reset Password testing email", () => {
+  let { app } = require("../../src/index");
+  const baseUrl = "/auth/forgotPassword";
+  let nm = "";
+  let transport = "";
+  beforeEach((cb) => {
+    transport = {
+      name: "testsend",
+      version: "1",
+      send: function send(data, callback) {
+        callback();
+      },
+      logger: false,
+    };
+    nm = nodemailer.createTransport(transport);
+    cb();
   });
-
-  it("should return an error and not send an email if there is no `to` in the mail data object", function () {
-    var transport = mockTransport({
-      foo: "bar",
+  context("when user exist in database", () => {
+    it("repond with 200 request with correct code that exist and changed password", function test(done) {
+      this.timeout(15000);
+      sinon.stub(transport, "send").yields(null, "test");
+      nm.sendMail(
+        {
+          subject: "test",
+        },
+        (err, info) => {
+          transport.send.restore();
+          done();
+        }
+      );
+      request(app)
+        .post(`${baseUrl}/resetPassword`)
+        .send({
+          password: "Leonella9",
+        })
+        .set("Accept", "application/json")
+        .expect("Content-Type", /json/)
+        .expect(httpConstants.STATUS_OK_200, {
+          message: "Your password has be changed",
+        })
+        .end(done);
     });
-
-    var transporter = nodemailer.createTransport(transport);
-
-    transporter.sendMail({
-      from: "silviadolomiti@gmail.com",
-      subject: "hello",
-      text: "hello world!",
-    });
-
-    transport.sentMail.length.should.equal(0);
   });
 });
