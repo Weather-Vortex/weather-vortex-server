@@ -14,7 +14,7 @@ Server for Weather Vortex Project.
 
 ### Build
 
-Generate your `.env` file following the example in `.env.example`.
+Generate your `.env` file following the example in `.env.example`. You will be required to generate api keys for [Open Weather Api](https://openweathermap.org/home/sign_in) and for [Troposphere](https://www.troposphere.io/developer/register).
 
 In local environment, you don't need anything to build this project, since it's all in Javascript. Just run
 
