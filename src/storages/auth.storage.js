@@ -131,15 +131,20 @@ const login = (req, res) => {
 
           user.generateToken((err, user) => {
             if (err) return res.status(500).send(err);
-            res.cookie("auth", user.token).json({
-              isAuth: true,
-              user: {
-                id: user._id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-              },
-            });
+            res
+              .cookie("auth", user.token, {
+                httpOnly: true, // to disable accessing cookie via client side js
+                secure: true, // to force https (if you use it)
+              })
+              .json({
+                isAuth: true,
+                user: {
+                  id: user._id,
+                  email: user.email,
+                  firstName: user.firstName,
+                  lastName: user.lastName,
+                },
+              });
           });
         });
       });
