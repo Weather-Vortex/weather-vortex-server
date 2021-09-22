@@ -68,7 +68,7 @@ app.use("/users", userRoutes);
 const authRoutes = require("./routes/auth.routes");
 app.use("/auth", authRoutes);
 
-// This route require a reference to Socker.io to send forecast data.
+// This route require a reference to Socket.io to send forecast data.
 const { configRouter } = require("./routes/forecasts.routes");
 configRouter(app, io);
 
