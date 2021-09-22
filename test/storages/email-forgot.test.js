@@ -26,7 +26,7 @@ describe("forgotPassword", () => {
         chai
           .request(app)
           .put("/auth/forgotPassword")
-          .set("Cookie", `auth=${userWithToken.token}`)
+          .send({ email: "doe@email.com" })
 
           .end((err, res) => {
             if (err) {
