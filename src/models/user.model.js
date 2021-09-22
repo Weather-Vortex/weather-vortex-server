@@ -78,11 +78,11 @@ var userSchema = mongoose.Schema({
       // TODO: Update those constraints like in location.model.js
       x: {
         type: Number,
-        default: undefined,
+        default: null,
       },
       y: {
         type: Number,
-        default: undefined,
+        default: null,
       },
     },
   },
@@ -185,6 +185,33 @@ userSchema.methods.deleteToken = function (token, cb) {
 
 userSchema.query.publicView = function () {
   return this.select("-isVerified -password -token");
+};
+
+/**
+ * Check that at least position or location are valorized.
+ * @returns All users with preferred location/position valorized.
+ */
+userSchema.statics.withPreferred = async function () {
+  const res = await this.find({
+    $or: [
+      {
+        "preferred.location": {
+          $ne: "",
+        },
+      },
+      {
+        "preferred.position.x": {
+          $ne: null,
+        },
+      },
+      {
+        "preferred.position.y": {
+          $ne: null,
+        },
+      },
+    ],
+  }).exec();
+  return res;
 };
 
 module.exports = mongoose.model("User", userSchema);

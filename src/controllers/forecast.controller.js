@@ -18,12 +18,14 @@
 
 "use strict";
 
+const nodemailer = require("../config/nodemailer.config");
 const openWeatherStorage = require("../storages/openweathermap.storage");
 const locationStorage = require("../storages/location.storage");
 const troposphereStorage = require("../storages/troposhpere.storage");
 const storageUtils = require("../storages/storage.utils");
 const stationStorage = require("../storages/station.storage");
 const { StationProvider } = require("../storages/stationProvider.storage");
+const usersStorage = require("../storages/user.storage");
 
 const { providerNames } = require("../models/provider.model");
 
@@ -175,43 +177,9 @@ const getCurrentForecasts = async (req, res) => {
     });
   }
 
-  // Fetch stations by location to query after.
-  const stations = await stationStorage.getStations({
-    position: { locality },
-  });
-
   const locality = req.params.locality;
-  let location;
   try {
-    const locations = await locationStorage.getLocationDataByCity(locality);
-    location = getLocation(locations);
-  } catch (error) {
-    // Return location error if any.
-    storageUtils.manageAxiosError(error);
-    // On Node 14.x we can use const statusCode = error.statusCode ?? 500;
-    let statusCode;
-    if (error == null || error.statusCode == null) {
-      statusCode = 500;
-    } else {
-      statusCode = error.statusCode;
-    }
-    return res.status(statusCode).json({ result: false, error, locality });
-  }
-
-  try {
-    const owmForecast = openWeatherStorage.currentByLocation(
-      location.position.latitude,
-      location.position.longitude
-    );
-    const troForecast = troposphereStorage.currentByLocation(
-      location.position.latitude,
-      location.position.latitude
-    );
-    const stationForecasts = stations.map((s) =>
-      new StationProvider(s.url, s.authKey, s.name).current()
-    );
-    const promises = [owmForecast, troForecast].concat(stationForecasts);
-    const results = await Promise.all(promises);
+    const results = currentForecastsByPosition(req.params.locality);
     return res.status(200).json({ owm: results[0], tro: results[1] });
   } catch (error) {
     storageUtils.manageAxiosError(error);
@@ -238,16 +206,20 @@ const getThreeDaysForecasts = async (req, res) => {
   }
   try {
     // First pending request.
-    const openWeatherForecast = openWeatherStorage.moreDayByLocation(
-      location.position.latitude,
-      location.position.longitude
-    );
+    const openWeatherForecast = openWeatherStorage
+      .moreDayByLocation(
+        location.position.latitude,
+        location.position.longitude
+      )
+      .then((res) => ({ provider: "Open Weather Map", forecast: res }));
 
     // Second pending request.
-    const troposphereForecast = troposphereStorage.moreDayByLocation(
-      location.position.latitude,
-      location.position.longitude
-    );
+    const troposphereForecast = troposphereStorage
+      .moreDayByLocation(
+        location.position.latitude,
+        location.position.longitude
+      )
+      .then((res) => ({ provider: "Troposphere", forecast: res }));
 
     // Wait for all requests.
     const results = await Promise.all([
@@ -260,6 +232,96 @@ const getThreeDaysForecasts = async (req, res) => {
     storageUtils.manageAxiosError(error);
     return res.status(statusCode).json({ result: false, error, locality });
   }
+};
+
+const notify = async (req, res) => {
+  const users = await usersStorage.getUsersWithPreferred();
+  const promises = await Promise.all(
+    users.map((m) => {
+      if (m.preferred.location) {
+        return currentByLocation(m.preferred.location);
+      } else if (m.preferred.position) {
+        return currentByPosition(m.preferred.position);
+      }
+      return null;
+    })
+  );
+  const pairings = promises.map((m, i) => {
+    if (m) {
+      return { user: users[i], forecast: m };
+    }
+    return null;
+  });
+  const results = await Promise.all(
+    pairings.map((f) => nodemailer.sendWeatherEmail(f.user, f.forecast))
+  );
+  const failings = results.filter((f) => f !== null);
+  if (failings.length === 0) {
+    return res.status(200).json({ result: "ok" });
+  }
+  return res.status(500).json({
+    fails: found.length,
+    message: "Not all email are sended without errors",
+  });
+};
+
+/**
+ * Get current forecast by a given position.
+ * @param {Number} latitude Position latitude.
+ * @param {Number} longitude Position longitude.
+ * @param {Array<Station>} stations Array of selected stations.
+ * @returns {Array<Promise<Forecast>>} Array of forecast Promises.
+ */
+const currentByPosition = async (latitude, longitude, stations) => {
+  const owmForecast = openWeatherStorage
+    .currentByLocation(latitude, longitude)
+    .then((res) => ({ provider: "Open Weather Map", forecast: res }));
+  const troForecast = troposphereStorage
+    .currentByLocation(latitude, latitude)
+    .then((res) => ({ provider: "Troposphere", forecast: res }));
+  const stationForecasts = stations.map((s) =>
+    new StationProvider(s.url, s.authKey, s.name)
+      .current()
+      .then((res) => ({ provider: s.name, forecast: res }))
+  );
+  const promises = [owmForecast, troForecast].concat(stationForecasts);
+  return await Promise.all(promises);
+};
+
+/**
+ * Get current forecast by a given location.
+ * @param {String} location Location string
+ * @returns List of Forecast Promises.
+ */
+const currentByLocation = async (location) => {
+  // Fetch stations by location to query after.
+  const stations = await stationStorage.getStations({
+    position: { locality: location },
+  });
+
+  let position;
+  try {
+    const locations = await locationStorage.getLocationDataByCity(location);
+    position = getLocation(locations);
+  } catch (error) {
+    // Return location error if any.
+    storageUtils.manageAxiosError(error);
+    // On Node 14.x we can use const statusCode = error.statusCode ?? 500;
+    let statusCode;
+    if (error == null || error.statusCode == null) {
+      statusCode = 500;
+    } else {
+      statusCode = error.statusCode;
+    }
+    return res
+      .status(statusCode)
+      .json({ result: false, error, locality: location });
+  }
+  return currentByPosition(
+    position.position.latitude,
+    position.position.latitude,
+    stations
+  );
 };
 
 /**
@@ -312,4 +374,5 @@ module.exports = {
   getCurrentForecastsWithIo,
   getThreeDaysForecasts,
   getThreeDaysForecastsWithIo,
+  notify,
 };

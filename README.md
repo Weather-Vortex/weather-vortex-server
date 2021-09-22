@@ -14,7 +14,7 @@ Server for Weather Vortex Project.
 
 ### Build
 
-Generate your `.env` file following the example in `.env.example`.
+Generate your `.env` file following the example in `.env.example`. You will be required to generate api keys for [Open Weather Api](https://openweathermap.org/home/sign_in) and for [Troposphere](https://www.troposphere.io/developer/register).
 
 In local environment, you don't need anything to build this project, since it's all in Javascript. Just run
 
@@ -34,9 +34,7 @@ You can see your container image with `docker images`.
 
 ### Run
 
-In your local environment, you can run with `npm start` command. You need a local mongodb installation to use Users feature at the moment. You can use a mongodb container too.
-
-> In the future, we'll create a repository with a docker-compose file to generate a local environment with server, database and client containers ready to execute.
+In your local environment, you can run with `npm run start:local` command. You need a local mongodb installation to use Users feature at the moment. You can use a mongodb container too.
 
 To run your container, use the following command:
 
@@ -50,6 +48,8 @@ Since this is a detached container, to see all logs run
 docker ps
 docker logs <container id>
 ```
+
+> The future is now! Check the [docker compose repository](https://github.com/Weather-Vortex/docker-compose). Reproduce an entire working environment with server, client, database and iot weather station too!
 
 ### Test
 
