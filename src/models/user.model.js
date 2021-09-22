@@ -20,6 +20,7 @@ const mongoose = require("mongoose");
 //(JWT) is an open standard that defines a compact and self-contained way of securely
 //transmitting information between parties as a JSON object
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto"); //for email token
 const bcrypt = require("bcrypt"); // It is used for hashing and comparing the passwords.
 const salt = 10; //per la password
 
@@ -60,6 +61,10 @@ var userSchema = mongoose.Schema({
     //required: true,
     unique: true,
   },
+  resetLink: {
+    data: String,
+    default: "",
+  },
   isVerified: {
     type: Boolean,
     default: false,
@@ -73,11 +78,11 @@ var userSchema = mongoose.Schema({
       // TODO: Update those constraints like in location.model.js
       x: {
         type: Number,
-        default: undefined,
+        default: null,
       },
       y: {
         type: Number,
-        default: undefined,
+        default: null,
       },
     },
   },
@@ -145,7 +150,9 @@ userSchema.methods.comparePassword = function (password, cb) {
 //the particular user has been logged-in or not and we will save this in database
 userSchema.methods.generateToken = function (cb) {
   var user = this;
-  var token = jwt.sign(user._id.toHexString(), process.env.SECRET);
+  var token = jwt.sign({ _id: user._id }, process.env.SECRET,/* {
+    expiresIn: "20m",
+  }*/);
 
   user.token = token;
   user.save(function (err, user) {
@@ -178,6 +185,33 @@ userSchema.methods.deleteToken = function (token, cb) {
 
 userSchema.query.publicView = function () {
   return this.select("-isVerified -password -token");
+};
+
+/**
+ * Check that at least position or location are valorized.
+ * @returns All users with preferred location/position valorized.
+ */
+userSchema.statics.withPreferred = async function () {
+  const res = await this.find({
+    $or: [
+      {
+        "preferred.location": {
+          $ne: "",
+        },
+      },
+      {
+        "preferred.position.x": {
+          $ne: null,
+        },
+      },
+      {
+        "preferred.position.y": {
+          $ne: null,
+        },
+      },
+    ],
+  }).exec();
+  return res;
 };
 
 module.exports = mongoose.model("User", userSchema);

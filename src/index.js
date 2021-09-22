@@ -40,6 +40,24 @@ app.use(express.json());
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
+// Configure session for Secure Cookies and Same Site None options.
+const session = require("express-session");
+var sess = {
+  cookie: { secure: true }, // For Secure: True cookies. Other values are defaults.
+  resave: false,
+  saveUninitialized: false,
+  secret: process.env.SECRET,
+};
+// Allow secure cookies in production environment.
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1); // trust first proxy
+  sess.cookie.secure = true; // serve secure cookies
+}
+app.use(session(sess));
+
+const actuator = require("express-actuator");
+app.use(actuator());
+
 app.get("/", (req, res) => {
   res.status(200).json({ result: "ok" });
 });
@@ -50,7 +68,7 @@ app.use("/users", userRoutes);
 const authRoutes = require("./routes/auth.routes");
 app.use("/auth", authRoutes);
 
-// This route require a reference to Socker.io to send forecast data.
+// This route require a reference to Socket.io to send forecast data.
 const { configRouter } = require("./routes/forecasts.routes");
 configRouter(app, io);
 
@@ -93,6 +111,14 @@ server.listen(port, () => {
   }
 
   console.log("Weather Vortex is running those CORS options:", cors.options);
+});
+
+// Graceful Shutdown: when receive SIGTERM, release all resources and open connections.
+process.on("SIGTERM", () => {
+  debug("SIGTERM signal received: closing HTTP server");
+  server.close(() => {
+    debug("HTTP server closed. See you next time!");
+  });
 });
 
 // Export app to use it in unit testing.

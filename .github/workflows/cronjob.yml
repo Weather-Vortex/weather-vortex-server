@@ -4,7 +4,7 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     # Trigger this workflow each day at midnight.
-    - cron:  '0 22 * * *' #UTC TIME, Italy is generally +2h
+    - cron: "0 5 * * *" #UTC TIME, Italy is generally +2h
 
 jobs:
   # Trigger a direct telegram notification.
@@ -18,11 +18,11 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-              This is a ${{ github.event_name }} event,
-              on github.com/${{ github.repository }}. 
-              Is triggered every day at midnight to 
-              send notifications to our registered users. 
-              Now it remember to make this job working, 
-              like a "Remeber that you have to die" or similar.
+            This is a ${{ github.event_name }} event,
+            on github.com/${{ github.repository }}. 
+            Is triggered every day at midnight to 
+            send notifications to our registered users. 
+            Now it remember to make this job working, 
+            like a "Remeber that you have to die" or similar.
           format: html
           disable_web_page_preview: true

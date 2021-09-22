@@ -64,9 +64,10 @@ const configRouter = (app, io) => {
   const router = express.Router();
 
   router
-    .get("/:locality", controller.getThreeDaysForecasts)
+    .get("/notify", controller.notify)
+    .get("/:locality/threedays", controller.getThreeDaysForecasts)
     .get("/:locality/current", controller.getCurrentForecasts)
-    .get("/:locality/threedays", controller.getThreeDaysForecasts);
+    .get("/:locality", controller.getThreeDaysForecasts);
 
   app.use("/forecast", router);
 };
