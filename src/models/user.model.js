@@ -150,7 +150,9 @@ userSchema.methods.comparePassword = function (password, cb) {
 //the particular user has been logged-in or not and we will save this in database
 userSchema.methods.generateToken = function (cb) {
   var user = this;
-  var token = jwt.sign(user._id.toHexString(), process.env.SECRET);
+  var token = jwt.sign({ _id: user._id }, process.env.SECRET, {
+    expiresIn: "20m",
+  });
 
   user.token = token;
   user.save(function (err, user) {
