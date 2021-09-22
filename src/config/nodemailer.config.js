@@ -49,6 +49,20 @@ module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
     .catch((err) => console.log(err));
 };
 
+module.exports.sendForgotEmail = (name, email, forgotToken) => {
+  console.log("Check");
+  transport
+    .sendMail({
+      from: ` "Change your password ${name}" <${process.env.USEREMAIL}>`,
+      to: email,
+      subject: "Account reset password link - Weather Vortex",
+      html: `<h2>Please click on the given link to reset your password</h2>
+          <p>Your token is: ${forgotToken}</p>
+          <a href='${process.env.CLIENT_URL}/resetPassword/${forgotToken}'> Click here`,
+    })
+    .catch((err) => console.log(err));
+};
+
 module.exports.sendWeatherEmail = (user, forecasts) =>
   new Promise((resolve, reject) => {
     const tbody = forecasts.reduce((old, current) => {

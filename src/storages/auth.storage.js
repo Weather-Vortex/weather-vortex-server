@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 //libreria bcrypt per le password, per generare token random invece serve crypto
 const crypto = require("crypto");
 const nodemailer = require("../config/nodemailer.config");
+const jwt = require("jsonwebtoken");
 
 // adding new user (sign-up route)
 const register = (req, res) => {
@@ -218,6 +219,77 @@ const updateUser = (req, res, next) => {
     });
   });
 };
+const forgotPassword = async (req, res) => {
+  User.findOne(
+    { email: /*req.user.email */ req.body.email },
+    function (err, user) {
+      console.log("email is " + req.body.email);
+      if (err || !user) {
+        return res
+          .status(500)
+          .json({ error: "User with this email doesn't not exist!" });
+      }
+      const forgotToken = jwt.sign(
+        { _id: user._id },
+        process.env.RESET_PASSWORD_KEY,
+        { expiresIn: "20m" }
+      );
+      //invio email
+      nodemailer.sendForgotEmail(user.firstName, user.email, forgotToken);
+      return User.updateOne(
+        { resetLink: forgotToken },
+        function (err, success) {
+          if (err) {
+            return res.status(500).json({ err: "reset password link error!" });
+          } else {
+            // res.send(data, function (err, body) {
+            if (err) {
+              return res.status(500).json({ message: "error" });
+            }
+            return res.status(200).json({
+              message: "Email has been sent, kindly follow the instructions!",
+            });
+            // });
+          }
+        }
+      );
+    }
+  );
+};
+
+//update password
+const resetPassword = async (req, res) => {
+  const { resetLink, newPass } = req.body;
+  if (resetLink) {
+    jwt.verify(resetLink, process.env.RESET_PASSWORD_KEY, function (error) {
+      if (error) {
+        return res.status(500).json({
+          error: "Incorrect token or it is expired!",
+        });
+      }
+      User.findOne({ resetLink }, (err, user) => {
+        if (err || !user) {
+          return res
+            .status(500)
+            .json({ err: "User with this token does not exist" });
+        }
+        user.password = req.body.password;
+        user.resetLink = "";
+        user.save((err, result) => {
+          if (err) {
+            return res.status(500).json({ err: "reset password error" });
+          } else {
+            return res
+              .status(200)
+              .json({ message: "Your password has be changed" });
+          }
+        });
+      });
+    });
+  } else {
+    return res.status(500).json({ error: "Authentication error" });
+  }
+};
 
 module.exports = {
   register,
@@ -227,4 +299,6 @@ module.exports = {
   verifyUser,
   deleteUser,
   updateUser,
+  forgotPassword,
+  resetPassword,
 };
