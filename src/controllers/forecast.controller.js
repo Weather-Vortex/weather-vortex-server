@@ -179,10 +179,10 @@ const getCurrentForecasts = async (req, res) => {
 
   const locality = req.params.locality;
   try {
-    const results = currentForecastsByPosition(req.params.locality);
+    const results = await currentByLocation(req.params.locality);
     return res.status(200).json({ owm: results[0], tro: results[1] });
   } catch (error) {
-    storageUtils.manageAxiosError(error);
+    // storageUtils.manageAxiosError(error);
     return res.status(statusCode).json({ result: false, error, locality });
   }
 };
@@ -229,7 +229,7 @@ const getThreeDaysForecasts = async (req, res) => {
 
     return res.status(200).json({ owm: results[0], tro: results[1] });
   } catch (error) {
-    storageUtils.manageAxiosError(error);
+    // storageUtils.manageAxiosError(error);
     return res.status(statusCode).json({ result: false, error, locality });
   }
 };
@@ -275,14 +275,17 @@ const notify = async (req, res) => {
 const currentByPosition = async (latitude, longitude, stations) => {
   const owmForecast = openWeatherStorage
     .currentByLocation(latitude, longitude)
-    .then((res) => ({ provider: "Open Weather Map", forecast: res }));
+    .then((res) => ({ provider: "Open Weather Map", forecast: res }))
+    .catch((err) => ({ provider: "Open Weather Map", error: err }));
   const troForecast = troposphereStorage
-    .currentByLocation(latitude, latitude)
-    .then((res) => ({ provider: "Troposphere", forecast: res }));
+    .currentByLocation(latitude, longitude)
+    .then((res) => ({ provider: "Troposphere", forecast: res }))
+    .catch((err) => ({ provider: "Troposphere", error: err }));
   const stationForecasts = stations.map((s) =>
     new StationProvider(s.url, s.authKey, s.name)
       .current()
       .then((res) => ({ provider: s.name, forecast: res }))
+      .catch((err) => ({ provider: s.name, error: err }))
   );
   const promises = [owmForecast, troForecast].concat(stationForecasts);
   return await Promise.all(promises);
@@ -305,7 +308,7 @@ const currentByLocation = async (location) => {
     position = getLocation(locations);
   } catch (error) {
     // Return location error if any.
-    storageUtils.manageAxiosError(error);
+    // storageUtils.manageAxiosError(error);
     // On Node 14.x we can use const statusCode = error.statusCode ?? 500;
     let statusCode;
     if (error == null || error.statusCode == null) {
@@ -319,7 +322,7 @@ const currentByLocation = async (location) => {
   }
   return currentByPosition(
     position.position.latitude,
-    position.position.latitude,
+    position.position.longitude,
     stations
   );
 };

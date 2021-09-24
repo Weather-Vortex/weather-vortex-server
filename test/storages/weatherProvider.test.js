@@ -31,20 +31,21 @@ const sample_data = {
     temp: 36,
   },
 };
-// From now on, Nock will intercept each get request to this url.
-nock(base_url).get(`${res_url}?${api_key}`).times(4).reply(200, sample_data);
 
 const providerProvider = (url) => new WeatherProvider(url, api_key);
 
 describe("Get forecast for a simple provider", () => {
-  describe("using old get result function", () => {
-    it.skip("responds with a successful result", async () => {
-      const provider = providerProvider(base_url);
-      const result = await provider.fourDayForecast(res_url);
-      expect(result).to.be.an("object");
-      expect(result).to.have.a.nested.property("forecast.rain", false);
-      expect(result).to.have.a.nested.property("forecast.temp", 36);
-    });
+  before(() => {
+    // From now on, Nock will intercept each get request to this url.
+    nock(base_url)
+      .get(`${res_url}?${api_key}`)
+      .times(4)
+      .reply(200, sample_data);
+  });
+
+  after(() => {
+    nock.cleanAll();
+    nock.restore();
   });
 
   describe("using new get request function", async () => {
@@ -70,8 +71,8 @@ describe("Get forecast for a simple provider", () => {
     });
   });
 
-  nock(base_url).get(res_url).reply(500);
   describe("fail when call a fake domain", () => {
+    //nock(base_url).get(res_url).reply(500);
     it.skip("that doesn't exists", async () => {
       const provider = providerProvider(base_url);
       const fake = await provider.makeRequest(res_url);
