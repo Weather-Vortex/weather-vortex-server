@@ -75,7 +75,7 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
 
     // Second pending request.
     troposphereStorage
-      .getCurrentForecastsByLocation(
+      .currentByLocation(
         location.position.latitude,
         location.position.longitude
       )
@@ -86,7 +86,7 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
         });
       })
       .catch((error) => {
-        console.log("Troposphere socket error:", error);
+        console.error("Troposphere socket error:", error);
         socket.emit("forecast_error", { provider: "Troposphere" }, { error });
       });
 
@@ -159,7 +159,7 @@ const getThreeDaysForecastsWithIo = async (socket, locality) => {
         });
       })
       .catch((error) => {
-        console.log("Troposphere socket error:", error);
+        console.error("Troposphere socket error:", error);
         socket.emit("forecast_error", { provider: "Troposphere" }, { error });
       });
   } catch (error) {
