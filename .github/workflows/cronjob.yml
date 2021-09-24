@@ -23,7 +23,7 @@ jobs:
             Is triggered every day at midnight to 
             send notifications to our registered users. 
             Now it remember to make this job working, 
-            like a "Remeber that you have to die" or similar.
+            like a "Remember that you have to die" or similar.
           format: html
           disable_web_page_preview: true
 
