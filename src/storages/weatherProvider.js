@@ -78,7 +78,6 @@ class WeatherProvider {
       // Return the real Promise from Axios.
       return axios.get(data_url);
     } catch (error) {
-      console.log("Errrrrrr");
       utils.manageAxiosError(error);
       let data = {};
       if (error && error.response && error.response.data) {
