@@ -19,10 +19,16 @@
 "use strict";
 
 const { WeatherProvider } = require("../../src/storages/weatherProvider");
-const { expect } = require("chai");
+
+const chai = require("chai");
+const { expect } = chai;
+
+const chaiAsPromised = require("chai-as-promised");
+chai.use(chaiAsPromised);
+
 const nock = require("nock"); // Used to mocking http calls.
 
-const base_url = "https://weather.provider.com";
+const base_url = "https://github.com";
 const res_url = "/forecast/Cesena";
 const api_key = "11";
 const sample_data = {
@@ -32,25 +38,31 @@ const sample_data = {
   },
 };
 
-const providerProvider = (url) => new WeatherProvider(url, api_key);
+const provideProvider = (url) => new WeatherProvider(url, api_key);
 
 describe("Get forecast for a simple provider", () => {
-  before(() => {
-    // From now on, Nock will intercept each get request to this url.
-    nock(base_url)
-      .get(`${res_url}?${api_key}`)
-      .times(4)
-      .reply(200, sample_data);
+  beforeEach(() => {
+    if (!nock.isActive()) {
+      nock.activate();
+    }
   });
 
-  after(() => {
+  afterEach(() => {
     nock.cleanAll();
     nock.restore();
   });
 
   describe("using new get request function", async () => {
+    // From now on, Nock will intercept each get request to this url.
+    const nockTests = (times) =>
+      nock(base_url)
+        .get(`${res_url}?${api_key}`)
+        .times(times)
+        .reply(200, sample_data);
+
     it("responds with a successful result", async () => {
-      const provider = providerProvider(base_url);
+      nockTests(1);
+      const provider = provideProvider(base_url);
       const { data } = await provider.makeRequest(res_url);
       expect(data).to.be.an("object");
       expect(data).to.have.a.nested.property("forecast.rain", false);
@@ -58,7 +70,8 @@ describe("Get forecast for a simple provider", () => {
     });
 
     it("responds with a successful result many times", async () => {
-      const provider = providerProvider(base_url);
+      nockTests(2);
+      const provider = provideProvider(base_url);
       const first = provider.makeRequest(res_url);
       const second = provider.makeRequest(res_url);
 
@@ -72,11 +85,22 @@ describe("Get forecast for a simple provider", () => {
   });
 
   describe("fail when call a fake domain", () => {
-    //nock(base_url).get(res_url).reply(500);
-    it.skip("that doesn't exists", async () => {
-      const provider = providerProvider(base_url);
-      const fake = await provider.makeRequest(res_url);
-      expect(fake).to.be.an("array");
+    it("that doesn't exists", async () => {
+      const fake = "called fake domain";
+      const grigri = "Ah Ah!";
+      nock(base_url)
+        .get(`${res_url}?${api_key}`)
+        .once()
+        .reply(400, { error: fake, data: grigri });
+      const provider = provideProvider(base_url);
+      try {
+        await provider.makeRequest(res_url);
+      } catch (error) {
+        if (error && error.response && error.response.data) {
+          expect(error).to.have.a.nested.property("response.data.error", fake);
+          expect(error).to.have.a.nested.property("response.data.data", grigri);
+        }
+      }
     });
   });
 });
