@@ -26,3 +26,14 @@ jobs:
             like a "Remeber that you have to die" or similar.
           format: html
           disable_web_page_preview: true
+
+  email-notifications:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make Request
+        id: myRequest
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: "https://weather-vortex-server.herokuapp.com/forecast/notify"
+      - name: Show Response
+        run: echo ${{ steps.myRequest.outputs.response }}
