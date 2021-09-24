@@ -21,6 +21,7 @@
 const request = require("supertest");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
+const nock = require("nock");
 const { app } = require("../src/index");
 const locationModel = require("../src/models/location.model");
 const userUtils = require("./utils/user.utils");
@@ -33,6 +34,11 @@ const base_url = "/forecast";
 describe("GET forecasts for Cesena", () => {
   beforeEach(async () => {
     await locationModel.deleteMany({});
+  });
+
+  afterEach(() => {
+    nock.cleanAll();
+    nock.restore();
   });
 
   it("responds with unsuccessful result", async () => {
@@ -87,6 +93,18 @@ describe("GET forecasts for Cesena", () => {
     });
   }, 2) // Retry at least one more time after fail
     .timeout(10000); // This test need more time.
+
+  it("doesn't crash if one provider stop to work", async () => {
+    nock("https://api.troposphere.io")
+      .get(/forecast*/i)
+      .once()
+      .reply(400, { error: "Usage limit reached", data: null });
+    const result = await request(app).get(base_url + "/Cesena");
+    expect(result).to.have.status(200);
+    const body = result.body;
+    expect(body).to.have.a.property("tro");
+    expect(body).to.have.a.property("owm");
+  });
 });
 
 describe("Notify users with emails", () => {
