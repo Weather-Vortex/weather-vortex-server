@@ -39,6 +39,6 @@ jobs:
           OPEN_WEATHER_MAP_API_KEY: ${{ secrets.OPEN_WEATHER_MAP_API_KEY }}
           PWDMAIL: ${{ secrets.PWDMAIL }}
           SECRET: ${{ secrets.SECRET }}
-          RESET_PASSWORD_KEY: ${{secrets.RESET_PASSWORD_KEY}}
+          RESET_PASSWORD_KEY: ${{ secrets.RESET_PASSWORD_KEY }}
           TROPOSPHERE_API_KEY: ${{ secrets.TROPOSPHERE_API_KEY }}
           USEREMAIL: ${{ secrets.USEREMAIL }}
