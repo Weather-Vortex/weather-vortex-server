@@ -231,8 +231,8 @@ const forgotPassword = async (req, res) => {
       }
       const forgotToken = jwt.sign(
         { _id: user._id },
-        process.env.RESET_PASSWORD_KEY
-        //{ expiresIn: "20m" }
+        process.env.RESET_PASSWORD_KEY,
+        { expiresIn: "20m" }
       );
       //invio email
       nodemailer.sendForgotEmail(user.firstName, user.email, forgotToken);
