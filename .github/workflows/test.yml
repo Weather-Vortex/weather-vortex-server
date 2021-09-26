@@ -38,6 +38,7 @@ jobs:
           MONGODB_URI: mongodb://localhost:27017/test # Access mongoDB Docker container
           OPEN_WEATHER_MAP_API_KEY: ${{ secrets.OPEN_WEATHER_MAP_API_KEY }}
           PWDMAIL: ${{ secrets.PWDMAIL }}
+          RESET_PASSWORD_KEY: ${{ secrets.RESET_PASSWORD_KEY }}
           SECRET: ${{ secrets.SECRET }}
           TROPOSPHERE_API_KEY: ${{ secrets.TROPOSPHERE_API_KEY }}
           USEREMAIL: ${{ secrets.USEREMAIL }}
