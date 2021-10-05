@@ -19,30 +19,30 @@ describe("forgotPassword", () => {
         done(err);
       }
 
-      user.generateToken((err, userWithToken) => {
+      /* user.generateToken((err, userWithToken) => {
         if (err) {
           done(err);
-        }
-        chai
-          .request(app)
-          .put("/auth/forgotPassword")
-          .send({ email: "doe@email.com" })
+        }*/
+      chai
+        .request(app)
+        .put("/auth/forgotPassword")
+        .send({ email: "doe@email.com" })
 
-          .end((err, res) => {
-            if (err) {
-              done(err);
-            }
-            res.should.have.status(200);
-            res.body.should.be.a("object");
-            res.body.should.have
-              .property("message")
-              .eql("Email has been sent, kindly follow the instructions!");
+        .end((err, res) => {
+          if (err) {
+            done(err);
+          }
+          res.should.have.status(200);
+          res.body.should.be.a("object");
+          res.body.should.have
+            .property("message")
+            .eql("Email has been sent, kindly follow the instructions!");
 
-            done();
-          });
-      });
+          done();
+        });
     });
   });
+  //});
 });
 
 /*Stub transport is useful for testing the email before actually sending email. It does not actually send an email, it convert mail object to a single buffer and return it with a send mail callback.
