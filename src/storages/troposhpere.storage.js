@@ -1,6 +1,6 @@
 /*
     Web server for Weather Vortex project.
-    Copyright (C) 2021  Daniele Tentoni
+    Copyright (C) 2021  Tentoni Daniele
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,18 +93,6 @@ const mapFields = (forecast) => {
 
 /**
  * Make a request to provider for current weather.
- * @deprecated Since 0.4.0, this method will be deprecated for currentByLocation and will be removed in a next release.
- * @param {Number} latitude Latitude.
- * @param {Number} longitude Longitude.
- */
-const getCurrentForecastsByLocation = (latitude, longitude) =>
-  getRequest(latitude, longitude).then((result) => {
-    const current = result.data.data.current;
-    return mapFields(current);
-  });
-
-/**
- * Make a request to provider for current weather.
  * @param {Number} latitude Latitude.
  * @param {Number} longitude Longitude.
  */
@@ -113,29 +101,6 @@ const currentByLocation = (latitude, longitude) =>
     const current = result.data.data.current;
     return mapFields(current);
   });
-
-/**
- * Make a request to provider for next days weather.
- * @deprecated Since 0.4.0, this method will be deprecated for moreDayByLocation and will be removed in a next release.
- * @param {Number} latitude Latitude.
- * @param {Number} longitude Longitude.
- */
-const getSevenDaysForecastByLocationRequest = (latitude, longitude) =>
-  getRequest(latitude, longitude).then((result) => {
-    const hourly = result.data.data.hourly; // Take hourly forecasts.
-    console.log("Now: ", new Date(), new Date(hourly[0].time) > new Date());
-    const pre = hourly.filter((f) => new Date(f.time) > new Date());
-    const filtered = pre.filter((_, i) => i % 3 == 0); // Take one forecast per 3 hours
-    const sliced = filtered.slice(0, 24); // Take up to 3 days
-    const mapped = sliced.map((value) => mapFields(value)); // Map to vortex fields.
-    return mapped;
-  });
-
-// Add hours difference from current locale. Has to change in future.
-const addHours = function (d, h) {
-  d.setTime(d.getTime() + h * 60 * 60 * 1000);
-  return d;
-};
 
 /**
  * Make a request to provider for next days weather.
@@ -159,6 +124,4 @@ const moreDayByLocation = (latitude, longitude) =>
 module.exports = {
   currentByLocation,
   moreDayByLocation,
-  getCurrentForecastsByLocation,
-  getSevenDaysForecastByLocationRequest,
 };

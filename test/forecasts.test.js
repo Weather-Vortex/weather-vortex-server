@@ -21,8 +21,10 @@
 const request = require("supertest");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
+const nock = require("nock");
 const { app } = require("../src/index");
-const locationModel = require("../src/models/location.model");
+const { getLocationDataByCity } = require("../src/storages/location.storage");
+const Location = require("../src/models/location.model");
 const userUtils = require("./utils/user.utils");
 
 chai.use(chaiHttp);
@@ -32,61 +34,103 @@ const base_url = "/forecast";
 
 describe("GET forecasts for Cesena", () => {
   beforeEach(async () => {
-    await locationModel.deleteMany({});
+    await Location.deleteMany({}).exec();
   });
 
-  it("responds with unsuccessful result", async () => {
-    const result = await request(app)
-      .get(base_url + "/1234")
-      .set("content-type", "application/json");
+  describe("Without a failure", () => {
+    it("responds with unsuccessful result", async () => {
+      const result = await request(app)
+        .get(base_url + "/1234")
+        .set("content-type", "application/json");
 
-    expect(result).have.status(400);
-    expect(result).to.be.an("object", "We expect that result is an object");
-    expect(result).to.have.a.nested.property("error.text");
+      expect(result).have.status(400);
+      expect(result).to.be.an("object", "We expect that result is an object");
+      expect(result).to.have.a.nested.property("error.text");
+    });
+
+    it("responds with successful result", async () => {
+      const result = await request(app)
+        .get(base_url + "/Cesena")
+        .set("content-type", "application/json")
+        .set("Accept", "application/json");
+
+      expect(result).to.have.status(200);
+      expect(result).to.be.an("object", "We expect that result is an object");
+      const body = result.body;
+      expect(result.body).to.have.a.property("tro");
+      expect(body).to.have.a.property("owm");
+      const tro = body.tro;
+      expect(tro)
+        .to.be.an("object")
+        .to.have.a.property("provider", "Troposphere");
+      expect(tro).to.have.a.property("forecast").to.be.an("array");
+      tro.forecast.forEach((each) => {
+        expect(each).to.have.a.property("time").to.be.a("string");
+        expect(each)
+          .to.be.an("object")
+          .to.have.a.property("weatherDescription")
+          .to.be.a("string").to.be.not.null;
+      });
+      const owm = body.owm;
+      expect(owm)
+        .to.be.an("object")
+        .to.have.a.property("provider", "Open Weather Map");
+      expect(owm).to.have.a.property("forecast").to.be.an("array");
+      owm.forecast.forEach((each, index) => {
+        expect(each)
+          .to.have.a.property("time")
+          .to.be.equals(
+            tro.forecast[index].time,
+            "Times between providers are not equals"
+          );
+        expect(each)
+          .to.be.an("object")
+          .to.have.a.property("weatherDescription")
+          .to.be.a("string").to.be.not.null;
+      });
+    }, 2) // Retry at least one more time after fail
+      .timeout(10000); // This test need more time.
   });
 
-  it("responds with successful result", async () => {
-    const result = await request(app)
-      .get(base_url + "/Cesena")
-      .set("content-type", "application/json")
-      .set("Accept", "application/json");
+  describe("With a failure", () => {
+    beforeEach(async () => {
+      // Fill database with Cesena data before.
+      const loc = new Location({
+        position: { latitude: 44.1391, longitude: 12.24315 },
+        name: "Cesena",
+      });
+      await loc.save();
+    });
 
-    expect(result).to.have.status(200);
-    expect(result).to.be.an("object", "We expect that result is an object");
-    const body = result.body;
-    expect(result.body).to.have.a.property("tro");
-    expect(body).to.have.a.property("owm");
-    const tro = body.tro;
-    expect(tro)
-      .to.be.an("object")
-      .to.have.a.property("provider", "Troposphere");
-    expect(tro).to.have.a.property("forecast").to.be.an("array");
-    tro.forecast.forEach((each) => {
-      expect(each).to.have.a.property("time").to.be.a("string");
-      expect(each)
-        .to.be.an("object")
-        .to.have.a.property("weatherDescription")
-        .to.be.a("string").to.be.not.null;
+    afterEach(async () => {
+      await Location.deleteMany({}).exec();
+      nock.cleanAll();
+      nock.restore();
     });
-    const owm = body.owm;
-    expect(owm)
-      .to.be.an("object")
-      .to.have.a.property("provider", "Open Weather Map");
-    expect(owm).to.have.a.property("forecast").to.be.an("array");
-    owm.forecast.forEach((each, index) => {
-      expect(each)
-        .to.have.a.property("time")
-        .to.be.equals(
-          tro.forecast[index].time,
-          "Times between providers are not equals"
-        );
-      expect(each)
+
+    it("doesn't crash if one provider stop to work", async () => {
+      nock("https://api.troposphere.io")
+        .get(/^\/forecast(.)*/)
+        .reply(400, { error: "Usage limit reached", data: null });
+      const result = await request(app).get(base_url + "/Cesena/current");
+      expect(result).to.have.status(200);
+      const body = result.body;
+      expect(body).to.have.a.property("tro");
+      const tro = body.tro;
+      expect(tro)
         .to.be.an("object")
-        .to.have.a.property("weatherDescription")
-        .to.be.a("string").to.be.not.null;
+        .to.have.a.property("provider", "Troposphere");
+      expect(tro)
+        .to.be.an("object")
+        .to.have.a.property("error")
+        .to.be.an("object");
+      expect(body).to.have.a.property("owm");
+      const owm = body.owm;
+      expect(owm)
+        .to.be.an("object")
+        .to.have.a.property("provider", "Open Weather Map");
     });
-  }, 2) // Retry at least one more time after fail
-    .timeout(10000); // This test need more time.
+  });
 });
 
 describe("Notify users with emails", () => {
