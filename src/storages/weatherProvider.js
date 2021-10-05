@@ -79,10 +79,17 @@ class WeatherProvider {
       return axios.get(data_url);
     } catch (error) {
       utils.manageAxiosError(error);
-      const err = new Error();
-      err.message = "Error in axios call";
+      let data = {};
+      if (error && error.response && error.response.data) {
+        data = error.response.data;
+      } else {
+        data.error = "Error in axios call";
+        data.data = { url };
+      }
+      const err = new Error("Error in axios call");
+      err.message = message;
       err.internalError = error;
-      err.url = url;
+      err.data = data;
       // Return a rejected Promise.
       throw err;
     }
