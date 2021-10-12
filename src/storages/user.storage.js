@@ -64,23 +64,21 @@ const getUsersWithPreferred = async () => {
   return res;
 };
 
-//an ADMINISTRATOR can obtain a user from its id
 /**
- * @deprecated This is unused, will be removed in a future release.
- * @param {*} req
- * @param {*} res
+ * Return a user by it's id.
+ * @param {*} req Request from user.
+ * @param {*} res Response for user.
+ * @returns User fetched.
  */
-const getUser = (req, res) => {
-  var id = req.params.id;
-  User.findById(id, function (err, docs) {
-    if (err) {
-      console.log(err);
-      return res.status(400).send(err);
-    } else {
-      console.log("Result : ", docs);
-      res.json(docs);
-    }
-  });
+const getUser = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await User.findById(id);
+    return res.status(200).json(user);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send(err);
+  }
 };
 
 //THE ADMINISTRATOR can view the list of users
@@ -110,4 +108,5 @@ module.exports = {
   getUserFeedbacks,
   getUserStations,
   getUsersWithPreferred,
+  getUser,
 };
