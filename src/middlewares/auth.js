@@ -1,6 +1,6 @@
 /*
     Web server for Weather Vortex project.
-    Copyright (C) 2021  Zandoli Silvia
+    Copyright (C) 2021  Tentoni Daniele, Zandoli Silvia
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,13 +23,22 @@ const User = require("../models/user.model");
 
 let auth = (req, res, next) => {
   let token = req.cookies.auth;
+  if (!token) {
+    // Response the missing token result.
+    return res.status(401).json({
+      error: "Missing auth token in the request.",
+    });
+  }
+
   User.findByToken(token, (err, user) => {
     if (err) throw err;
     if (!user)
-      return res.status(401).json({
-        error: "Didn't found any auth token.",
+      // Notify the unauthorized access.
+      return res.status(403).json({
+        error: "Didn't found any user matching the auth token provided.",
       });
 
+    // Use the found data in next handler.
     req.token = token;
     req.user = user;
     next();
