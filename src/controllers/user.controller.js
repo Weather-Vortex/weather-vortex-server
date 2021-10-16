@@ -52,4 +52,8 @@ const getUserStations = async (req, res) => {
   }
 };
 
-module.exports = { getUserFeedbacks, getUserStations };
+const getPublicUserProfile = async (req, res) => {
+  return await storage.getUser(req, res);
+};
+
+module.exports = { getUserFeedbacks, getUserStations, getPublicUserProfile };
