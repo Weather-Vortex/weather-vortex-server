@@ -63,6 +63,7 @@ module.exports.sendForgotEmail = (name, email, forgotToken) => {
     .catch((err) => console.log(err));
 };
 
+
 module.exports.sendWeatherEmail = (user, forecasts) =>
   new Promise((resolve, reject) => {
     const tbody = forecasts.reduce((old, current) => {
