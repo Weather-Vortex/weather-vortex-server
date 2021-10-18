@@ -19,6 +19,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
+
 const User = require("../models/user.model");
 
 /**
@@ -80,6 +81,8 @@ const getUser = async (req, res) => {
     return res.status(500).send(err);
   }
 };
+
+
 
 //THE ADMINISTRATOR can view the list of users
 /**

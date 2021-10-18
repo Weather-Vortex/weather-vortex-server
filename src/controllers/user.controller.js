@@ -19,6 +19,8 @@
 "use strict";
 
 const storage = require("../storages/user.storage");
+const nodemailer = require("nodemailer");
+//const nodemailer = require("../config/nodemailer.config");
 
 const getUserFeedbacks = async (req, res) => {
   const id = req.params.id;
@@ -56,4 +58,63 @@ const getPublicUserProfile = async (req, res) => {
   return await storage.getUser(req, res);
 };
 
-module.exports = { getUserFeedbacks, getUserStations, getPublicUserProfile };
+/*setting for contact form */
+const contactEmail = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.USEREMAIL,
+    pass: process.env.PWDMAIL,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
+contactEmail.verify((error) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log("Ready to Send");
+  }
+});
+
+const contactUser = async (req, res) => {
+  const email = req.body.email;
+  const select = req.body.select;
+  const message = req.body.text;
+  const mail = {
+    from: email,
+    to: process.env.USEREMAIL,
+    subject: "Contact Form Submission",
+    html: `From Weather Vortex Application: A user just contacted you!
+            <p>Email: ${email}</p>
+            <p>Issue: ${select}</p>
+           <p>Message: ${message}</p>`,
+  };
+  contactEmail.sendMail(mail, (error) => {
+    if (error) {
+      res.json({ status: "ERROR" });
+    } else {
+      res.json({ status: "Message Sent" });
+    }
+  });
+};
+/*const contactUser = async (req, res) => {
+  const email = req.body.email;
+  const select = req.body.select;
+  const message = req.body.text;
+  nodemailer.sendContactForm(email, select, message, (error) => {
+    if (error) {
+      res.json({ status: "ERROR" });
+    } else {
+      res.json({ status: "Message Sent" });
+    }
+  });
+};*/
+
+module.exports = {
+  getUserFeedbacks,
+  getUserStations,
+  getPublicUserProfile,
+  contactUser,
+};

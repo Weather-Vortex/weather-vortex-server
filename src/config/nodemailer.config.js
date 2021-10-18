@@ -63,6 +63,22 @@ module.exports.sendForgotEmail = (name, email, forgotToken) => {
     .catch((err) => console.log(err));
 };
 
+/*module.exports.sendContactForm = (email, select, message) => {
+  console.log("form");
+
+  transport
+    .sendMail({
+      from: email,
+      to: process.env.USEREMAIL,
+      subject: "Contact Form Submission",
+      html: `From Weather Vortex Application: A user just contacted you!
+            <p>Email: ${email}</p>
+            <p>Issue: ${select}</p>
+           <p>Message: ${message}</p>`,
+    })
+    .catch((err) => console.log(err));
+};*/
+
 module.exports.sendWeatherEmail = (user, forecasts) =>
   new Promise((resolve, reject) => {
     const tbody = forecasts.reduce((old, current) => {
