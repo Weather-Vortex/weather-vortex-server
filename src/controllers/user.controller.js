@@ -77,7 +77,7 @@ contactEmail.verify((error) => {
     console.log("Ready to Send");
   }
 });
-
+/*contact form*/
 const contactUser = async (req, res) => {
   const email = req.body.email;
   const select = req.body.select;
@@ -99,18 +99,6 @@ const contactUser = async (req, res) => {
     }
   });
 };
-/*const contactUser = async (req, res) => {
-  const email = req.body.email;
-  const select = req.body.select;
-  const message = req.body.text;
-  nodemailer.sendContactForm(email, select, message, (error) => {
-    if (error) {
-      res.json({ status: "ERROR" });
-    } else {
-      res.json({ status: "Message Sent" });
-    }
-  });
-};*/
 
 module.exports = {
   getUserFeedbacks,
