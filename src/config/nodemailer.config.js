@@ -56,13 +56,11 @@ module.exports.sendForgotEmail = (name, email, forgotToken) => {
       from: ` "Change your password ${name}" <${process.env.USEREMAIL}>`,
       to: email,
       subject: "Account reset password link - Weather Vortex",
-      html: `<h2>Please click on the given link to reset your password</h2>
-          <p>Your token is: ${forgotToken}</p>
-          <a href='${process.env.CLIENT_URL}/resetPassword/${forgotToken}'> Click here`,
+      html: `<h2>Please copy this token to reset your password and paste it in the form</h2>
+          <p>Your token is: ${forgotToken}</p>`,
     })
     .catch((err) => console.log(err));
 };
-
 
 module.exports.sendWeatherEmail = (user, forecasts) =>
   new Promise((resolve, reject) => {
