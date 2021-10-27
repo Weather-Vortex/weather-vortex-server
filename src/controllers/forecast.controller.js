@@ -235,6 +235,11 @@ const getThreeDaysForecasts = async (req, res) => {
 };
 
 const notify = async (req, res) => {
+  /*
+   * Send a response as soon as possible before start to notify (long running process).
+   */
+  res.status(200).json({ result: "ok", message: "Request accepted." });
+
   const users = await usersStorage.getUsersWithPreferred();
   const promises = await Promise.all(
     users.map((m) => {
@@ -255,14 +260,14 @@ const notify = async (req, res) => {
   const results = await Promise.all(
     pairings.map((f) => nodemailer.sendWeatherEmail(f.user, f.forecast))
   );
-  const failings = results.filter((f) => f !== null);
+  /*const failings = results.filter((f) => f !== null);
   if (failings.length === 0) {
     return res.status(200).json({ result: "ok" });
   }
   return res.status(500).json({
     fails: found.length,
     message: "Not all email are sended without errors",
-  });
+  });*/
 };
 
 /**
