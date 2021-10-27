@@ -155,12 +155,18 @@ const login = (req, res) => {
 //logout user
 const logout = (req, res) => {
   req.user.deleteToken(req.token, (err, user) => {
-    if (err) return res.status(400).send(err);
+    if (err) {
+      return res.status(400).send(err);
+    }
+
+    // Invalidate client session before sending the result.
+    req.session = null;
+    res.clearCookie("auth");
     res.sendStatus(200);
   });
 };
 
-// get logged in user, the user can view its informations (profile)
+// get logged in user, the user can view its information (profile)
 const loggedIn = (req, res) => {
   if (req.user) {
     return res.status(200).json({

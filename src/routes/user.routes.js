@@ -26,4 +26,8 @@ router.get("/:id/feedbacks", controller.getUserFeedbacks);
 
 router.get("/:id/stations", controller.getUserStations);
 
+router.get("/:id", controller.getPublicUserProfile);
+
+router.post("/contact", controller.contactUser);
+
 module.exports = router;
