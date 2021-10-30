@@ -87,7 +87,7 @@ CONTAINER ID   IMAGE                                    CREATED         STATUS  
 You can start a local mongo container with persistent volume:
 
 ```sh
-sudo docker run -d -v /path/to/data/:/data/db --name mymongo -p 27017:27017 mongo
+sudo docker run -d -v /path/to/data/:/data/db --name mongo -p 27017:27017 mongo
 ```
 
 ---
