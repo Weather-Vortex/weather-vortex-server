@@ -68,6 +68,12 @@ const mapFields = (forecast) => {
   forecast.weatherDescription = elem.description;
 
   /*
+   * Fix pressure val because it's not in bar notation.
+   */
+  const normPressure = forecast.preasure / 100;
+  const fixedPressure = Number.parseFloat(normPressure).toFixed(2);
+
+  /*
     Missing:
     airQualityIndex: 2.02
     time: "2021-08-19T17:00:00+02:00"
@@ -81,7 +87,7 @@ const mapFields = (forecast) => {
     temp: forecast.temperature,
     tempMin: forecast.temperatureMin,
     tempMax: forecast.temperatureMax,
-    pressure: forecast.preasure,
+    pressure: fixedPressure,
     humidity: forecast.relHumidity,
     weatherIcon: forecast.weatherIcon,
     weatherDescription: forecast.weatherDescription,
