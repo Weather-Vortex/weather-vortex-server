@@ -70,7 +70,7 @@ const mapFields = (forecast) => {
 
   return {
     dt: forecast.dt, // Time of data forecasted, Unix, UTC
-    time: forecast.time.toISOString(),
+    time: forecast.time?.toISOString(),
     temp: forecast.main.temp, // Temperature. Unit Default: Kelvin
     tempMin: forecast.main.temp_min,
     tempMax: forecast.main.temp_max,

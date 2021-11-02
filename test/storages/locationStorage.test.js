@@ -22,6 +22,7 @@ const Location = require("../../src/models/location.model");
 const {
   getLocationDataByCity,
 } = require("../../src/storages/location.storage");
+const locationUtils = require("../utils/location.utils");
 
 const chai = require("chai");
 const { expect } = chai;
@@ -69,16 +70,16 @@ describe("Ask for a Location", () => {
     nock.restore();
   });
 
+  it("That exists in real world.", async () => {
+    const city_name = "Paris";
+    const result = await getLocationDataByCity(city_name);
+    expect(result).to.be.an("object").to.have.a.property("name", city_name);
+  });
+
   it("that exists", async () => {
     nock(troposphereUrl).get(rimininelloUrl).reply(200, rimininelloData);
     const city_name = "Rimininello";
     const result = await getLocationDataByCity(city_name);
-
-    /*if (result.error?.error === "Usage limit reached") {
-      // If we reach the api quota, don't mark the test as failed.
-      assert.ok(true);
-      return;
-    }*/
 
     expect(result).to.be.an("object");
     expect(result).to.have.a.property("id");
@@ -116,34 +117,64 @@ describe("Ask for a Location", () => {
 
   it("that have an already cached result", async () => {
     // Set fake data and check if retrieved data are those or another.
-    const loc = new Location({
-      position: { latitude: 11, longitude: 12 },
-      name: "Cesena",
-    });
-    const res = await loc.save();
+    const res = await locationUtils.saveMockCity();
     expect(res).to.be.an("object");
-    expect(res).to.have.a.nested.property("position.latitude", 11);
-    expect(res).to.have.a.nested.property("position.longitude", 12);
+    expect(res).to.have.a.nested.property(
+      "position.latitude",
+      locationUtils.cesenaMockData.position.latitude
+    );
+    expect(res).to.have.a.nested.property(
+      "position.longitude",
+      locationUtils.cesenaMockData.position.longitude
+    );
     nock(troposphereUrl).get(cccUrl).reply(200, cccData);
-    const result = await getLocationDataByCity("Cesena");
+    const result = await getLocationDataByCity(
+      locationUtils.cesenaMockData.name
+    );
     expect(result).to.be.an("object");
-    expect(result).to.have.a.property("name", "Cesena");
-    expect(result).to.have.a.nested.property("position.latitude", 11);
-    expect(result).to.have.a.nested.property("position.longitude", 12);
+    expect(result).to.have.a.property(
+      "name",
+      locationUtils.cesenaMockData.name
+    );
+    expect(result).to.have.a.nested.property(
+      "position.latitude",
+      locationUtils.cesenaMockData.position.latitude
+    );
+    expect(result).to.have.a.nested.property(
+      "position.longitude",
+      locationUtils.cesenaMockData.position.longitude
+    );
   });
 
   it("that retrieve remote data if not in cache", async () => {
-    const loc = new Location({
-      position: { latitude: 11, longitude: 12 },
-      name: "Cesena",
-    });
-    const res = await loc.save();
-    expect(res).to.be.an("object").to.have.a.property("name", "Cesena");
+    const res = await locationUtils.saveMockCity();
+    expect(res)
+      .to.be.an("object")
+      .to.have.a.property("name", locationUtils.cesenaMockData.name);
     nock(troposphereUrl).get(cccUrl).reply(200, cccData);
     const result = await getLocationDataByCity("Rimininello");
     expect(result).to.be.an("object");
     expect(result).to.have.a.property("name", "Rimininello");
-    expect(result).to.have.a.nested.property("position.latitude", 42.46964);
-    expect(result).to.have.a.nested.property("position.longitude", 11.62925);
+    expect(result).to.have.a.nested.property(
+      "position.latitude",
+      rimininelloData.data[0].latitude
+    );
+    expect(result).to.have.a.nested.property(
+      "position.longitude",
+      rimininelloData.data[0].longitude
+    );
   });
 });
+
+/*
+### Final thoughts.
+
+If there's the problem of api usage quota limits, use the following code.
+```js
+if (result.error?.error === "Usage limit reached") {
+  // If we reach the api quota, don't mark the test as failed.
+  assert.ok(true);
+  return;
+}
+```
+*/

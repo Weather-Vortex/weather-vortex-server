@@ -66,7 +66,7 @@ const fetchLocationByName = async (localityName) => {
   }
   if (result) {
     const promises = result.data.map((data) =>
-      addCachedLocation(data.name, data.latitude, data.longitude)
+      addCachedLocation(data.id, data.name, data.latitude, data.longitude)
     );
     const caches = await Promise.all(promises);
     return caches[0].added;
@@ -109,13 +109,15 @@ class CacheError extends Error {
 
 /**
  * Add a Location to the collection of cached locations.
+ * @param {Number} id Troposphere id of location.
  * @param {String} name Name of location.
  * @param {Number} latitude Latitude of location.
  * @param {Number} longitude Longitude of location.
  * @returns Added location or error message.
  */
-const addCachedLocation = async (name, latitude, longitude) => {
+const addCachedLocation = async (id, name, latitude, longitude) => {
   const location = new Location({
+    id,
     name,
     position: {
       latitude,
@@ -127,10 +129,12 @@ const addCachedLocation = async (name, latitude, longitude) => {
     const added = await location.save();
     return { result: true, added };
   } catch (error) {
-    const message = "Error in mongoose location insert.";
+    const message = `Error in mongoose location insert: ${error}`;
     // TODO: Generate error to throw with this.
     const err = new Error(message);
     err.internalError = error;
+    err.location = location;
+    console.log("Cache:", location);
     throw err;
   }
 };

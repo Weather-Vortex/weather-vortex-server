@@ -26,6 +26,7 @@ const { app } = require("../src/index");
 const { getLocationDataByCity } = require("../src/storages/location.storage");
 const Location = require("../src/models/location.model");
 const userUtils = require("./utils/user.utils");
+const { saveMockCity } = require("./utils/location.utils");
 
 chai.use(chaiHttp);
 const expect = chai.expect;
@@ -95,11 +96,7 @@ describe("GET forecasts for Cesena", () => {
   describe("With a failure", () => {
     beforeEach(async () => {
       // Fill database with Cesena data before.
-      const loc = new Location({
-        position: { latitude: 44.1391, longitude: 12.24315 },
-        name: "Cesena",
-      });
-      await loc.save();
+      await saveMockCity();
     });
 
     afterEach(async () => {
