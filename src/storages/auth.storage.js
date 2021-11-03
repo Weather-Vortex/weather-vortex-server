@@ -111,10 +111,12 @@ const login = (req, res) => {
       });
     else {
       User.findOne({ email: req.body.email }, function (err, user) {
-        if (!user)
-          return res
-            .status(500)
-            .json({ isAuth: false, message: " Auth failed ,email not found" });
+        if (!user) {
+          return res.status(500).json({
+            isAuth: false,
+            message: "Auth failed, email not found.",
+          });
+        }
 
         //If the user isn't verified, cannot login->
         if (user.isVerified == false) {
