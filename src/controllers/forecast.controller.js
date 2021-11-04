@@ -29,6 +29,17 @@ const usersStorage = require("../storages/user.storage");
 
 const { providerNames } = require("../models/provider.model");
 
+const getCurrentGeolocationForecastWithIo = async (
+  socket,
+  latitude,
+  longitude
+) => {
+  socket.emit("forecast_requested", { providerNames });
+  const latitude = location.position.latitude;
+  const longitude = location.position.longitude;
+  emitCurrentForecasts(latitude, longitude, null, socket);
+};
+
 const getCurrentForecastsWithIo = async (socket, locality) => {
   // Fetch stations by location to query after.
   const stations = await stationStorage.getStations({
@@ -50,14 +61,83 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
     return;
   }
 
+  const latitude = location.position.latitude;
+  const longitude = location.position.longitude;
+  emitCurrentForecasts(latitude, longitude, stations, socket);
+};
+
+const getThreeDaysGeolocationForecastWithIo = async (
+  socket,
+  latitude,
+  longitude
+) => {
+  socket.emit("forecast_requested", { providerNames });
+  emitThreeDaysForecasts(latitude, longitude, socket);
+};
+
+const getThreeDaysForecastsWithIo = async (socket, locality) => {
+  socket.emit("forecast_requested", { providerNames });
+
+  let location;
+  try {
+    const locations = await locationStorage.getLocationDataByCity(locality);
+    location = getLocation(locations);
+  } catch (error) {
+    console.log("Emitted error %o", error);
+    socket.emit("forecast_error", { error, message: error.message, locality });
+    return;
+  }
+
+  const latitude = location.position.latitude;
+  const longitude = location.position.longitude;
+  emitThreeDaysForecasts(latitude, longitude, socket);
+};
+
+const emitThreeDaysForecasts = async (latitude, longitude, socket) => {
+  try {
+    // First pending request.
+    openWeatherStorage
+      .moreDayByLocation(latitude, longitude)
+      .then((result) => {
+        socket.emit("result", {
+          provider: "Open Weather Map",
+          data: result,
+        });
+      })
+      .catch((error) => {
+        console.log("Open Weather Map socket error:", error);
+        socket.emit(
+          "forecast_error",
+          { provider: "OpenWeatherMap" },
+          { error }
+        );
+      });
+
+    // Second pending request.
+    troposphereStorage
+      .moreDayByLocation(latitude, longitude)
+      .then((result) => {
+        socket.emit("result", {
+          provider: "Troposphere",
+          data: result,
+        });
+      })
+      .catch((error) => {
+        console.error("Troposphere socket error:", error);
+        socket.emit("forecast_error", { provider: "Troposphere" }, { error });
+      });
+  } catch (error) {
+    console.log("GENERIC ERROR:", error);
+    socket.emit("error", error);
+  }
+};
+
+const emitCurrentForecasts = async (latitude, longitude, stations, socket) => {
   // Let's Forecast!
   try {
     // First pending request.
     openWeatherStorage
-      .currentByLocation(
-        location.position.latitude,
-        location.position.longitude
-      )
+      .currentByLocation(latitude, longitude)
       .then((result) => {
         socket.emit("result", {
           provider: "Open Weather Map",
@@ -75,10 +155,7 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
 
     // Second pending request.
     troposphereStorage
-      .currentByLocation(
-        location.position.latitude,
-        location.position.longitude
-      )
+      .currentByLocation(latitude, longitude)
       .then((result) => {
         socket.emit("result", {
           provider: "Troposphere",
@@ -106,62 +183,6 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
           socket.emit("forecast_error", { provider: s.name }, { error });
         });
     });
-  } catch (error) {
-    console.log("GENERIC ERROR:", error);
-    socket.emit("error", error);
-  }
-};
-
-const getThreeDaysForecastsWithIo = async (socket, locality) => {
-  socket.emit("forecast_requested", { providerNames });
-
-  let location;
-  try {
-    const locations = await locationStorage.getLocationDataByCity(locality);
-    location = getLocation(locations);
-  } catch (error) {
-    console.log("Emitted error %o", error);
-    socket.emit("forecast_error", { error, message: error.message, locality });
-    return;
-  }
-  try {
-    // First pending request.
-    openWeatherStorage
-      .moreDayByLocation(
-        location.position.latitude,
-        location.position.longitude
-      )
-      .then((result) => {
-        socket.emit("result", {
-          provider: "Open Weather Map",
-          data: result,
-        });
-      })
-      .catch((error) => {
-        console.log("Open Weather Map socket error:", error);
-        socket.emit(
-          "forecast_error",
-          { provider: "OpenWeatherMap" },
-          { error }
-        );
-      });
-
-    // Second pending request.
-    troposphereStorage
-      .moreDayByLocation(
-        location.position.latitude,
-        location.position.longitude
-      )
-      .then((result) => {
-        socket.emit("result", {
-          provider: "Troposphere",
-          data: result,
-        });
-      })
-      .catch((error) => {
-        console.error("Troposphere socket error:", error);
-        socket.emit("forecast_error", { provider: "Troposphere" }, { error });
-      });
   } catch (error) {
     console.log("GENERIC ERROR:", error);
     socket.emit("error", error);
@@ -234,6 +255,34 @@ const getThreeDaysForecasts = async (req, res) => {
   }
 };
 
+const getThreeDaysGeolocationForecast = async (req, res) => {
+  console.log("Received req in geolocation with %o", req.params);
+  const latitud = req.params.latitude;
+  const longitud = req.params.longitude;
+  console.log("Generated latitud %s and longitud %s", latitud, longitude);
+  const { latitude, longitude } = req.params;
+  try {
+    const promises = await threeDaysByPosition(latitude, longitude);
+    const results = await Promise.all(promises);
+    return res.status(200).json({ results });
+  } catch (error) {
+    return res.status(500).json({ results: null, error });
+  }
+};
+
+const getCurrentGeolocationForecast = async (req, res) => {
+  console.log("Received req in geolocation with %o", req.params);
+  const latitud = req.params.latitude;
+  const longitud = req.params.longitude;
+  console.log("Generated latitud %s and longitud %s", latitud, longitude);
+  try {
+    const results = await currentByPosition(latitud, longitud, null);
+    return res.status(200).json({ results });
+  } catch (error) {
+    return res.status(500).json({ results: null, error });
+  }
+};
+
 const notify = async (req, res) => {
   /*
    * Send a response as soon as possible before start to notify (long running process).
@@ -246,7 +295,9 @@ const notify = async (req, res) => {
       if (m.preferred.location) {
         return currentByLocation(m.preferred.location);
       } else if (m.preferred.position) {
-        return currentByPosition(m.preferred.position);
+        const latitude = m.preferred.position.latitude;
+        const longitude = m.preferred.position.longitude;
+        return currentByPosition(latitude, longitude, stations);
       }
       return null;
     })
@@ -268,6 +319,20 @@ const notify = async (req, res) => {
     fails: found.length,
     message: "Not all email are sended without errors",
   });*/
+};
+
+const threeDaysByPosition = async (latitude, longitude) => {
+  // First pending request.
+  const openWeatherMapForecast = openWeatherStorage
+    .moreDayByLocation(latitude, longitude)
+    .then((res) => ({ provider: "Open Weather Map", forecast: res }));
+
+  // Second pending request.
+  const troposphereForecast = troposphereStorage
+    .moreDayByLocation(latitude, longitude)
+    .then((res) => ({ provider: "Troposphere", forecast: res }));
+  const promises = [openWeatherMapForecast, troposphereForecast];
+  return promises;
 };
 
 /**
@@ -325,11 +390,9 @@ const currentByLocation = async (location) => {
       .status(statusCode)
       .json({ result: false, error, locality: location });
   }
-  return currentByPosition(
-    position.position.latitude,
-    position.position.longitude,
-    stations
-  );
+  const latitude = position.position.latitude;
+  const longitude = position.position.longitude;
+  return currentByPosition(latitude, longitude, stations);
 };
 
 /**
@@ -382,5 +445,9 @@ module.exports = {
   getCurrentForecastsWithIo,
   getThreeDaysForecasts,
   getThreeDaysForecastsWithIo,
+  getThreeDaysGeolocationForecastWithIo,
+  getCurrentGeolocationForecastWithIo,
+  getThreeDaysGeolocationForecast,
+  getCurrentGeolocationForecast,
   notify,
 };

@@ -47,12 +47,20 @@ const configRouter = (app, io) => {
 
     socket.on("current", (arg) => {
       console.log("Received a current forecast request with arg:", arg);
-      controller.getCurrentForecastsWithIo(socket, arg.locality);
+      if (arg.locality) {
+        controller.getCurrentForecastsWithIo(socket, arg.locality);
+      } else if (arg.latitude && arg.longitude) {
+        controller.getCurrentGeolocationForecastWithIo(socket, arg.locality);
+      }
     });
 
     socket.on("threedays", (arg) => {
       console.log("Received a three days forecast request with arg: ", arg);
-      controller.getThreeDaysForecastsWithIo(socket, arg.locality);
+      if (arg.locality) {
+        controller.getThreeDaysForecastsWithIo(socket, arg.locality);
+      } else if (arg.latitude && arg.longitude) {
+        controller.getThreeDaysGeolocationForecastWithIo(socket, arg.locality);
+      }
     });
 
     socket.on("disconnect", () => {
@@ -65,6 +73,15 @@ const configRouter = (app, io) => {
 
   router
     .get("/notify", controller.notify)
+    .get(
+      "/:latitude,:longitude/threedays",
+      controller.getThreeDaysGeolocationForecast
+    )
+    .get(
+      "/:latitude,:longitude/current",
+      controller.getCurrentGeolocationForecast
+    )
+    .get("/:latitude,:longitude", controller.getThreeDaysGeolocationForecast)
     .get("/:locality/threedays", controller.getThreeDaysForecasts)
     .get("/:locality/current", controller.getCurrentForecasts)
     .get("/:locality", controller.getThreeDaysForecasts);
