@@ -35,8 +35,6 @@ const getCurrentGeolocationForecastWithIo = async (
   longitude
 ) => {
   socket.emit("forecast_requested", { providerNames });
-  const latitude = location.position.latitude;
-  const longitude = location.position.longitude;
   emitCurrentForecasts(latitude, longitude, null, socket);
 };
 
@@ -200,11 +198,12 @@ const getCurrentForecasts = async (req, res) => {
 
   const locality = req.params.locality;
   try {
-    const results = await currentByLocation(req.params.locality);
+    const promises = await currentByLocation(locality);
+    const results = await Promise.all(promises);
     return res.status(200).json({ owm: results[0], tro: results[1] });
   } catch (error) {
-    // storageUtils.manageAxiosError(error);
-    return res.status(statusCode).json({ result: false, error, locality });
+    storageUtils.manageAxiosError(error);
+    return res.status(500).json({ result: false, error, locality });
   }
 };
 
@@ -251,18 +250,14 @@ const getThreeDaysForecasts = async (req, res) => {
     return res.status(200).json({ owm: results[0], tro: results[1] });
   } catch (error) {
     // storageUtils.manageAxiosError(error);
-    return res.status(statusCode).json({ result: false, error, locality });
+    return res.status(500).json({ result: false, error, locality });
   }
 };
 
 const getThreeDaysGeolocationForecast = async (req, res) => {
-  console.log("Received req in geolocation with %o", req.params);
-  const latitud = req.params.latitude;
-  const longitud = req.params.longitude;
-  console.log("Generated latitud %s and longitud %s", latitud, longitude);
   const { latitude, longitude } = req.params;
   try {
-    const promises = await threeDaysByPosition(latitude, longitude);
+    const promises = threeDaysByPosition(latitude, longitude);
     const results = await Promise.all(promises);
     return res.status(200).json({ results });
   } catch (error) {
@@ -271,14 +266,13 @@ const getThreeDaysGeolocationForecast = async (req, res) => {
 };
 
 const getCurrentGeolocationForecast = async (req, res) => {
-  console.log("Received req in geolocation with %o", req.params);
-  const latitud = req.params.latitude;
-  const longitud = req.params.longitude;
-  console.log("Generated latitud %s and longitud %s", latitud, longitude);
+  const { latitude, longitude } = req.params;
   try {
-    const results = await currentByPosition(latitud, longitud, null);
+    const promises = await currentByPosition(latitude, longitude, null);
+    const results = await Promise.all(promises);
     return res.status(200).json({ results });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ results: null, error });
   }
 };
@@ -292,14 +286,15 @@ const notify = async (req, res) => {
   const users = await usersStorage.getUsersWithPreferred();
   const promises = await Promise.all(
     users.map((m) => {
+      let promises = null;
       if (m.preferred.location) {
-        return currentByLocation(m.preferred.location);
+        promises = currentByLocation(m.preferred.location);
       } else if (m.preferred.position) {
         const latitude = m.preferred.position.latitude;
         const longitude = m.preferred.position.longitude;
-        return currentByPosition(latitude, longitude, stations);
+        promises = currentByPosition(latitude, longitude, stations);
       }
-      return null;
+      return Promise.all(promises);
     })
   );
   const pairings = promises.map((m, i) => {
@@ -321,7 +316,7 @@ const notify = async (req, res) => {
   });*/
 };
 
-const threeDaysByPosition = async (latitude, longitude) => {
+const threeDaysByPosition = (latitude, longitude) => {
   // First pending request.
   const openWeatherMapForecast = openWeatherStorage
     .moreDayByLocation(latitude, longitude)
@@ -342,7 +337,7 @@ const threeDaysByPosition = async (latitude, longitude) => {
  * @param {Array<Station>} stations Array of selected stations.
  * @returns {Array<Promise<Forecast>>} Array of forecast Promises.
  */
-const currentByPosition = async (latitude, longitude, stations) => {
+const currentByPosition = (latitude, longitude, stations) => {
   const owmForecast = openWeatherStorage
     .currentByLocation(latitude, longitude)
     .then((res) => ({ provider: "Open Weather Map", forecast: res }))
@@ -351,20 +346,23 @@ const currentByPosition = async (latitude, longitude, stations) => {
     .currentByLocation(latitude, longitude)
     .then((res) => ({ provider: "Troposphere", forecast: res }))
     .catch((err) => ({ provider: "Troposphere", error: err }));
-  const stationForecasts = stations.map((s) =>
-    new StationProvider(s.url, s.authKey, s.name)
-      .current()
-      .then((res) => ({ provider: s.name, forecast: res }))
-      .catch((err) => ({ provider: s.name, error: err }))
-  );
+  let stationForecasts = null;
+  if (stations) {
+    stationForecasts = stations.map((s) =>
+      new StationProvider(s.url, s.authKey, s.name)
+        .current()
+        .then((res) => ({ provider: s.name, forecast: res }))
+        .catch((err) => ({ provider: s.name, error: err }))
+    );
+  }
   const promises = [owmForecast, troForecast].concat(stationForecasts);
-  return await Promise.all(promises);
+  return promises;
 };
 
 /**
  * Get current forecast by a given location.
  * @param {String} location Location string
- * @returns List of Forecast Promises.
+ * @returns {Promise<any>[]} List of Forecast Promises.
  */
 const currentByLocation = async (location) => {
   // Fetch stations by location to query after.
@@ -392,7 +390,8 @@ const currentByLocation = async (location) => {
   }
   const latitude = position.position.latitude;
   const longitude = position.position.longitude;
-  return currentByPosition(latitude, longitude, stations);
+  const promises = currentByPosition(latitude, longitude, stations);
+  return promises;
 };
 
 /**
