@@ -68,7 +68,7 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
         console.log("Open Weather Map socket error:", error);
         socket.emit(
           "forecast_error",
-          { provider: "OpenWeatherMap" },
+          { provider: "Open Weather Map" },
           { error }
         );
       });
