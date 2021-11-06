@@ -50,7 +50,13 @@ const configRouter = (app, io) => {
       if (arg.locality) {
         controller.getCurrentForecastsWithIo(socket, arg.locality);
       } else if (arg.latitude && arg.longitude) {
-        controller.getCurrentGeolocationForecastWithIo(socket, arg.locality);
+        controller.getCurrentGeolocationForecastWithIo(
+          socket,
+          arg.latitude,
+          arg.longitude
+        );
+      } else {
+        // Emit corrupted packet error.
       }
     });
 
@@ -59,7 +65,13 @@ const configRouter = (app, io) => {
       if (arg.locality) {
         controller.getThreeDaysForecastsWithIo(socket, arg.locality);
       } else if (arg.latitude && arg.longitude) {
-        controller.getThreeDaysGeolocationForecastWithIo(socket, arg.locality);
+        controller.getThreeDaysGeolocationForecastWithIo(
+          socket,
+          arg.latitude,
+          arg.longitude
+        );
+      } else {
+        // Emit corrupted packet error.
       }
     });
 

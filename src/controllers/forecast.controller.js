@@ -165,6 +165,11 @@ const emitCurrentForecasts = async (latitude, longitude, stations, socket) => {
         socket.emit("forecast_error", { provider: "Troposphere" }, { error });
       });
 
+    if (!stations) {
+      // If there's no stations, return here.
+      return;
+    }
+
     // Stations pending requests.
     stations.map((s) => {
       const provider = new StationProvider(s.url, s.authKey, s.name);
