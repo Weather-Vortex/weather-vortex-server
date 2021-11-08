@@ -36,5 +36,6 @@ jobs:
         with:
           method: 'GET'
           url: "https://weather-vortex-server.herokuapp.com/forecast/notify"
+          timeout: 60000
       - name: Show Response
         run: echo ${{ steps.myRequest.outputs.response }}
