@@ -51,9 +51,13 @@ const mapFields = (forecast) => {
 
   // In Node 14.x we can write as `forecast.rain?.3h ?? 0`.
   if (typeof forecast.rain === "object") {
-    forecast.rain = forecast.rain["1h"];
+    forecast.rain = forecast.rain["1h"]
+      ? forecast.rain["1h"]
+      : forecast.rain["3h"]
+      ? forecast.rain["3h"]
+      : "n.d.";
   } else {
-    forecast.rain = 0;
+    forecast.rain = "n.d.";
   }
 
   if (typeof forecast.snow === "object") {

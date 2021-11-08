@@ -49,48 +49,95 @@ describe("GET forecasts for Cesena", () => {
       expect(result).to.have.a.nested.property("error.text");
     });
 
-    it("responds with successful result", async () => {
-      const result = await request(app)
-        .get(base_url + "/Cesena")
-        .set("content-type", "application/json")
-        .set("Accept", "application/json");
+    describe("responds with successful result", () => {
+      it("with simple current forecast request by location", async () => {
+        const result = await request(app)
+          .get(base_url + "/Cesena")
+          .set("content-type", "application/json")
+          .set("Accept", "application/json");
 
-      expect(result).to.have.status(200);
-      expect(result).to.be.an("object", "We expect that result is an object");
-      const body = result.body;
-      expect(result.body).to.have.a.property("tro");
-      expect(body).to.have.a.property("owm");
-      const tro = body.tro;
-      expect(tro)
-        .to.be.an("object")
-        .to.have.a.property("provider", "Troposphere");
-      expect(tro).to.have.a.property("forecast").to.be.an("array");
-      tro.forecast.forEach((each) => {
-        expect(each).to.have.a.property("time").to.be.a("string");
-        expect(each)
+        expect(result).to.have.status(200);
+        expect(result).to.be.an("object", "We expect that result is an object");
+        const body = result.body;
+        expect(result.body).to.have.a.property("tro");
+        expect(body).to.have.a.property("owm");
+        const tro = body.tro;
+        expect(tro)
           .to.be.an("object")
-          .to.have.a.property("weatherDescription")
-          .to.be.a("string").to.be.not.null;
-      });
-      const owm = body.owm;
-      expect(owm)
-        .to.be.an("object")
-        .to.have.a.property("provider", "Open Weather Map");
-      expect(owm).to.have.a.property("forecast").to.be.an("array");
-      owm.forecast.forEach((each, index) => {
-        expect(each)
-          .to.have.a.property("time")
-          .to.be.equals(
-            tro.forecast[index].time,
-            "Times between providers are not equals"
-          );
-        expect(each)
+          .to.have.a.property("provider", "Troposphere");
+        expect(tro).to.have.a.property("forecast").to.be.an("array");
+        tro.forecast.forEach((each) => {
+          expect(each).to.have.a.property("time").to.be.a("string");
+          expect(each)
+            .to.be.an("object")
+            .to.have.a.property("weatherDescription")
+            .to.be.a("string").to.be.not.null;
+        });
+        const owm = body.owm;
+        expect(owm)
           .to.be.an("object")
-          .to.have.a.property("weatherDescription")
-          .to.be.a("string").to.be.not.null;
+          .to.have.a.property("provider", "Open Weather Map");
+        expect(owm).to.have.a.property("forecast").to.be.an("array");
+        owm.forecast.forEach((each, index) => {
+          expect(each)
+            .to.have.a.property("time")
+            .to.be.equals(
+              tro.forecast[index].time,
+              "Times between providers are not equals"
+            );
+          expect(each)
+            .to.be.an("object")
+            .to.have.a.property("weatherDescription")
+            .to.be.a("string").to.be.not.null;
+        });
+      }, 2) // Retry at least one more time after fail
+        .timeout(10000); // This test need more time.
+
+      it("with three days forecast request by location", async () => {
+        const result = await request(app)
+          .get(base_url + "/Cesena/threedays")
+          .set("content-type", "application/json")
+          .set("Accept", "application/json");
+
+        expect(result).to.have.status(200);
       });
-    }, 2) // Retry at least one more time after fail
-      .timeout(10000); // This test need more time.
+
+      it("with current forecast request by location", async () => {
+        const result = await request(app)
+          .get(base_url + "/Cesena/current")
+          .set("content-type", "application/json")
+          .set("Accept", "application/json");
+
+        expect(result).to.have.status(200);
+      });
+
+      it("with simple three days forecast request by geolocation", async () => {
+        const result = await request(app)
+          .get(base_url + "/14,15")
+          .set("content-type", "application/json")
+          .set("Accept", "application/json");
+
+        expect(result).to.have.status(200);
+      });
+
+      it("with current forecast request by geolocation", async () => {
+        const result = await request(app)
+          .get(base_url + "/14,15/current")
+          .set("content-type", "application/json")
+          .set("Accept", "application/json");
+
+        expect(result).to.have.status(200);
+      });
+
+      it("with three days forecast request by geolocation", async () => {
+        const result = await request(app)
+          .get(base_url + "/14,15/threedays")
+          .set("content-type", "application/json")
+          .set("Accept", "application/json");
+
+        expect(result).to.have.status(200);
+      });
+    });
   });
 
   describe("With a failure", () => {
