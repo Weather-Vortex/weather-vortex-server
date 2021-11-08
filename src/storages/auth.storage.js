@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 // adding new user (sign-up route)
 const register = (req, res) => {
   // taking a user
-  const newuser = new User({
+  const newUser = new User({
     //insert other parameters of the model if you want
     firstName: req.body.firstName,
     lastName: req.body.lastName,
@@ -19,12 +19,27 @@ const register = (req, res) => {
 
   const { firstName, lastName, email, password } = req.body;
 
-  //if(newuser.password!=newuser.password2)return res.status(400).json({message: "passwords not match"});
+  const mandatoryFields = ["firstName", "lastName", "email", "password"];
+  let missingFields = [];
+  const keys = Object.keys(req.body);
+  mandatoryFields.forEach((elem) => {
+    if (!keys.includes(elem)) {
+      missingFields.push(elem);
+    }
+  });
 
-  if (!firstName || !lastName || !email || !password)
-    return res
-      .status(400)
-      .json({ auth: false, message: "some fields are mandatory" });
+  const mandatoryMessage =
+    missingFields.length > 0
+      ? missingFields.reduce((prev, curr) => `${prev}, ${curr}`)
+      : "";
+
+  if (!firstName || !lastName || !email || !password) {
+    return res.status(400).json({
+      auth: false,
+      message: "Missing some fields that are mandatory",
+      fields: mandatoryMessage,
+    });
+  }
 
   const validRegex =
     /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -34,7 +49,7 @@ const register = (req, res) => {
   // User.findOne({ email: newuser.email }, function (err, user) {
   //if (user) return res.status(400).json({ auth: false, message: "email exists" });
 
-  newuser.save((err, doc) => {
+  newUser.save((err, doc) => {
     if (err) {
       console.log(err);
       return res
@@ -48,11 +63,11 @@ const register = (req, res) => {
     });
 
     nodemailer.sendConfirmationEmail(
-      newuser.firstName,
-      newuser.email,
-      newuser.emailToken
+      newUser.firstName,
+      newUser.email,
+      newUser.emailToken
     );
-    console.log("before email not verified ", newuser.isVerified);
+    console.log("before email not verified ", newUser.isVerified);
   });
   // });
 
@@ -111,10 +126,12 @@ const login = (req, res) => {
       });
     else {
       User.findOne({ email: req.body.email }, function (err, user) {
-        if (!user)
-          return res
-            .status(500)
-            .json({ isAuth: false, message: " Auth failed ,email not found" });
+        if (!user) {
+          return res.status(500).json({
+            isAuth: false,
+            message: "Auth failed, email not found.",
+          });
+        }
 
         //If the user isn't verified, cannot login->
         if (user.isVerified == false) {
@@ -155,12 +172,18 @@ const login = (req, res) => {
 //logout user
 const logout = (req, res) => {
   req.user.deleteToken(req.token, (err, user) => {
-    if (err) return res.status(400).send(err);
+    if (err) {
+      return res.status(400).send(err);
+    }
+
+    // Invalidate client session before sending the result.
+    req.session = null;
+    res.clearCookie("auth");
     res.sendStatus(200);
   });
 };
 
-// get logged in user, the user can view its informations (profile)
+// get logged in user, the user can view its information (profile)
 const loggedIn = (req, res) => {
   if (req.user) {
     return res.status(200).json({
@@ -224,6 +247,7 @@ const updateUser = (req, res, next) => {
     });
   });
 };
+
 const forgotPassword = async (req, res) => {
   User.findOne(
     { email: /*req.user.email */ req.body.email },

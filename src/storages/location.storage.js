@@ -129,7 +129,9 @@ const addCachedLocation = async (name, latitude, longitude) => {
   } catch (error) {
     const message = "Error in mongoose location insert.";
     // TODO: Generate error to throw with this.
-    throw new Error(message);
+    const err = new Error(message);
+    err.internalError = error;
+    throw err;
   }
 };
 

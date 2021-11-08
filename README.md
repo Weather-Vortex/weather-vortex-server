@@ -84,6 +84,12 @@ CONTAINER ID   IMAGE                                    CREATED         STATUS  
 64bbb7ec15d7   daniele.tentoni2/weather-vortex-server   4 minutes ago   Up 4 minutes    15600/tcp, 0.0.0.0:49161->12000/tcp, :::49161->12000/tcp
 ```
 
+You can start a local mongo container with persistent volume:
+
+```sh
+sudo docker run -d -v /path/to/data/:/data/db --name mongo -p 27017:27017 mongo
+```
+
 ---
 
 If you run into this test failure message:

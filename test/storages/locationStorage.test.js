@@ -22,10 +22,16 @@ const Location = require("../../src/models/location.model");
 const {
   getLocationDataByCity,
 } = require("../../src/storages/location.storage");
+
 const chai = require("chai");
-const nock = require("nock");
 const { expect } = chai;
-chai.use(require("chai-as-promised"));
+
+const chaiAsPromised = require("chai-as-promised");
+chai.use(chaiAsPromised);
+
+const { connection } = require("../../src/config/database.connector");
+
+const nock = require("nock");
 
 const troposphereUrl = "https://api.troposphere.io";
 const rimininelloUrl = `/place/name/Rimininello?token=${process.env.TROPOSPHERE_API_KEY}`;
@@ -54,7 +60,13 @@ const cccData = { error: null, data: [] };
 describe("Ask for a Location", () => {
   beforeEach(async () => {
     // Clean database.
+    await connection;
     await Location.deleteMany({}).exec();
+  });
+
+  afterEach(() => {
+    nock.cleanAll();
+    nock.restore();
   });
 
   it("that exists", async () => {
@@ -71,7 +83,6 @@ describe("Ask for a Location", () => {
     expect(result).to.be.an("object");
     expect(result).to.have.a.property("id");
     expect(result).to.have.a.property("name", city_name);
-    expect(result).to.have.a.property("position");
     expect(result).to.have.a.nested.property("position.latitude", 42.46964);
     expect(result).to.have.a.nested.property("position.longitude", 11.62925);
   });
@@ -101,5 +112,38 @@ describe("Ask for a Location", () => {
     const city_name = "CCC";
     const result = getLocationDataByCity(city_name);
     await expect(result).to.be.rejectedWith(Error);
+  });
+
+  it("that have an already cached result", async () => {
+    // Set fake data and check if retrieved data are those or another.
+    const loc = new Location({
+      position: { latitude: 11, longitude: 12 },
+      name: "Cesena",
+    });
+    const res = await loc.save();
+    expect(res).to.be.an("object");
+    expect(res).to.have.a.nested.property("position.latitude", 11);
+    expect(res).to.have.a.nested.property("position.longitude", 12);
+    nock(troposphereUrl).get(cccUrl).reply(200, cccData);
+    const result = await getLocationDataByCity("Cesena");
+    expect(result).to.be.an("object");
+    expect(result).to.have.a.property("name", "Cesena");
+    expect(result).to.have.a.nested.property("position.latitude", 11);
+    expect(result).to.have.a.nested.property("position.longitude", 12);
+  });
+
+  it("that retrieve remote data if not in cache", async () => {
+    const loc = new Location({
+      position: { latitude: 11, longitude: 12 },
+      name: "Cesena",
+    });
+    const res = await loc.save();
+    expect(res).to.be.an("object").to.have.a.property("name", "Cesena");
+    nock(troposphereUrl).get(cccUrl).reply(200, cccData);
+    const result = await getLocationDataByCity("Rimininello");
+    expect(result).to.be.an("object");
+    expect(result).to.have.a.property("name", "Rimininello");
+    expect(result).to.have.a.nested.property("position.latitude", 42.46964);
+    expect(result).to.have.a.nested.property("position.longitude", 11.62925);
   });
 });
