@@ -6,18 +6,7 @@ const jwt = require("jsonwebtoken");
 
 // adding new user (sign-up route)
 const register = (req, res) => {
-  // taking a user
-  const newUser = new User({
-    //insert other parameters of the model if you want
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    password: req.body.password,
-    emailToken: crypto.randomBytes(64).toString("hex"),
-    isVerified: false,
-  });
-
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, returnLink } = req.body;
 
   const mandatoryFields = ["firstName", "lastName", "email", "password"];
   let missingFields = [];
@@ -46,15 +35,27 @@ const register = (req, res) => {
   if (!email.match(validRegex)) {
     return res.status(400).json({ auth: false, message: "Invalid Email" });
   }
+
+  // taking a user
+  const newUser = new User({
+    //insert other parameters of the model if you want
+    firstName,
+    lastName,
+    email,
+    password,
+    emailToken: crypto.randomBytes(64).toString("hex"),
+  });
   // User.findOne({ email: newuser.email }, function (err, user) {
   //if (user) return res.status(400).json({ auth: false, message: "email exists" });
 
   newUser.save((err, doc) => {
     if (err) {
       console.log(err);
-      return res
-        .status(500)
-        .json({ success: false, message: "Error registration" });
+      return res.status(500).json({
+        success: false,
+        message:
+          "Database error occurred during user registration, report this problem to the administrator.",
+      });
     }
     res.status(200).json({
       succes: true,
@@ -65,7 +66,8 @@ const register = (req, res) => {
     nodemailer.sendConfirmationEmail(
       newUser.firstName,
       newUser.email,
-      newUser.emailToken
+      newUser.emailToken,
+      returnLink
     );
     console.log("before email not verified ", newUser.isVerified);
   });
