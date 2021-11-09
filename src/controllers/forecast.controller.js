@@ -309,7 +309,9 @@ const notify = async (req, res) => {
     return null;
   });
   const results = await Promise.all(
-    pairings.map((f) => nodemailer.sendWeatherEmail(f.user, f.forecast))
+    pairings.map((f) =>
+      nodemailer.sendWeatherEmail(f.user.email, f.user, f.forecast)
+    )
   );
   /*const failings = results.filter((f) => f !== null);
   if (failings.length === 0) {

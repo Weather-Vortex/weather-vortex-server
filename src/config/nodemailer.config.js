@@ -67,7 +67,7 @@ module.exports.sendForgotEmail = (name, email, forgotToken) => {
     .catch((err) => console.log(err));
 };
 
-module.exports.sendWeatherEmail = (user, forecasts) =>
+module.exports.sendWeatherEmail = (email, user, forecasts) =>
   new Promise((resolve, reject) => {
     const tbody = forecasts.reduce((old, current) => {
       const str = `
@@ -87,7 +87,7 @@ module.exports.sendWeatherEmail = (user, forecasts) =>
     transport
       .sendMail({
         from: `"Forecast notifications" <${process.env.USERMAIL}>`,
-        to: user.email,
+        to: email,
         subject: "Forecast notification from Weather Vortex",
         html: `
     <h1>Weather Notification</h1>
@@ -112,6 +112,7 @@ module.exports.sendWeatherEmail = (user, forecasts) =>
         console.error(
           "Email sending to %s finished with errors:",
           user.email,
+          email,
           err
         );
         reject("Error");
