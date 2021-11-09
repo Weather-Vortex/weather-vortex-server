@@ -66,16 +66,25 @@ const mapFields = (forecast) => {
     forecast.snow = 0;
   }
 
+  let date = null;
   if (forecast.timezone) {
-    forecast.time = new Date(forecast.dt - forecast.timezone * 1000);
+    date = new Date(forecast.dt - forecast.timezone * 1000);
   } else if (forecast.dt_txt) {
-    forecast.time = new Date(forecast.dt_txt);
+    date = new Date(forecast.dt_txt);
+  }
+
+  // In Node.JS > 14, we can simply write `data?.toISOString();`.
+  let time = null;
+  if (date) {
+    time = date.toISOString();
+  } else {
+    time = "";
   }
 
   return {
     dt: forecast.dt, // Time of data forecasted, Unix, UTC
-    time: forecast.time.toISOString(), // Temperature. Unit Default: Kelvin
-    temp: forecast.main.temp,
+    time,
+    temp: forecast.main.temp, // Temperature. Unit Default: Kelvin
     tempMin: forecast.main.temp_min,
     tempMax: forecast.main.temp_max,
     pressure: forecast.main.pressure, // Atmospheric pressure on the sea level by default, hPa

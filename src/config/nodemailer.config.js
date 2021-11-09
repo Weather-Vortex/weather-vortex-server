@@ -33,7 +33,12 @@ var transport = nodemailer.createTransport({
 });
 
 //confirmationCode-> emailToken
-module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
+module.exports.sendConfirmationEmail = (
+  name,
+  email,
+  confirmationCode,
+  returnLink
+) => {
   console.log("Check");
   transport
     .sendMail({
@@ -43,7 +48,7 @@ module.exports.sendConfirmationEmail = (name, email, confirmationCode) => {
       html: `<h1>Email Confirmation</h1>
           <h2>Hello ${name}</h2>
           <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-          <a href='${process.env.CLIENT_URL}/weather-vortex-client/#/user/confirm?name=${confirmationCode}'> Click here
+          <a href='${process.env.CLIENT_URL}${returnLink}user/confirm?name=${confirmationCode}'> Click here
           </div>`,
     })
     .catch((err) => console.log(err));

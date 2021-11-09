@@ -16,33 +16,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-const mongoose = require("mongoose");
+"use strict";
 
-const locationSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-    unique: true,
-  },
-  name: {
-    type: String,
-    required: true,
-    unique: false,
-  },
+const Location = require("../../src/models/location.model");
+
+const cesenaMockData = {
+  id: 3178957,
+  name: "Cesena",
   position: {
-    latitude: {
-      type: Number,
-      required: true,
-      max: 90,
-      min: -90,
-    },
-    longitude: {
-      type: Number,
-      required: true,
-      max: 180,
-      min: -180,
-    },
+    latitude: 44.1391,
+    longitude: 12.24315,
   },
-});
+};
 
-module.exports = mongoose.model("Location", locationSchema);
+const saveMockCity = async () => {
+  const loc = new Location(cesenaMockData);
+  return await loc.save();
+};
+
+module.exports = { cesenaMockData, saveMockCity };

@@ -26,36 +26,52 @@ chai.use(chaiHttp);
 /*Some tests for authentication*/
 
 describe("Users", () => {
-  beforeEach((done) => {
-    User.remove({}, (err) => {
-      done();
-    });
-  });
+  beforeEach(async () => await User.deleteMany({}));
 
   describe("/POST user", () => {
-    it("it should not create a user without email address", (done) => {
-      let user = {
+    it("it should not create a user without email address", async () => {
+      const user = {
         firstName: "John",
         lastName: "Doe",
         password: "ffffffff",
       };
-      chai
-        .request(app)
-        .post("/auth/register")
-        .send(user)
-        .end((err, res) => {
-          if (err) {
-            done(err);
-          }
+      const res = await chai.request(app).post("/auth/register").send(user);
+      res.should.have.status(400);
+      res.should.have.property("body");
+      res.body.should.be.a("object");
+      res.body.should.have.property("auth").eql(false);
+      res.body.should.have
+        .property("message")
+        .eql("Missing some fields that are mandatory");
+      res.body.should.have.property("fields").eql("email");
+    });
 
-          res.should.have.status(400);
-          res.body.should.be.a("object");
-          res.body.should.have.property("auth").eql(false);
-          res.body.should.have
-            .property("message")
-            .eql("some fields are mandatory");
-          done();
-        });
+    it("should not create a user without some mandatory fields", async () => {
+      const user = { firstName: "John", lastName: "Doe" };
+      const res = await chai.request(app).post("/auth/register").send(user);
+      res.should.have.status(400);
+      res.should.have.property("body");
+      res.body.should.be.a("object");
+      res.body.should.have.property("auth").eql(false);
+      res.body.should.have
+        .property("message")
+        .eql("Missing some fields that are mandatory");
+      res.body.should.have.property("fields").eql("email, password");
+    });
+
+    it("should not create a user without any mandatory fields", async () => {
+      const user = {};
+      const res = await chai.request(app).post("/auth/register").send(user);
+      res.should.have.status(400);
+      res.should.have.property("body");
+      res.body.should.be.a("object");
+      res.body.should.have.property("auth").eql(false);
+      res.body.should.have
+        .property("message")
+        .eql("Missing some fields that are mandatory");
+      res.body.should.have
+        .property("fields")
+        .eql("firstName, lastName, email, password");
     });
 
     it("it should create a user ", (done) => {
@@ -167,5 +183,4 @@ describe("Users", () => {
       });
     });
   });
-
 });
