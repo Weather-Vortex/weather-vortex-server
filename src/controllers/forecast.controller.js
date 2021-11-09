@@ -293,11 +293,11 @@ const notify = async (req, res) => {
     users.map((m) => {
       let promises = null;
       if (m.preferred.location) {
-        promises = currentByLocation(m.preferred.location);
+        promises = await currentByLocation(m.preferred.location);
       } else if (m.preferred.position) {
         const latitude = m.preferred.position.latitude;
         const longitude = m.preferred.position.longitude;
-        promises = currentByPosition(latitude, longitude, stations);
+        promises = await currentByPosition(latitude, longitude, stations);
       }
       return Promise.all(promises);
     })
