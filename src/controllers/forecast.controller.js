@@ -282,46 +282,123 @@ const getCurrentGeolocationForecast = async (req, res) => {
   }
 };
 
+const getLocationsFromUsers = (users) =>
+  users
+    .map((user) => user.preferred)
+    .filter((preferred) =>
+      preferred.location ||
+      (preferred.position && preferred.position.x && preferred.position.y)
+        ? true
+        : false
+    );
+
+const equalsPreferred = (first, second) => {
+  if (!first || !second) {
+    return false;
+  }
+
+  if (
+    (first.location && !second.location) ||
+    (!first.location && second.location)
+  ) {
+    return false;
+  }
+
+  if (first.location !== second.location) {
+    return false;
+  }
+
+  if (
+    (first.position && !second.position) ||
+    (!first.position && second.position)
+  ) {
+    return false;
+  }
+
+  if (
+    (first.position.x && !second.position.x) ||
+    (first.position.y && !second.position.y) ||
+    (!first.position.x && second.position.x) ||
+    (!first.position.y && second.position.x)
+  ) {
+    return false;
+  }
+
+  return (
+    first.position.x === second.position.y &&
+    first.position.y === second.position.y
+  );
+};
+
+const reduceLocations = (locations) =>
+  locations.reduce((prev, curr) => {
+    if (!Array.isArray(prev)) {
+      console.log("Prev is not an array", prev, [curr]);
+      return [curr];
+    }
+
+    if (prev.length === 0) {
+      return [curr];
+    }
+
+    if (prev.some((elem) => equalsPreferred(elem, curr))) {
+      console.log("Prev include curr", prev, curr);
+      return prev;
+    }
+
+    return [curr, ...prev];
+  }, new Array());
+
+const makeQueries = (counts) =>
+  counts.map((preferred) => {
+    let forecasts = null;
+    if (preferred.location) {
+      forecasts = currentByLocation(preferred.location);
+    } else if (preferred.position) {
+      const latitude = preferred.position.x;
+      const longitude = preferred.position.y;
+      forecasts = currentByPosition(latitude, longitude, stations);
+    }
+    // Those are not arrays?
+    return { preferred, forecasts };
+  });
+
 const notify = async (req, res) => {
   /*
    * Send a response as soon as possible before start to notify (long running process).
    */
   res.status(200).json({ result: "ok", message: "Request accepted." });
-
   const users = await usersStorage.getUsersWithPreferred();
-  const queries = users.map((m) => {
-      let promises = null;
-      if (m.preferred.location) {
-        promises = await currentByLocation(m.preferred.location);
-      } else if (m.preferred.position) {
-        const latitude = m.preferred.position.latitude;
-        const longitude = m.preferred.position.longitude;
-        promises = await currentByPosition(latitude, longitude, stations);
-      }
-      return Promise.all(promises);
-    });
-  const promises = await Promise.all(
-    
-  );
-  const pairings = promises.map((m, i) => {
-    if (m) {
-      return { user: users[i], forecast: m };
-    }
-    return null;
-  });
-  const results = await Promise.all(
-    pairings.map((f) =>
-      nodemailer.sendWeatherEmail(f.user.email, f.user, f.forecast)
-    )
-  );
-  /*const failings = results.filter((f) => f !== null);
-  if (failings.length === 0) {
-    return res.status(200).json({ result: "ok" });
+  if (!users) {
+    console.log("No users have to be notified.");
+    return;
   }
-  return res.status(500).json({
-    fails: found.length,
-    message: "Not all email are sended without errors",
-  });*/
+
+  // Reduce locations.
+  const locations = getLocationsFromUsers(users);
+  const counts = reduceLocations(locations);
+  const queries = makeQueries(counts);
+
+  const usersQueries = users.map((user) => {
+    const related = queries.find((query) => {
+      return equalsPreferred(user.preferred, query.preferred);
+    });
+    const sum = { user, forecasts: related.forecasts };
+    return new Promise(async (resolve) => {
+      console.log("Forecasts:", sum.forecasts);
+      const prepared = await sum.forecasts;
+      const results = Array.isArray(prepared)
+        ? await Promise.all(prepared)
+        : await prepared;
+      resolve({ user, forecasts: results });
+    });
+  });
+  console.log("Users queries", usersQueries);
+
+  const afterQueries = await Promise.all(usersQueries);
+  afterQueries.map((after) =>
+    nodemailer.sendWeatherEmail(after.user.email, after.user, after.forecasts)
+  );
 };
 
 const threeDaysByPosition = (latitude, longitude) => {
