@@ -43,7 +43,7 @@ jobs:
 
   TelegramJobDeploy:
     needs: [Deploy]
-    if: success()
+    if: false # success()
     runs-on: ubuntu-latest
     steps:
       - name: Send custom Telegram message
