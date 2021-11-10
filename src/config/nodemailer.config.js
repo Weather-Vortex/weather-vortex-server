@@ -109,12 +109,8 @@ module.exports.sendWeatherEmail = (email, user, forecasts) =>
       })
       .then((_) => resolve(null))
       .catch((err) => {
-        console.error(
-          "Email sending to %s finished with errors:",
-          user.email,
-          email,
-          err
-        );
-        reject("Error");
+        const message = `Email sending to ${user.email} finished with errors: ${email}`;
+        console.error(message, err);
+        reject(message);
       });
   });
