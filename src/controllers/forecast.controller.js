@@ -392,11 +392,12 @@ const notify = async (req, res) => {
   }
 
   // Reduce locations.
+  let usersQueries = null;
   try {
     const locations = getLocationsFromUsers(users);
     const counts = reduceLocations(locations);
     const queries = makeQueries(counts);
-    const usersQueries = pairUserQueries(users, queries);
+    usersQueries = pairUserQueries(users, queries);
     console.log("Users queries", usersQueries);
   } catch (error) {
     console.error("Error during fetching forecasts:", error);
