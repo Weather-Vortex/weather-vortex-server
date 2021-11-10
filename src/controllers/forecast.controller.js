@@ -406,9 +406,10 @@ const notify = async (req, res) => {
 
   try {
     const afterQueries = await Promise.all(usersQueries);
-    afterQueries.map((after) =>
+    const emails = afterQueries.map((after) =>
       nodemailer.sendWeatherEmail(after.user.email, after.user, after.forecasts)
     );
+    await Promise.all(emails);
   } catch (error) {
     console.error("Error while notification email", error);
   }
