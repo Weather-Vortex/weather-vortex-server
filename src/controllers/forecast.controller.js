@@ -363,23 +363,8 @@ const makeQueries = (counts) =>
     return { preferred, forecasts };
   });
 
-const notify = async (req, res) => {
-  /*
-   * Send a response as soon as possible before start to notify (long running process).
-   */
-  res.status(200).json({ result: "ok", message: "Request accepted." });
-  const users = await usersStorage.getUsersWithPreferred();
-  if (!users) {
-    console.log("No users have to be notified.");
-    return;
-  }
-
-  // Reduce locations.
-  const locations = getLocationsFromUsers(users);
-  const counts = reduceLocations(locations);
-  const queries = makeQueries(counts);
-
-  const usersQueries = users.map((user) => {
+const pairUserQueries = (users, queries) =>
+  users.map((user) => {
     const related = queries.find((query) => {
       return equalsPreferred(user.preferred, query.preferred);
     });
@@ -393,12 +378,39 @@ const notify = async (req, res) => {
       resolve({ user, forecasts: results });
     });
   });
-  console.log("Users queries", usersQueries);
 
-  const afterQueries = await Promise.all(usersQueries);
-  afterQueries.map((after) =>
-    nodemailer.sendWeatherEmail(after.user.email, after.user, after.forecasts)
-  );
+const notify = async (req, res) => {
+  /*
+   * Send a response as soon as possible before start to notify (long running process).
+   */
+  res.status(200).json({ result: "ok", message: "Request accepted." });
+
+  const users = await usersStorage.getUsersWithPreferred();
+  if (!users) {
+    console.log("No users have to be notified.");
+    return;
+  }
+
+  // Reduce locations.
+  try {
+    const locations = getLocationsFromUsers(users);
+    const counts = reduceLocations(locations);
+    const queries = makeQueries(counts);
+    const usersQueries = pairUserQueries(users, queries);
+    console.log("Users queries", usersQueries);
+  } catch (error) {
+    console.error("Error during fetching forecasts:", error);
+    return;
+  }
+
+  try {
+    const afterQueries = await Promise.all(usersQueries);
+    afterQueries.map((after) =>
+      nodemailer.sendWeatherEmail(after.user.email, after.user, after.forecasts)
+    );
+  } catch (error) {
+    console.error("Error while notification email", error);
+  }
 };
 
 const threeDaysByPosition = (latitude, longitude) => {
