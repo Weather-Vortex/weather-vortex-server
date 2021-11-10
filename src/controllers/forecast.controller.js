@@ -289,8 +289,7 @@ const notify = async (req, res) => {
   res.status(200).json({ result: "ok", message: "Request accepted." });
 
   const users = await usersStorage.getUsersWithPreferred();
-  const promises = await Promise.all(
-    users.map((m) => {
+  const queries = users.map((m) => {
       let promises = null;
       if (m.preferred.location) {
         promises = await currentByLocation(m.preferred.location);
@@ -300,7 +299,9 @@ const notify = async (req, res) => {
         promises = await currentByPosition(latitude, longitude, stations);
       }
       return Promise.all(promises);
-    })
+    });
+  const promises = await Promise.all(
+    
   );
   const pairings = promises.map((m, i) => {
     if (m) {
