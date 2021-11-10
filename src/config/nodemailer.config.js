@@ -21,16 +21,17 @@
 const nodemailer = require("nodemailer");
 
 //email sender details
-var transport = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.USEREMAIL,
-    pass: process.env.PWDMAIL,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+const transport = () =>
+  nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.USEREMAIL,
+      pass: process.env.PWDMAIL,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
 
 //confirmationCode-> emailToken
 module.exports.sendConfirmationEmail = (
@@ -40,7 +41,7 @@ module.exports.sendConfirmationEmail = (
   returnLink
 ) => {
   console.log("Check");
-  transport
+  transport()
     .sendMail({
       from: ` "Verify your email" <${process.env.USEREMAIL}>`,
       to: email,
@@ -56,7 +57,7 @@ module.exports.sendConfirmationEmail = (
 
 module.exports.sendForgotEmail = (name, email, forgotToken) => {
   console.log("Check");
-  transport
+  transport()
     .sendMail({
       from: ` "Change your password ${name}" <${process.env.USEREMAIL}>`,
       to: email,
@@ -84,7 +85,7 @@ module.exports.sendWeatherEmail = (email, user, forecasts) =>
       return old.concat(str);
     }, "");
 
-    transport
+    transport()
       .sendMail({
         from: `"Forecast notifications" <${process.env.USERMAIL}>`,
         to: email,
