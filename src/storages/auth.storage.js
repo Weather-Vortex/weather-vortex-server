@@ -290,7 +290,7 @@ const forgotPassword = async (req, res) => {
 
 //update password
 const resetPassword = async (req, res) => {
-  const { resetLink, newPass } = req.body;
+  const { resetLink } = req.body;
   if (resetLink) {
     jwt.verify(resetLink, process.env.RESET_PASSWORD_KEY, function (error) {
       if (error) {
@@ -304,11 +304,17 @@ const resetPassword = async (req, res) => {
             .status(500)
             .json({ err: "User with this token does not exist" });
         }
+        console.log(
+          "I wanna reset %s with %s",
+          user.password,
+          req.body.password,
+          user.email
+        );
         user.password = req.body.password;
         user.resetLink = "";
         user.save((err, result) => {
           if (err) {
-            return res.status(500).json({ err: "reset password error" });
+            return res.status(500).json({ error: "reset password error" });
           } else {
             return res
               .status(200)

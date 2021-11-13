@@ -80,6 +80,11 @@ module.exports.sendWeatherEmail = (email, user, forecasts) =>
         <td>${current.forecast.temp}</td>
         <td>${current.forecast.tempMin}</td>
         <td>${current.forecast.tempMax}</td>
+        <th>${current.forecast.pressure}</th>
+        <th>${current.forecast.humidity}</th>
+        <th>${current.forecast.clouds}</th>
+        <th>${current.forecast.rain}</th>
+        <th>${current.forecast.snow}</th>
       </tr>`;
       if (!old) {
         return str;
@@ -104,6 +109,11 @@ module.exports.sendWeatherEmail = (email, user, forecasts) =>
         <th>Temp</th>
         <th>Temp Min</th>
         <th>Temp Max</th>
+        <th>Pressure</th>
+        <th>Humidity</th>
+        <th>Clouds</th>
+        <th>Rain</th>
+        <th>Snow</th>
       </thead>
       <tbody>${tbody}</tbody>
     </table>

@@ -19,6 +19,7 @@ let mongoose = require("mongoose");
 const User = require("../../src/models/user.model");
 let chai = require("chai");
 let chaiHttp = require("chai-http");
+const userUtils = require("../utils/user.utils");
 let { app } = require("../../src/index");
 let should = chai.should();
 chai.use(chaiHttp);
@@ -27,6 +28,8 @@ chai.use(chaiHttp);
 
 describe("Users", () => {
   beforeEach(async () => await User.deleteMany({}));
+
+  afterEach(async () => await User.deleteMany({}));
 
   describe("/POST user", () => {
     it("it should not create a user without email address", async () => {
@@ -106,11 +109,12 @@ describe("Users", () => {
 
   describe("/PUT/:id user", () => {
     it("it should update a user given an id", (done) => {
+      const oldPassword = "ffffffff";
       let user = new User({
         firstName: "John",
         lastName: "Doe",
         email: "doe@email.com",
-        password: "ffffffff",
+        password: oldPassword,
       });
       user.save((err, user) => {
         if (err) {
@@ -122,12 +126,13 @@ describe("Users", () => {
             done(err);
           }
 
+          const newPassword = oldPassword.concat("1");
           chai
             .request(app)
             .put("/auth/")
             .set("Cookie", `auth=${userWithToken.token}`)
             .send({
-              password: "ffffffff",
+              password: newPassword,
               preferred: "Cesena",
             })
             .end((err, res) => {
@@ -181,6 +186,40 @@ describe("Users", () => {
             });
         });
       });
+    });
+  });
+
+  describe("Password reset", () => {
+    it("should work", async () => {
+      const tester = await userUtils.createUser();
+      const verified = await userUtils.verifyUser(tester);
+      verified.should.have.property("isVerified", true);
+
+      const result = await chai
+        .request(app)
+        .put("/auth/forgotPassword")
+        .send({ email: tester.email });
+      result.should.have.status(200);
+      result.body.should.have.property(
+        "message",
+        "Email has been sent, kindly follow the instructions!"
+      );
+
+      const userWithLink = await User.findById(tester._id);
+      userWithLink.should.have.property("resetLink");
+
+      const newPassword = "newPwd123";
+      const resetResult = await chai
+        .request(app)
+        .put("/auth/resetPassword")
+        .send({ resetLink: userWithLink.resetLink, password: newPassword });
+      resetResult.should.have.status(200);
+
+      const login = await chai
+        .request(app)
+        .post("/auth/login")
+        .send({ email: userWithLink.email, password: newPassword });
+      login.should.have.status(200);
     });
   });
 });

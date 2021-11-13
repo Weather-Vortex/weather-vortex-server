@@ -38,6 +38,11 @@ const createUser = async () => {
   return res;
 };
 
+const verifyUser = async (user) => {
+  user.isVerified = true;
+  return await user.save();
+};
+
 const createToken = (user) =>
   new Promise((resolve, reject) => {
     user.generateToken((err, withToken) => {
@@ -64,4 +69,10 @@ const cleanUserStation = async (user) => {
  */
 const cleanTesters = async () => await User.deleteMany({ email: testEmail });
 
-module.exports = { cleanTesters, cleanUserStation, createUser, createToken };
+module.exports = {
+  cleanTesters,
+  cleanUserStation,
+  createUser,
+  createToken,
+  verifyUser,
+};
