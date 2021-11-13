@@ -39,7 +39,7 @@ In your local environment, you can run with `npm run start:local` command. You n
 To run your container, use the following command:
 
 ```sh
-docker run -p 49161:12000 -d <your username>/weather-vortex-server
+docker run -p 12000:12000 -d <your username>/weather-vortex-server
 ```
 
 Since this is a detached container, to see all logs run
