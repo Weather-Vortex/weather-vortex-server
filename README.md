@@ -16,13 +16,13 @@ Server for Weather Vortex Project.
 
 Generate your `.env` file following the example in `.env.example`. You will be required to generate api keys for [Open Weather Api](https://openweathermap.org/home/sign_in) and for [Troposphere](https://www.troposphere.io/developer/register).
 
-In local environment, you don't need anything to build this project, since it's all in Javascript. Just run
+! If you haven't some keys, the application will continue to run, but forecasts for missing services will not be given when requested.
+
+In local environment, you don't need anything to build this project, since it's all in Javascript. Just run the following command in route folder to install all dependencies:
 
 ```sh
 npm install
 ```
-
-in route folder to install all dependencies.
 
 To build Docker image, run the following command:
 
