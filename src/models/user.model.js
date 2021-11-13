@@ -114,13 +114,16 @@ userSchema.pre("save", function (next) {
       if (err) return next(err);
 
       bcrypt.hash(user.password, salt, function (err, hash) {
-        if (err) return next(err);
+        if (err) {
+          return next(err);
+        }
+
         user.password = hash;
-        next();
+        return next();
       });
     });
   } else {
-    next();
+    return next();
   }
 });
 
@@ -150,9 +153,12 @@ userSchema.methods.comparePassword = function (password, cb) {
 //the particular user has been logged-in or not and we will save this in database
 userSchema.methods.generateToken = function (cb) {
   var user = this;
-  var token = jwt.sign({ _id: user._id }, process.env.SECRET,/* {
+  var token = jwt.sign(
+    { _id: user._id },
+    process.env.SECRET /* {
     expiresIn: "20m",
-  }*/);
+  }*/
+  );
 
   user.token = token;
   user.save(function (err, user) {

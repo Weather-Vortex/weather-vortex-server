@@ -21,6 +21,6 @@ router.put("/", auth, authStorage.updateUser);
 router.delete("/", auth, authStorage.deleteUser);
 
 router.put("/forgotPassword", authStorage.forgotPassword);
-router.put("/resetPassword/", authStorage.resetPassword);
+router.put("/resetPassword", authStorage.resetPassword);
 
 module.exports = router;
