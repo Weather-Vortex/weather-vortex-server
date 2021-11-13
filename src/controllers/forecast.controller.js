@@ -54,7 +54,7 @@ const getCurrentForecastsWithIo = async (socket, locality) => {
     const locations = await locationStorage.getLocationDataByCity(locality);
     location = getLocation(locations);
   } catch (error) {
-    console.log("Emitted error %o", error);
+    console.error("Emitted error %o", error);
     socket.emit("forecast_error", { error, message: error.message, locality });
     return;
   }
@@ -81,7 +81,7 @@ const getThreeDaysForecastsWithIo = async (socket, locality) => {
     const locations = await locationStorage.getLocationDataByCity(locality);
     location = getLocation(locations);
   } catch (error) {
-    console.log("Emitted error %o", error);
+    console.error("Emitted error %o", error);
     socket.emit("forecast_error", { error, message: error.message, locality });
     return;
   }
@@ -103,7 +103,7 @@ const emitThreeDaysForecasts = async (latitude, longitude, socket) => {
         });
       })
       .catch((error) => {
-        console.log("Open Weather Map socket error:", error);
+        console.error("Open Weather Map socket error:", error);
         socket.emit(
           "forecast_error",
           { provider: "OpenWeatherMap" },
@@ -125,7 +125,7 @@ const emitThreeDaysForecasts = async (latitude, longitude, socket) => {
         socket.emit("forecast_error", { provider: "Troposphere" }, { error });
       });
   } catch (error) {
-    console.log("GENERIC ERROR:", error);
+    console.error("GENERIC ERROR:", error);
     socket.emit("error", error);
   }
 };
@@ -143,7 +143,7 @@ const emitCurrentForecasts = async (latitude, longitude, stations, socket) => {
         });
       })
       .catch((error) => {
-        console.log("Open Weather Map socket error:", error);
+        console.error("Open Weather Map socket error:", error);
         socket.emit(
           "forecast_error",
           { provider: "Open Weather Map" },
@@ -182,12 +182,12 @@ const emitCurrentForecasts = async (latitude, longitude, stations, socket) => {
           })
         )
         .catch((error) => {
-          console.log(`Station ${s.name} error: ${error}`);
+          console.error(`Station ${s.name} error: ${error}`);
           socket.emit("forecast_error", { provider: s.name }, { error });
         });
     });
   } catch (error) {
-    console.log("GENERIC ERROR:", error);
+    console.error("GENERIC ERROR:", error);
     socket.emit("error", error);
   }
 };
@@ -277,7 +277,7 @@ const getCurrentGeolocationForecast = async (req, res) => {
     const results = await Promise.all(promises);
     return res.status(200).json({ results });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ results: null, error });
   }
 };
@@ -333,7 +333,7 @@ const equalsPreferred = (first, second) => {
 const reduceLocations = (locations) =>
   locations.reduce((prev, curr) => {
     if (!Array.isArray(prev)) {
-      console.log("Prev is not an array", prev, [curr]);
+      console.error("Prev is not an array", prev, [curr]);
       return [curr];
     }
 
@@ -342,7 +342,7 @@ const reduceLocations = (locations) =>
     }
 
     if (prev.some((elem) => equalsPreferred(elem, curr))) {
-      console.log("Prev include curr", prev, curr);
+      console.error("Prev include curr", prev, curr);
       return prev;
     }
 
@@ -370,7 +370,6 @@ const pairUserQueries = (users, queries) =>
     });
     const sum = { user, forecasts: related.forecasts };
     return new Promise(async (resolve) => {
-      console.log("Forecasts:", sum.forecasts);
       const prepared = await sum.forecasts;
       const results = Array.isArray(prepared)
         ? await Promise.all(prepared)
@@ -387,7 +386,7 @@ const notify = async (req, res) => {
 
   const users = await usersStorage.getUsersWithPreferred();
   if (!users) {
-    console.log("No users have to be notified.");
+    console.debug("No users have to be notified.");
     return;
   }
 
@@ -398,7 +397,6 @@ const notify = async (req, res) => {
     const counts = reduceLocations(locations);
     const queries = makeQueries(counts);
     usersQueries = pairUserQueries(users, queries);
-    console.log("Users queries", usersQueries);
   } catch (error) {
     console.error("Error during fetching forecasts:", error);
     return;
