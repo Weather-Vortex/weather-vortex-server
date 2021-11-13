@@ -205,7 +205,7 @@ const loggedIn = (req, res) => {
 const deleteUser = (req, res) => {
   User.findByIdAndDelete(req.user._id)
     .then(() => {
-      res.status(200).json({
+      res.status(200).clearCookie("auth").json({
         message: "Deleted!",
       });
     })
