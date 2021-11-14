@@ -37,18 +37,10 @@ describe("Feedbacks Storage", () => {
   const providerName = storage.providerNames[0];
   let testUser;
 
-  before((done) => {
-    connection
-      .then(async () => {
-        try {
-          const created = await createUser();
-          testUser = created;
-          done();
-        } catch (err) {
-          done(err);
-        }
-      })
-      .catch((error) => done(error));
+  before(async () => {
+    await connection;
+    const created = await createUser();
+    testUser = created;
   });
 
   // Delete previous test users.
