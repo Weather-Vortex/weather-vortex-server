@@ -153,7 +153,7 @@ describe("Feedbacks Storage", () => {
       expect(then).to.be.null;
     });
 
-    it("Delete a Feedback with provider id", async () => {
+    it("Fail deleting a Feedback with provider id inside an object", async () => {
       expect(provider.feedbacks).to.have.lengthOf(1);
       const feedbackId = provider.feedbacks[0]._id;
       expect(
@@ -165,7 +165,7 @@ describe("Feedbacks Storage", () => {
       );
     });
 
-    it("Delete a Feedback with user id", async () => {
+    it("Fail deleting a Feedback with user id inside an object", async () => {
       expect(provider.feedbacks).to.have.lengthOf(1);
       const feedbackId = provider.feedbacks[0]._id;
 
@@ -191,8 +191,24 @@ describe("Feedbacks Storage", () => {
       expect(then).to.have.a.property("provider");
 
       const fb = await Feedback.findById(then._id);
-
       expect(fb).to.be.null;
+    });
+
+    it("The provider must not have the feedback in his collection", async () => {
+      const then = await storage.deleteFeedback(
+        feedbackCreated._id,
+        feedbackCreated.user
+      );
+      const pr = await Provider.findById(then.provider);
+      expect(pr).to.be.not.null;
+      /**
+       * Gets feedbacks Ids from a provider.
+       * @param {Provider} provider Provider to process.
+       * @returns {[any]} Feedbacks Ids.
+       */
+      const getFeedbacksFromProvider = (provider) => provider.feedbacks;
+      const feedbacks = getFeedbacksFromProvider(pr);
+      expect(feedbacks.includes(then._id)).to.be.false;
     });
   });
 
