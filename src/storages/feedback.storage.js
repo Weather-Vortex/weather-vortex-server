@@ -64,11 +64,18 @@ const createFeedback = async (
 
 /**
  * Delete a feedback given his id.
- * @param {mongoose.ObjectId} id ObjectId of the feedback to delete.
+ * @param {mongoose.ObjectId | String} id ObjectId of the feedback to delete.
  * @param {mongoose.ObjectId} user Owner of the feedback.
  * @returns Operation result.
  */
 const deleteFeedback = async (id, user) => {
+  if (!mongoose.isValidObjectId(id)) {
+    const message =
+      "id param must be a String or a mongoose.Schema.Types.ObjectId";
+    const error = new TypeError(message);
+    throw error;
+  }
+
   if (typeof id === "string") {
     id = new mongoose.Types.ObjectId(id);
   }
