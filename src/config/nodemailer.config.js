@@ -92,6 +92,18 @@ module.exports.sendWeatherEmail = (email, user, forecasts) =>
       return old.concat(str);
     }, "");
 
+    const locality = user
+      ? user.preferred
+        ? user.preferred.location
+          ? user.preferred.location
+          : user.preferred.position &&
+            user.preferred.position.x &&
+            user.preferred.position.y
+          ? user.preferred.position
+          : ""
+        : ""
+      : "";
+
     transport()
       .sendMail({
         from: `"Forecast notifications" <${process.env.USERMAIL}>`,
@@ -99,7 +111,7 @@ module.exports.sendWeatherEmail = (email, user, forecasts) =>
         subject: "Forecast notification from Weather Vortex",
         html: `
     <h1>Weather Notification</h1>
-    <p>You are receiving this email because you are registered to Weather Vortex, based on your preferred position: ${user.preferred}</p>
+    <p>You are receiving this email because you are registered to Weather Vortex, based on your preferred position: ${locality}</p>
     <div>
     <table border="1">
       <caption>All Forecasts</caption>
