@@ -144,37 +144,39 @@ describe("Feedbacks Storage", () => {
       provider = await Provider.findOne({ name: providerName });
     });
 
-    it.skip("Fail deleting a feedback with a string instead of a provider/user objectId object", async () => {
+    it("Fail deleting a feedback with a string instead of a provider/user objectId object", async () => {
+      const feedbackId = provider.feedbacks[0]._id;
       const then = await storage.deleteFeedback(
         testUser._id.toString(),
-        provider.feedbacks[0]._id
+        feedbackId
       );
       expect(then).to.be.null;
     });
 
-    it.skip("Delete a Feedback with provider id", async () => {
+    it("Delete a Feedback with provider id", async () => {
       expect(provider.feedbacks).to.have.lengthOf(1);
-      const then = await storage.deleteFeedback(
-        { provider: provider._id },
-        provider.feedbacks[0]._id
+      const feedbackId = provider.feedbacks[0]._id;
+      expect(
+        storage.deleteFeedback({ providerId: provider._id }, feedbackId)
+      ).to.eventually.throw(
+        new TypeError(
+          "id param must be a String or a mongoose.Schema.Types.ObjectId"
+        )
       );
-
-      expect(then).to.not.be.null;
-      expect(then).to.be.an("object");
-      expect(then.feedbacks).to.have.lengthOf(0);
     });
 
-    it.skip("Delete a Feedback with user id", async () => {
+    it("Delete a Feedback with user id", async () => {
       expect(provider.feedbacks).to.have.lengthOf(1);
+      const feedbackId = provider.feedbacks[0]._id;
 
       // First create the Feedback.
-      const then = await storage.deleteFeedback(
-        { user: testUser._id },
-        provider.feedbacks[0]._id
+      expect(
+        storage.deleteFeedback({ user: testUser._id }, feedbackId)
+      ).to.eventually.throw(
+        new TypeError(
+          "id param must be a String or a mongoose.Schema.Types.ObjectId"
+        )
       );
-
-      expect(then).to.not.be.null;
-      expect(then).to.be.an("object");
     });
 
     it("Delete a feedback with his id", async () => {
