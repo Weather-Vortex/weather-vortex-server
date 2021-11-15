@@ -180,6 +180,7 @@ const logout = (req, res) => {
 
     // Invalidate client session before sending the result.
     req.session = null;
+    // Clear http only authentication cookies.
     res.clearCookie("auth");
     res.sendStatus(200);
   });
@@ -205,6 +206,7 @@ const loggedIn = (req, res) => {
 const deleteUser = (req, res) => {
   User.findByIdAndDelete(req.user._id)
     .then(() => {
+      // Clear http only authentication cookies.
       res.status(200).clearCookie("auth").json({
         message: "Deleted!",
       });
