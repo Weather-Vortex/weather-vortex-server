@@ -42,29 +42,41 @@ let provideProvider;
 
 describe("Construct a new provider", () => {
   describe("Test base_url validation", () => {
+    const sharedHostname = "//aaa.com";
     /**
      * Generate a new constructor for a weather provider.
      * @param {String} protocol internet protocol to use with hostname to validate.
+     * @param {String} hostname hostname to use with protocol to validate.
      * @returns constructor function.
      */
-    const providerConstructionByProtocol = (protocol) => {
-      const url = protocol.concat("://aaa.com");
+    const providerConstruction = (protocol, hostname) => {
+      const url = protocol.concat(hostname);
       const fake_api_key = "1";
       return () => new WeatherProvider(url, fake_api_key);
     };
 
     it("Try to construct a new URL with some invalid protocols", async () => {
-      const protocols = ["ftp", "ssh"];
+      const protocols = ["ftp:", "ssh:"];
       protocols.forEach((protocol) => {
-        const constructor = providerConstructionByProtocol(protocol);
+        const constructor = providerConstruction(protocol, sharedHostname);
         expect(constructor).to.throw(Error, /protocol/);
       });
     });
 
+    it("Fail to construct a new provider without base_url", async () => {
+      const constructor = providerConstruction("http:", "");
+      expect(constructor).to.throw(Error, "Invalid URL: ");
+    });
+
+    it("Fail to construct a new provider without any piece.", async () => {
+      const constructor = providerConstruction("", "");
+      expect(constructor).to.throw(Error, "Invalid URL: ");
+    });
+
     it("try to construct a new URL with some valid protocols", async () => {
-      const protocols = ["http", "https"];
+      const protocols = ["http:", "https:"];
       protocols.forEach((protocol) => {
-        const constructor = providerConstructionByProtocol(protocol);
+        const constructor = providerConstruction(protocol, sharedHostname);
         const provider = constructor();
         expect(provider).to.be.an("object").to.have.a.property("internalUrl");
       });
@@ -72,7 +84,7 @@ describe("Construct a new provider", () => {
   });
 });
 
-describe.skip("Get forecast for a simple provider", () => {
+describe("Get forecast for a simple provider", () => {
   beforeEach(() => {
     provideProvider = (url) => new WeatherProvider(url, api_key);
     if (!nock.isActive()) {
