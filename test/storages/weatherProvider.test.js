@@ -1,19 +1,19 @@
 /*
-    Web server for Weather Vortex project.
-    Copyright (C) 2021  Daniele Tentoni
+Web server for Weather Vortex project.
+Copyright (C) 2021  Daniele Tentoni
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 "use strict";
@@ -23,7 +23,7 @@ const { WeatherProvider } = require("../../src/storages/weatherProvider");
 const chai = require("chai");
 const { expect } = chai;
 
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require("chai-as-promised"); // Used for async tests.
 chai.use(chaiAsPromised);
 
 const nock = require("nock"); // Used to mocking http calls.
@@ -38,10 +38,36 @@ const sample_data = {
   },
 };
 
-const provideProvider = (url) => new WeatherProvider(url, api_key);
+let provideProvider;
 
-describe("Get forecast for a simple provider", () => {
+describe("Construct a new provider", () => {
+  const providerConstruction = (protocol) => {
+    const url = protocol.concat("://aaa.com");
+    const fake_api_key = "1";
+    return () => new WeatherProvider(url, fake_api_key);
+  };
+
+  it("Try to construct a new URL with some invalid protocols", async () => {
+    const protocols = ["ftp", "ssh"];
+    protocols.forEach((protocol) => {
+      const constructor = providerConstruction(protocol);
+      expect(constructor).to.throw(Error, /protocol/);
+    });
+  });
+
+  it("try to construct a new URL with some valid protocols", async () => {
+    const protocols = ["http", "https"];
+    protocols.forEach((protocol) => {
+      const constructor = providerConstruction(protocol);
+      const provider = constructor();
+      expect(provider).to.be.an("object").to.have.a.property("internalUrl");
+    });
+  });
+});
+
+describe.skip("Get forecast for a simple provider", () => {
   beforeEach(() => {
+    provideProvider = (url) => new WeatherProvider(url, api_key);
     if (!nock.isActive()) {
       nock.activate();
     }

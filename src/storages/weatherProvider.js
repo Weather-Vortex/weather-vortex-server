@@ -18,6 +18,39 @@
 
 const axios = require("axios");
 const utils = require("./storage.utils");
+const url = require("url");
+
+/**
+ * Convert a given string to a valid url for weather providing.
+ *
+ * This is a list of valid protocols:
+ * - http;
+ * - https;
+ *
+ * Any other protocol will be rejected at the moment.
+ *
+ * @param {String} urlString string to convert to url.
+ * @returns {URL} converted url.
+ */
+const validateUrl = (urlString) => {
+  const myUrl = new URL(urlString);
+  if (!myUrl) {
+    throw new TypeError(
+      `${this.name}: param ${urlString} has to be convertible to URL node object.`
+    );
+  }
+
+  // List of accepted protocols.
+  const validProtocols = ["http:", "https:"];
+  if (!validProtocols.includes(myUrl.protocol)) {
+    throw new Error(
+      `${this.name}: param ${urlString} doesn't contains a valid protocol (${myUrl.protocol}). Value admitted are ${validProtocols}`
+    );
+  }
+
+  // At the end of validation, return the right url.
+  return myUrl;
+};
 
 /**
  * Base class for any Weather Provider.
@@ -30,8 +63,12 @@ class WeatherProvider {
    */
   constructor(base_url, api_key_part) {
     this.name = "Base Weather Provider";
-    this.base_url = base_url;
     this.api_key_part = api_key_part;
+    this.base_url = base_url;
+
+    // Move to use URL object instead row string.
+    const myUrl = validateUrl(base_url);
+    this.internalUrl = myUrl;
   }
 
   /**
@@ -40,7 +77,7 @@ class WeatherProvider {
    * @returns Url composed.
    */
   formatUrl = (resource) => {
-    if (typeof resource !== "string") {
+    if (!resource || typeof resource !== "string") {
       throw new TypeError(
         "Weather Provider: param resource have to be a string."
       );
