@@ -34,11 +34,13 @@ const url = require("url");
  */
 const validateUrl = (urlString) => {
   const myUrl = new URL(urlString);
+  /*
   if (!myUrl) {
     throw new TypeError(
       `${this.name}: param ${urlString} has to be convertible to URL node object.`
     );
   }
+  */
 
   // List of accepted protocols.
   const validProtocols = ["http:", "https:"];

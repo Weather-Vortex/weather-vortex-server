@@ -40,112 +40,133 @@ const sample_data = {
 
 let provideProvider;
 
-describe("Construct a new provider", () => {
-  describe("Test base_url validation", () => {
-    const sharedHostname = "//aaa.com";
-    /**
-     * Generate a new constructor for a weather provider.
-     * @param {String} protocol internet protocol to use with hostname to validate.
-     * @param {String} hostname hostname to use with protocol to validate.
-     * @returns constructor function.
-     */
-    const providerConstruction = (protocol, hostname) => {
-      const url = protocol.concat(hostname);
-      const fake_api_key = "1";
-      return () => new WeatherProvider(url, fake_api_key);
-    };
+describe("Test Weather Provider functionalities", () => {
+  /**
+   * Generate a new constructor for a weather provider.
+   * @param {String} protocol internet protocol to use with hostname to validate.
+   * @param {String} hostname hostname to use with protocol to validate.
+   * @returns constructor function.
+   */
+  const providerConstruction = (protocol, hostname) => {
+    const url = protocol.concat(hostname);
+    const fake_api_key = "1";
+    return () => new WeatherProvider(url, fake_api_key);
+  };
 
-    it("Try to construct a new URL with some invalid protocols", async () => {
-      const protocols = ["ftp:", "ssh:"];
-      protocols.forEach((protocol) => {
-        const constructor = providerConstruction(protocol, sharedHostname);
-        expect(constructor).to.throw(Error, /protocol/);
+  describe("Construct a new provider", () => {
+    describe("Test base_url validation", () => {
+      const sharedHostname = "//aaa.com";
+
+      it("Try to construct a new URL with some invalid protocols", async () => {
+        const protocols = ["ftp:", "ssh:"];
+        protocols.forEach((protocol) => {
+          const constructor = providerConstruction(protocol, sharedHostname);
+          expect(constructor).to.throw(Error, /protocol/);
+        });
       });
-    });
 
-    it("Fail to construct a new provider without base_url", async () => {
-      const constructor = providerConstruction("http:", "");
-      expect(constructor).to.throw(Error, "Invalid URL: ");
-    });
-
-    it("Fail to construct a new provider without any piece.", async () => {
-      const constructor = providerConstruction("", "");
-      expect(constructor).to.throw(Error, "Invalid URL: ");
-    });
-
-    it("try to construct a new URL with some valid protocols", async () => {
-      const protocols = ["http:", "https:"];
-      protocols.forEach((protocol) => {
-        const constructor = providerConstruction(protocol, sharedHostname);
-        const provider = constructor();
-        expect(provider).to.be.an("object").to.have.a.property("internalUrl");
+      it("Fail to construct a new provider without base_url", async () => {
+        const constructor = providerConstruction("http:", "");
+        expect(constructor).to.throw(Error, "Invalid URL: ");
       });
-    });
-  });
-});
 
-describe("Get forecast for a simple provider", () => {
-  beforeEach(() => {
-    provideProvider = (url) => new WeatherProvider(url, api_key);
-    if (!nock.isActive()) {
-      nock.activate();
-    }
-  });
+      it("Fail to construct a new provider without any piece.", async () => {
+        const constructor = providerConstruction("", "");
+        expect(constructor).to.throw(Error, "Invalid URL: ");
+      });
 
-  afterEach(() => {
-    nock.cleanAll();
-    nock.restore();
-  });
-
-  describe("using new get request function", async () => {
-    // From now on, Nock will intercept each get request to this url.
-    const nockTests = (times) =>
-      nock(base_url)
-        .get(`${res_url}?${api_key}`)
-        .times(times)
-        .reply(200, sample_data);
-
-    it("responds with a successful result", async () => {
-      nockTests(1);
-      const provider = provideProvider(base_url);
-      const { data } = await provider.makeRequest(res_url);
-      expect(data).to.be.an("object");
-      expect(data).to.have.a.nested.property("forecast.rain", false);
-      expect(data).to.have.a.nested.property("forecast.temp", 36);
-    });
-
-    it("responds with a successful result many times", async () => {
-      nockTests(2);
-      const provider = provideProvider(base_url);
-      const first = provider.makeRequest(res_url);
-      const second = provider.makeRequest(res_url);
-
-      const data = await Promise.all([first, second]);
-      data.map((val) => {
-        expect(val).to.be.an("object");
-        expect(val).to.have.a.nested.property("data.forecast.rain", false);
-        expect(val).to.have.a.nested.property("data.forecast.temp", 36);
+      it("try to construct a new URL with some valid protocols", async () => {
+        const protocols = ["http:", "https:"];
+        protocols.forEach((protocol) => {
+          const constructor = providerConstruction(protocol, sharedHostname);
+          const provider = constructor();
+          expect(provider).to.be.an("object").to.have.a.property("internalUrl");
+        });
       });
     });
   });
 
-  describe("fail when call a fake domain", () => {
-    it("that doesn't exists", async () => {
-      const fake = "called fake domain";
-      const grigri = "Ah Ah!";
-      nock(base_url)
-        .get(`${res_url}?${api_key}`)
-        .once()
-        .reply(400, { error: fake, data: grigri });
-      const provider = provideProvider(base_url);
-      try {
-        await provider.makeRequest(res_url);
-      } catch (error) {
-        if (error && error.response && error.response.data) {
-          expect(error).to.have.a.nested.property("response.data.error", fake);
-          expect(error).to.have.a.nested.property("response.data.data", grigri);
-        }
+  describe("Format requests", () => {
+    it("Fail to format an url without a resource", async () => {
+      const constructor = providerConstruction("http:", "aaa.com");
+      const provider = constructor();
+      const futureUrl = () => provider.formatUrl("");
+      expect(futureUrl).to.throw(
+        Error,
+        "Weather Provider: param resource have to be a string."
+      );
+    });
+  });
+
+  describe("Get forecast for a simple provider", () => {
+    beforeEach(() => {
+      provideProvider = (url) => new WeatherProvider(url, api_key);
+      if (!nock.isActive()) {
+        nock.activate();
       }
+    });
+
+    afterEach(() => {
+      nock.cleanAll();
+      nock.restore();
+    });
+
+    describe("using new get request function", async () => {
+      // From now on, Nock will intercept each get request to this url.
+      const nockTests = (times) =>
+        nock(base_url)
+          .get(`${res_url}?${api_key}`)
+          .times(times)
+          .reply(200, sample_data);
+
+      it("responds with a successful result", async () => {
+        nockTests(1);
+        const provider = provideProvider(base_url);
+        const { data } = await provider.makeRequest(res_url);
+        expect(data).to.be.an("object");
+        expect(data).to.have.a.nested.property("forecast.rain", false);
+        expect(data).to.have.a.nested.property("forecast.temp", 36);
+      });
+
+      it("responds with a successful result many times", async () => {
+        nockTests(2);
+        const provider = provideProvider(base_url);
+        const first = provider.makeRequest(res_url);
+        const second = provider.makeRequest(res_url);
+
+        const data = await Promise.all([first, second]);
+        data.map((val) => {
+          expect(val).to.be.an("object");
+          expect(val).to.have.a.nested.property("data.forecast.rain", false);
+          expect(val).to.have.a.nested.property("data.forecast.temp", 36);
+        });
+      });
+    });
+
+    describe("fail when call a fake domain", () => {
+      it("that doesn't exists", async () => {
+        const fake = "called fake domain";
+        const grigri = "Ah Ah!";
+        nock(base_url)
+          .get(`${res_url}?${api_key}`)
+          .once()
+          .reply(400, { error: fake, data: grigri });
+        const provider = provideProvider(base_url);
+        try {
+          await provider.makeRequest(res_url);
+        } catch (error) {
+          if (error && error.response && error.response.data) {
+            expect(error).to.have.a.nested.property(
+              "response.data.error",
+              fake
+            );
+            expect(error).to.have.a.nested.property(
+              "response.data.data",
+              grigri
+            );
+          }
+        }
+      });
     });
   });
 });
