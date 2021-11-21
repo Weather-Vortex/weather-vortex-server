@@ -41,26 +41,33 @@ const sample_data = {
 let provideProvider;
 
 describe("Construct a new provider", () => {
-  const providerConstruction = (protocol) => {
-    const url = protocol.concat("://aaa.com");
-    const fake_api_key = "1";
-    return () => new WeatherProvider(url, fake_api_key);
-  };
+  describe("Test base_url validation", () => {
+    /**
+     * Generate a new constructor for a weather provider.
+     * @param {String} protocol internet protocol to use with hostname to validate.
+     * @returns constructor function.
+     */
+    const providerConstructionByProtocol = (protocol) => {
+      const url = protocol.concat("://aaa.com");
+      const fake_api_key = "1";
+      return () => new WeatherProvider(url, fake_api_key);
+    };
 
-  it("Try to construct a new URL with some invalid protocols", async () => {
-    const protocols = ["ftp", "ssh"];
-    protocols.forEach((protocol) => {
-      const constructor = providerConstruction(protocol);
-      expect(constructor).to.throw(Error, /protocol/);
+    it("Try to construct a new URL with some invalid protocols", async () => {
+      const protocols = ["ftp", "ssh"];
+      protocols.forEach((protocol) => {
+        const constructor = providerConstructionByProtocol(protocol);
+        expect(constructor).to.throw(Error, /protocol/);
+      });
     });
-  });
 
-  it("try to construct a new URL with some valid protocols", async () => {
-    const protocols = ["http", "https"];
-    protocols.forEach((protocol) => {
-      const constructor = providerConstruction(protocol);
-      const provider = constructor();
-      expect(provider).to.be.an("object").to.have.a.property("internalUrl");
+    it("try to construct a new URL with some valid protocols", async () => {
+      const protocols = ["http", "https"];
+      protocols.forEach((protocol) => {
+        const constructor = providerConstructionByProtocol(protocol);
+        const provider = constructor();
+        expect(provider).to.be.an("object").to.have.a.property("internalUrl");
+      });
     });
   });
 });
