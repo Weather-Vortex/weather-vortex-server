@@ -21,10 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 const { WeatherProvider } = require("../../src/storages/weatherProvider");
 
 const chai = require("chai");
-const { expect } = chai;
-
 const chaiAsPromised = require("chai-as-promised"); // Used for async tests.
 chai.use(chaiAsPromised);
+const { expect } = chai;
 
 const nock = require("nock"); // Used to mocking http calls.
 
@@ -209,9 +208,23 @@ describe("Test Weather Provider functionalities", () => {
     });
 
     describe("fail when call a fake domain", () => {
+      const fake = "called fake domain";
+      const grigri = "Ah Ah!";
+
+      it("Force an axios error", async () => {
+        nock(base_url)
+          .get(`${res_url}?api_key=${api_key}`)
+          .once()
+          .reply(400, { error: fake, data: grigri });
+        const provider = provideProvider(base_url);
+        const req = () => provider.makeRequest(res_url);
+        expect(req()).to.eventually.be.rejectedWith(
+          Error,
+          "Error in axios call"
+        );
+      });
+
       it("that doesn't exists", async () => {
-        const fake = "called fake domain";
-        const grigri = "Ah Ah!";
         nock(base_url)
           .get(`${res_url}?api_key=${api_key}`)
           .once()

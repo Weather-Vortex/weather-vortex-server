@@ -101,25 +101,8 @@ class WeatherProvider {
     // Format url. Let error flow up to inherited provider.
     const data_url = this.formatUrl(resource);
 
-    try {
-      // Return the real Promise from Axios.
-      return axios.get(data_url);
-    } catch (error) {
-      utils.manageAxiosError(error);
-      let data = {};
-      if (error && error.response && error.response.data) {
-        data = error.response.data;
-      } else {
-        data.error = "Error in axios call";
-        data.data = { url };
-      }
-      const err = new Error("Error in axios call");
-      err.message = message;
-      err.internalError = error;
-      err.data = data;
-      // Return a rejected Promise.
-      throw err;
-    }
+    // Return the real Promise from Axios.
+    return axios.get(data_url);
   };
 }
 
