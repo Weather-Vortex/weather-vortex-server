@@ -41,25 +41,27 @@ const sample_data = {
 let provideProvider;
 
 describe("Test Weather Provider functionalities", () => {
-  /**
-   * Generate a new constructor for a weather provider.
-   * @param {String} protocol internet protocol to use with hostname to validate.
-   * @param {String} hostname hostname to use with protocol to validate.
-   * @returns constructor function.
-   */
-  const providerConstruction = (protocol, hostname) => {
-    const url = protocol.concat(hostname);
-    const fake_api_key = "1";
-    return () => new WeatherProvider(url, fake_api_key);
-  };
-
   describe("Construct a new provider", () => {
-    describe("Test base_url validation", () => {
+    /**
+     * Generate a new constructor for a weather provider.
+     * Using this function let you to test missing protocols or hostnames cases.
+     * @param {String} protocol internet protocol to use with hostname to validate.
+     * @param {String} hostname hostname to use with protocol to validate.
+     * @returns constructor function.
+     */
+    const providerConstruction = (protocol, hostname) => {
+      const url = protocol.concat(hostname);
+      const fake_api_key = "1";
+      return () => new WeatherProvider(url, fake_api_key);
+    };
+
+    describe("Test failing combinations", () => {
       const sharedHostname = "//aaa.com";
+      const validProtocols = ["http:", "https:"];
+      const invalidProtocols = ["ftp:", "ssh:"];
 
       it("Try to construct a new URL with some invalid protocols", async () => {
-        const protocols = ["ftp:", "ssh:"];
-        protocols.forEach((protocol) => {
+        invalidProtocols.forEach((protocol) => {
           const constructor = providerConstruction(protocol, sharedHostname);
           expect(constructor).to.throw(Error, /protocol/);
         });
@@ -76,25 +78,88 @@ describe("Test Weather Provider functionalities", () => {
       });
 
       it("try to construct a new URL with some valid protocols", async () => {
-        const protocols = ["http:", "https:"];
-        protocols.forEach((protocol) => {
+        validProtocols.forEach((protocol) => {
           const constructor = providerConstruction(protocol, sharedHostname);
           const provider = constructor();
-          expect(provider).to.be.an("object").to.have.a.property("internalUrl");
+          expect(provider)
+            .to.be.an("object")
+            .to.have.a.property("internal_url");
         });
       });
     });
   });
 
   describe("Format requests", () => {
-    it("Fail to format an url without a resource", async () => {
-      const constructor = providerConstruction("http:", "aaa.com");
-      const provider = constructor();
-      const futureUrl = () => provider.formatUrl("");
-      expect(futureUrl).to.throw(
-        Error,
-        "Weather Provider: param resource have to be a string."
-      );
+    let provider;
+    const url = "http://aaa.com";
+    const slash = "/";
+
+    /**
+     * Create a new Weather Provider.
+     * @param {Boolean} hasSlash Define if the base url of generated provider has to have an ending url or not.
+     * @returns {WeatherProvider} Weather Provider generated.
+     */
+    const createSimpleProvider = (hasSlash) =>
+      new WeatherProvider(hasSlash ? `${url}${slash}` : url, "1");
+
+    describe("Try to compose different urls", () => {
+      // Doesn't need to test an empty url: it would fail the creation.
+
+      describe("Fail to format an url without a resource", () => {
+        const emptyResource = "";
+        it("With final slash url", () => {
+          provider = createSimpleProvider(true);
+          const futureUrl = () => provider.formatUrl(emptyResource);
+          expect(futureUrl).to.throw(
+            Error,
+            "Weather Provider: param resource have to be a string."
+          );
+        });
+
+        it("Or not", () => {
+          provider = createSimpleProvider(false);
+          const futureUrl = () => provider.formatUrl(emptyResource);
+          expect(futureUrl).to.throw(
+            Error,
+            "Weather Provider: param resource have to be a string."
+          );
+        });
+      });
+
+      describe("Success to format an url with a non empty resource", () => {
+        const initialResource = "try";
+        const composeUrl = (res) => `${url}${slash}${res}?api_key=1`;
+        const testUrl = composeUrl(initialResource);
+
+        describe("Not starting with a slash", () => {
+          it("With a final slash url", () => {
+            const provider = createSimpleProvider(true);
+            const formatted = provider.formatUrl(initialResource);
+            expect(formatted).to.be.equal(testUrl);
+          });
+
+          it("Or not", () => {
+            const provider = createSimpleProvider(false);
+            const formatted = provider.formatUrl(initialResource);
+            expect(formatted).to.be.equal(testUrl);
+          });
+        });
+
+        describe("Or starting with it", () => {
+          const slashedResource = `${slash}${initialResource}`;
+          it("With a final slash url", () => {
+            const provider = createSimpleProvider(true);
+            const formatted = provider.formatUrl(slashedResource);
+            expect(formatted).to.be.equal(testUrl);
+          });
+
+          it("Or not", () => {
+            const provider = createSimpleProvider(false);
+            const formatted = provider.formatUrl(slashedResource);
+            expect(formatted).to.be.equal(testUrl);
+          });
+        });
+      });
     });
   });
 
@@ -115,7 +180,7 @@ describe("Test Weather Provider functionalities", () => {
       // From now on, Nock will intercept each get request to this url.
       const nockTests = (times) =>
         nock(base_url)
-          .get(`${res_url}?${api_key}`)
+          .get(`${res_url}?api_key=${api_key}`)
           .times(times)
           .reply(200, sample_data);
 
@@ -148,7 +213,7 @@ describe("Test Weather Provider functionalities", () => {
         const fake = "called fake domain";
         const grigri = "Ah Ah!";
         nock(base_url)
-          .get(`${res_url}?${api_key}`)
+          .get(`${res_url}?api_key=${api_key}`)
           .once()
           .reply(400, { error: fake, data: grigri });
         const provider = provideProvider(base_url);

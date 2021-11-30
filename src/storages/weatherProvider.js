@@ -20,6 +20,9 @@ const axios = require("axios");
 const utils = require("./storage.utils");
 const url = require("url");
 
+// This is a curated list of valid protocols to use for common use weather providers.
+const validProtocols = ["http:", "https:"];
+
 /**
  * Convert a given string to a valid url for weather providing.
  *
@@ -43,7 +46,6 @@ const validateUrl = (urlString) => {
   */
 
   // List of accepted protocols.
-  const validProtocols = ["http:", "https:"];
   if (!validProtocols.includes(myUrl.protocol)) {
     throw new Error(
       `${this.name}: param ${urlString} doesn't contains a valid protocol (${myUrl.protocol}). Value admitted are ${validProtocols}`
@@ -69,14 +71,14 @@ class WeatherProvider {
     this.base_url = base_url;
 
     // Move to use URL object instead row string.
-    const myUrl = validateUrl(base_url);
-    this.internalUrl = myUrl;
+    const new_url = validateUrl(base_url);
+    this.internal_url = new_url;
   }
 
   /**
-   * Compose an url with a resource properly.
+   * Compose an url with a resource properly concat to internal url.
    * @param {String} resource Resource to compose.
-   * @returns Url composed.
+   * @returns {String} Url composed.
    */
   formatUrl = (resource) => {
     if (!resource || typeof resource !== "string") {
@@ -85,23 +87,9 @@ class WeatherProvider {
       );
     }
 
-    let tmp;
-    if (this.base_url.endsWith("/") && resource.startsWith("/")) {
-      tmp = this.base_url.substr(0, this.base_url.length - 1).concat(resource);
-    } else if (
-      (this.base_url.endsWith("/") && !resource.startsWith("/")) ||
-      (!this.base_url.endsWith("/") && resource.startsWith("/"))
-    ) {
-      tmp = this.base_url.concat(resource);
-    } else if (!this.base_url.endsWith("/") && !resource.startsWith("/")) {
-      tmp = `${this.base_url}/${resource}`;
-    }
-
-    if (!tmp.includes("?")) {
-      tmp = tmp.concat("?");
-    }
-
-    return tmp.concat(this.api_key_part);
+    const tmp = new URL(resource, this.internal_url);
+    tmp.searchParams.set("api_key", this.api_key_part);
+    return tmp.toString();
   };
 
   /**
@@ -136,5 +124,6 @@ class WeatherProvider {
 }
 
 module.exports = {
+  validProtocols,
   WeatherProvider,
 };
