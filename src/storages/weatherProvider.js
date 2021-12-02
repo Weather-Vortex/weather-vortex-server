@@ -17,8 +17,6 @@
 */
 
 const axios = require("axios");
-const utils = require("./storage.utils");
-const url = require("url");
 
 // This is a curated list of valid protocols to use for common use weather providers.
 const validProtocols = ["http:", "https:"];
@@ -57,17 +55,39 @@ const validateUrl = (urlString) => {
 };
 
 /**
+ * ApiKey class.
+ */
+class ApiKey {
+  name = "";
+  value = "";
+}
+
+/**
  * Base class for any Weather Provider.
  */
 class WeatherProvider {
   /**
    * Initialize the Weather Provider with some common data.
    * @param {String} base_url Base url of the service.
-   * @param {String} api_key_part Api Key Url Part of the service.
+   * @param {String | ApiKey} api_key_part Api Key Url Part of the service or Api Key of the service.
+   * @deprecated In a future version, this constructor will use only ApiKey parameter type.
    */
   constructor(base_url, api_key_part) {
     this.name = "Base Weather Provider";
-    this.api_key_part = api_key_part;
+
+    if (typeof api_key_part === "string") {
+      // This is the behavior that is going to be removed.
+      this.api_key_part = api_key_part;
+      this.api_key = new ApiKey();
+      this.api_key.name = "key";
+      this.api_key.value = api_key_part;
+    } else if (
+      typeof api_key_part === "object" &&
+      typeof api_key_part.name === "string" &&
+      typeof api_key_part.value === "string"
+    ) {
+      this.api_key = api_key_part;
+    }
     this.base_url = base_url;
 
     // Move to use URL object instead row string.
