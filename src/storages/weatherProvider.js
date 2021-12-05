@@ -77,6 +77,9 @@ class WeatherProvider {
 
     if (typeof api_key_part === "string") {
       // This is the behavior that is going to be removed.
+      console.warn(
+        "Deprecation: api_key_part as string is deprecated since 1.0.2 and will be removed in a future version of the library."
+      );
       this.api_key_part = api_key_part;
       this.api_key = new ApiKey();
       this.api_key.name = "key";
