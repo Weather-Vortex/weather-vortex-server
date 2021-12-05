@@ -130,8 +130,6 @@ const moreDayByLocation = (latitude, longitude) =>
     });
 
 module.exports = {
-  fourDayForecastByCityRequest,
-  fourDayForecastByLocationRequest,
   currentByLocation,
   moreDayByLocation,
 };
