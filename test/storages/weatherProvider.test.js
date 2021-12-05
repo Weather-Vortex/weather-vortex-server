@@ -1,6 +1,6 @@
 /*
 Web server for Weather Vortex project.
-Copyright (C) 2021  Daniele Tentoni
+Copyright (C) 2021  Tentoni Daniele
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 "use strict";
 
-const { WeatherProvider } = require("../../src/storages/weatherProvider");
+const {
+  ApiKey,
+  WeatherProvider,
+} = require("../../src/storages/weatherProvider");
 
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised"); // Used for async tests.
@@ -41,6 +44,8 @@ let provideProvider;
 
 describe("Test Weather Provider functionalities", () => {
   describe("Construct a new provider", () => {
+    const sharedHostname = "//aaa.com";
+
     /**
      * Generate a new constructor for a weather provider.
      * Using this function let you to test missing protocols or hostnames cases.
@@ -55,8 +60,6 @@ describe("Test Weather Provider functionalities", () => {
     };
 
     describe("Test failing combinations", () => {
-      const sharedHostname = "//aaa.com";
-      const validProtocols = ["http:", "https:"];
       const invalidProtocols = ["ftp:", "ssh:"];
 
       it("Try to construct a new URL with some invalid protocols", async () => {
@@ -75,7 +78,10 @@ describe("Test Weather Provider functionalities", () => {
         const constructor = providerConstruction("", "");
         expect(constructor).to.throw(Error, "Invalid URL: ");
       });
+    });
 
+    describe("Test some successful combinations", () => {
+      const validProtocols = ["http:", "https:"];
       it("try to construct a new URL with some valid protocols", async () => {
         validProtocols.forEach((protocol) => {
           const constructor = providerConstruction(protocol, sharedHostname);
@@ -84,6 +90,16 @@ describe("Test Weather Provider functionalities", () => {
             .to.be.an("object")
             .to.have.a.property("internal_url");
         });
+      });
+
+      it("Construct a new URL with valid ApiKey object", async () => {
+        const apiKey = new ApiKey();
+        apiKey.name = "token";
+        apiKey.value = "1";
+        const provider = new WeatherProvider("http://aaa.com", apiKey);
+        expect(provider)
+          .to.be.an("object")
+          .to.have.a.property("api_key", apiKey);
       });
     });
   });
@@ -127,7 +143,7 @@ describe("Test Weather Provider functionalities", () => {
 
       describe("Success to format an url with a non empty resource", () => {
         const initialResource = "try";
-        const composeUrl = (res) => `${url}${slash}${res}?api_key=1`;
+        const composeUrl = (res) => `${url}${slash}${res}?key=1`;
         const testUrl = composeUrl(initialResource);
 
         describe("Not starting with a slash", () => {
@@ -179,7 +195,7 @@ describe("Test Weather Provider functionalities", () => {
       // From now on, Nock will intercept each get request to this url.
       const nockTests = (times) =>
         nock(base_url)
-          .get(`${res_url}?api_key=${api_key}`)
+          .get(`${res_url}?key=${api_key}`)
           .times(times)
           .reply(200, sample_data);
 
@@ -213,7 +229,7 @@ describe("Test Weather Provider functionalities", () => {
 
       it("Force an axios error", async () => {
         nock(base_url)
-          .get(`${res_url}?api_key=${api_key}`)
+          .get(`${res_url}?key=${api_key}`)
           .once()
           .reply(400, { error: fake, data: grigri });
         const provider = provideProvider(base_url);

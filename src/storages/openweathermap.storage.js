@@ -18,11 +18,12 @@
 
 "use strict";
 
-const { WeatherProvider } = require("./weatherProvider");
+const { WeatherProvider, ApiKey } = require("./weatherProvider");
 
 class OpenWeatherMapProvider extends WeatherProvider {
-  constructor(base_url, api_key) {
-    super(base_url, `&appid=${api_key}`);
+  constructor(base_url, token) {
+    const apiKey = new ApiKey("appid", token);
+    super(base_url, apiKey);
     this.name = "OpenWeatherMap Provider";
   }
 }

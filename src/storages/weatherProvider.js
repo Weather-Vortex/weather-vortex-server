@@ -1,6 +1,6 @@
 /*
     Web server for Weather Vortex project.
-    Copyright (C) 2021  Daniele Tentoni
+    Copyright (C) 2021  Tentoni Daniele
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,6 +60,10 @@ const validateUrl = (urlString) => {
 class ApiKey {
   name = "";
   value = "";
+  constructor(name, value) {
+    this.name = name;
+    this.value = value;
+  }
 }
 
 /**
@@ -69,11 +73,12 @@ class WeatherProvider {
   /**
    * Initialize the Weather Provider with some common data.
    * @param {String} base_url Base url of the service.
-   * @param {String | ApiKey} api_key_part Api Key Url Part of the service or Api Key of the service.
-   * @deprecated In a future version, this constructor will use only ApiKey parameter type.
+   * @param {String | ApiKey} api_key_part Api Key Url Part of the service or Api Key of the service. Deprecation: String param type is deprecated since 1.0.2 and will be removed in a future version of the library.
    */
   constructor(base_url, api_key_part) {
     this.name = "Base Weather Provider";
+
+    console.log("TYPES: ", typeof api_key_part, api_key_part instanceof ApiKey);
 
     if (typeof api_key_part === "string") {
       // This is the behavior that is going to be removed.
@@ -85,11 +90,16 @@ class WeatherProvider {
       this.api_key.name = "key";
       this.api_key.value = api_key_part;
     } else if (
-      typeof api_key_part === "object" &&
-      typeof api_key_part.name === "string" &&
-      typeof api_key_part.value === "string"
+      api_key_part instanceof ApiKey ||
+      (typeof api_key_part === "object" &&
+        typeof api_key_part.name === "string" &&
+        typeof api_key_part.value === "string")
     ) {
       this.api_key = api_key_part;
+    } else {
+      const message = `Invalid argument (${api_key_part}) type given (${typeof api_key_part})`;
+      console.error(message);
+      throw new TypeError(message);
     }
     this.base_url = base_url;
 
@@ -111,7 +121,7 @@ class WeatherProvider {
     }
 
     const tmp = new URL(resource, this.internal_url);
-    tmp.searchParams.set("api_key", this.api_key_part);
+    tmp.searchParams.set(this.api_key.name, this.api_key.value);
     return tmp.toString();
   };
 
@@ -130,6 +140,7 @@ class WeatherProvider {
 }
 
 module.exports = {
+  ApiKey,
   validProtocols,
   WeatherProvider,
 };
