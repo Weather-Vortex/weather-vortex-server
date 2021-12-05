@@ -78,6 +78,15 @@ describe("Test Weather Provider functionalities", () => {
         const constructor = providerConstruction("", "");
         expect(constructor).to.throw(Error, "Invalid URL: ");
       });
+
+      it("Fail to use non string non apikey values", async () => {
+        const nonValidConstructor = () =>
+          new WeatherProvider("http://aaa.com", 1);
+        expect(nonValidConstructor).to.throw(
+          TypeError,
+          "Invalid argument (1) type given (number)"
+        );
+      });
     });
 
     describe("Test some successful combinations", () => {

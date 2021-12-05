@@ -78,23 +78,14 @@ class WeatherProvider {
   constructor(base_url, api_key_part) {
     this.name = "Base Weather Provider";
 
-    console.log("TYPES: ", typeof api_key_part, api_key_part instanceof ApiKey);
-
     if (typeof api_key_part === "string") {
       // This is the behavior that is going to be removed.
       console.warn(
         "Deprecation: api_key_part as string is deprecated since 1.0.2 and will be removed in a future version of the library."
       );
       this.api_key_part = api_key_part;
-      this.api_key = new ApiKey();
-      this.api_key.name = "key";
-      this.api_key.value = api_key_part;
-    } else if (
-      api_key_part instanceof ApiKey ||
-      (typeof api_key_part === "object" &&
-        typeof api_key_part.name === "string" &&
-        typeof api_key_part.value === "string")
-    ) {
+      this.api_key = new ApiKey("key", api_key_part);
+    } else if (api_key_part instanceof ApiKey) {
       this.api_key = api_key_part;
     } else {
       const message = `Invalid argument (${api_key_part}) type given (${typeof api_key_part})`;

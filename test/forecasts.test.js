@@ -56,8 +56,6 @@ describe("GET forecasts for Cesena", () => {
           .set("content-type", "application/json")
           .set("Accept", "application/json");
 
-        console.error("ERROR: ", result.error);
-
         expect(result).to.have.status(200);
         expect(result).to.be.an("object", "We expect that result is an object");
         const body = result.body;
