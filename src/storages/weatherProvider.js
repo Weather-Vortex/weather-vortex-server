@@ -16,6 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/**
+ * Weather Provider.
+ * Provide the abstract Weather Provider class to extends for a more specific remote provider.
+ * @author Tentoni Daniele <daniele.tentoni.1996@gmail.com>
+ * @module weatherProvider
+ */
+
 const axios = require("axios");
 
 // This is a curated list of valid protocols to use for common use weather providers.
