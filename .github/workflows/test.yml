@@ -6,14 +6,16 @@ on:
       - "main"
       - "dev"
     paths-ignore:
-      - "**/*.md"
-      - "**/*.data"
+      - "**/*.[mM][dD]"
+      - "**/*.[dD][aA][tT][aA]"
 
 jobs:
   build:
+    name: Test using Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         node-version: [12.x, 14.x, 16.x]
     steps:
       - uses: actions/checkout@v2
@@ -21,6 +23,7 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
+          cache: "npm"
           node-version: ${{ matrix.node-version }}
 
       - name: Create mongoDB Docker container for API testing
