@@ -41,20 +41,7 @@ const validProtocols = ["http:", "https:"];
  * @returns {URL} converted url.
  */
 const validateUrl = (urlString) => {
-  let myUrl;
-  try {
-    myUrl = new URL(urlString);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-  /*
-  if (!myUrl) {
-    throw new TypeError(
-      `${this.name}: param ${urlString} has to be convertible to URL node object.`
-    );
-  }
-  */
+  const myUrl = new URL(urlString);
 
   // List of accepted protocols.
   if (!validProtocols.includes(myUrl.protocol)) {
