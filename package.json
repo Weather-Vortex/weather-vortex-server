@@ -29,18 +29,18 @@
   "dependencies": {
     "axios": "^0.24.0",
     "bcrypt": "^5.0.1",
-    "cookie-parser": "^1.4.5",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "express": "^4.17.1",
     "express-actuator": "^1.8.0",
     "express-session": "^1.17.2",
     "jsonwebtoken": "^8.5.1",
-    "link-check": "^5.0.0",
-    "mongoose": "^6.0.12",
-    "nodemailer": "^6.7.0",
+    "link-check": "^5.0.1",
+    "mongoose": "^6.0.14",
+    "nodemailer": "^6.7.2",
     "sinon": "^12.0.1",
-    "socket.io": "^4.3.2"
+    "socket.io": "^4.4.0"
   },
   "devDependencies": {
     "chai": "^4.3.4",
@@ -48,7 +48,7 @@
     "chai-http": "^4.3.0",
     "dotenv": "^10.0.0",
     "mocha": "^9.1.3",
-    "nock": "^13.2.0",
+    "nock": "^13.2.1",
     "nyc": "^15.1.0",
     "supertest": "^6.1.6"
   },
