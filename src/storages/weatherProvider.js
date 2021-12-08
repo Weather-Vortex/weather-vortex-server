@@ -41,7 +41,13 @@ const validProtocols = ["http:", "https:"];
  * @returns {URL} converted url.
  */
 const validateUrl = (urlString) => {
-  const myUrl = new URL(urlString);
+  let myUrl;
+  try {
+    myUrl = new URL(urlString);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
   /*
   if (!myUrl) {
     throw new TypeError(
@@ -52,7 +58,7 @@ const validateUrl = (urlString) => {
 
   // List of accepted protocols.
   if (!validProtocols.includes(myUrl.protocol)) {
-    throw new Error(
+    throw new TypeError(
       `${this.name}: param ${urlString} doesn't contains a valid protocol (${myUrl.protocol}). Value admitted are ${validProtocols}`
     );
   }

@@ -71,12 +71,12 @@ describe("Test Weather Provider functionalities", () => {
 
       it("Fail to construct a new provider without base_url", async () => {
         const constructor = providerConstruction("http:", "");
-        expect(constructor).to.throw(Error, "Invalid URL: ");
+        expect(constructor).to.throw(TypeError, "Invalid URL: ");
       });
 
       it("Fail to construct a new provider without any piece.", async () => {
         const constructor = providerConstruction("", "");
-        expect(constructor).to.throw(Error, "Invalid URL: ");
+        expect(constructor).to.throw(TypeError, "Invalid URL: ");
       });
 
       it("Fail to use non string non apikey values", async () => {
