@@ -18,11 +18,12 @@
 
 "use strict";
 
-const { WeatherProvider } = require("./weatherProvider");
+const { WeatherProvider, ApiKey } = require("./weatherProvider");
 
 class OpenWeatherMapProvider extends WeatherProvider {
-  constructor(base_url, api_key) {
-    super(base_url, `&appid=${api_key}`);
+  constructor(base_url, token) {
+    const apiKey = new ApiKey("appid", token);
+    super(base_url, apiKey);
     this.name = "OpenWeatherMap Provider";
   }
 }
@@ -102,29 +103,6 @@ const mapFields = (forecast) => {
 };
 
 /**
- * Retrieve weather forecasts for given city.
- * @deprecated Since 0.4.0, this method will be deprecated for moreDayByCity and will be removed in a next release.
- * @param {String} city_name City Name for weather forecasts.
- * @returns {Promise<any>} Weather Forecast Promise.
- */
-const fourDayForecastByCityRequest = (city_name) => {
-  const resource = `forecast?q=${city_name}`;
-  return provider.makeRequest(resource);
-};
-
-/**
- * Return request promise for forecast for given position.
- * @deprecated Since 0.4.0, this method will be deprecated for moreDayByLocation and will be removed in a next release.
- * @param {Number} latitude Latitude of the position.
- * @param {Number} longitude Longitude of the position.
- * @returns {Promise<any>} Weather Forecast Promise.
- */
-const fourDayForecastByLocationRequest = (latitude, longitude) => {
-  const resource = `forecast?lat=${latitude}&lon=${longitude}`;
-  return provider.makeRequest(resource);
-};
-
-/**
  * Return request promise for forecast for given position.
  * @param {Number} latitude Latitude of the position.
  * @param {Number} longitude Longitude of the position.
@@ -152,8 +130,6 @@ const moreDayByLocation = (latitude, longitude) =>
     });
 
 module.exports = {
-  fourDayForecastByCityRequest,
-  fourDayForecastByLocationRequest,
   currentByLocation,
   moreDayByLocation,
 };

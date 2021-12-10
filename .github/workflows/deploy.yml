@@ -2,20 +2,24 @@ name: Deploy
 
 on:
   push:
-    branches:
-      - "main"
-    # Ignore paths without code or useful runtime files.
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.data"
-      - "**/test/*.test.js"
-      - "**/*.*ignore"
+    tags:
+      - v*
 
 env:
   IMAGE_NAME: weather-vortex-server
 
 jobs:
+  master-check:
+    name: Assure that we are on master branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exit if not on master branch
+        if: endsWith(github.ref, 'master') == false
+        run: exit -1
+
   Deploy:
+    name: Deploy to Heroku paas
+    needs: [master-check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -42,6 +46,7 @@ jobs:
           usedocker: true
 
   TelegramJobDeploy:
+    name: Send Telegram notification on successful workflow
     needs: [Deploy]
     if: "false"
     runs-on: ubuntu-latest
@@ -60,6 +65,7 @@ jobs:
           disable_web_page_preview: true
 
   TelegramJobFailure:
+    name: Send Telegram notification on failure workflow
     needs: [Deploy]
     if: failure()
     runs-on: ubuntu-latest
@@ -79,6 +85,7 @@ jobs:
 
   push-to-registry:
     name: Push Docker image to Docker Hub
+    needs: [master-check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

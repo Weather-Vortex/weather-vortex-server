@@ -18,11 +18,12 @@
 
 "use strict";
 
-const { WeatherProvider } = require("./weatherProvider");
+const { WeatherProvider, ApiKey } = require("./weatherProvider");
 
 class TroposphereProvider extends WeatherProvider {
-  constructor(base_url, api_key) {
-    super(base_url, `token=${api_key}`);
+  constructor(base_url, token) {
+    const apiKey = new ApiKey("token", token);
+    super(base_url, apiKey);
     this.name = "Troposphere Provider";
   }
 }

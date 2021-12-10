@@ -21,15 +21,15 @@
 const request = require("supertest");
 const chai = require("chai");
 const chaiHttp = require("chai-http");
+chai.use(chaiHttp);
+const { expect } = chai;
+
 const nock = require("nock");
 const { app } = require("../src/index");
 const { getLocationDataByCity } = require("../src/storages/location.storage");
 const Location = require("../src/models/location.model");
 const userUtils = require("./utils/user.utils");
 const { saveMockCity } = require("./utils/location.utils");
-
-chai.use(chaiHttp);
-const expect = chai.expect;
 
 const base_url = "/forecast";
 
