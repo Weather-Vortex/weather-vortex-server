@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-FROM node:16-alpine
+FROM node:17-alpine
 
 ENV WORKINGDIR=/app
 
