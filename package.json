@@ -35,7 +35,7 @@
     "express": "^4.17.1",
     "express-actuator": "^1.8.0",
     "express-session": "^1.17.2",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "link-check": "^5.0.1",
     "mongoose": "^6.1.1",
     "nodemailer": "^6.7.2",
